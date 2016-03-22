@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<title>main.html</title>
+<link rel="stylesheet" type="text/css" media="all" href="/Users/yorisilo/Dropbox/DATA/bootstrap-3.1.1-dist/css/bootstrap.css"  />
+
+</head>
+
+<body>
+
+<h1>全体ゼミ</h1>
+
+<h1>Fri May 22 15:27:17 2015</h1>
+
+<h1>kobori</h1>
+
+<h2>shift/reset</h2>
+
+<p>式の途中で元の式の型が変化してしまう
+answer type modification (ATM)</p>
+
+<pre><code>reset (5+ shift k.k)
+~&gt; rest k where k = \x.rest(5+x)
+k 9 ~&gt; (\x.reset(5+x)) 9
+~&gt; rest(5+9) ~&gt; reset 14 ~&gt; 14
+</code></pre>
+
+<h2>ATMをサポートするために</h2>
+
+<h3>プロンプト渡し変換</h3>
+
+<ul>
+<li>一つのshift/resetを複数のshift/resetで模倣する</li>
+<li>Effectifl term は2つのプロンプトを受け取る</li>
+</ul>
+
+<h3>effectiful term</h3>
+
+<ul>
+<li>shiftを含んだ項という意味でなく，そのtermからeffectが染みだしてしまう項のこと</li>
+<li>見た目にはpureなtermだが，effectを持つterm?</li>
+</ul>
+
+<h2>OCaml上への実装</h2>
+
+<ul>
+<li>ATMありのshift/reset言語をDSLとして実装</li>
+<li><p>DSLの解釈に変換を利用</p></li>
+<li><p>終タグレス法 carette et al.2009</p></li>
+</ul>
+
+<h2>GADT</h2>
+
+<ul>
+<li>代数的データ型の拡張．コンストラクタごとに独立に型を書けるようになる．</li>
+</ul>
+
+<p>コンストラクタは関数のように書く．</p>
+
+<pre><code>type _ term =
+| int:int -&gt; int term
+| Add:(int -&gt; int -&gt; int) term
+...
+
+
+let lam:type a b.
+</code></pre>
+
+<h1>torii</h1>
+
+<ul>
+<li>horn節 節約系の話</li>
+<li>再帰horn節 節約系の実装の話</li>
+</ul>
+
+<h2>論文</h2>
+
+<p><code>PPDP2009 dependent type inference with interpolants</code></p>
+
+<h2>実装</h2>
+
+<p><code>sorceprogram -&gt; ホーン節制約生成 -&gt; (HSSCの変換):main -&gt; ホーン節制約解消:今回話すこと</code></p>
+
+</body>
+</html>

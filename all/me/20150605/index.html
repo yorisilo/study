@@ -1,0 +1,346 @@
+ <!DOCTYPE html>
+<html>
+  <head>
+    <title>全体ゼミ 20150605</title>
+    <meta charset="utf-8">
+    <style>
+      @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+      @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
+      @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+      body { font-family: 'Droid Serif'; }
+      h1, h2, h3 {
+      font-family: 'Yanone Kaffeesatz';
+      font-weight: normal;
+      }
+      .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+      .remark-code-line {
+        word-wrap: break-word;
+      }
+    </style>
+  </head>
+  <body>
+    <script src="http://gnab.github.io/remark/downloads/remark-latest.min.js" type="text/javascript"></script>
+    <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML&delayStartupUntil=configured" type="text/javascript"></script>
+    <script src="http://code.jquery.com/jquery-2.1.3.min.js" type="text/javascript"></script>
+    <textarea id="source">
+
+
+      class: center, middle
+
+      # 全体ゼミ
+      ** 20150605 **
+
+      ** 大石純平 **
+      ---
+
+      name: A Functional Correspondence between Evaluators and Abstract Machines
+
+      # {{ name }}
+      * Authors: Mads Sig Ager, Dariusz Biernacki, Olivier Danvy, Jan Midtgaard
+      * year: 2003
+      * [A Functional Correspondence between Evaluators and Abstract Machines](http://www.brics.dk/RS/03/13/BRICS-RS-03-13.pdf)
+      ---
+
+      # Agenda
+
+      1. Overview
+
+      2. Functional Correspondence
+
+      3. recusive function to transition system
+
+      4. lambda lifting
+
+      5. closure conversion
+
+      6. CPS transformation
+
+      7. Defunctionalization
+
+      8. Conclusion
+      ---
+
+      # Over view
+      *ラムダ計算のevaluatorにCPS transformationやdefunctionarization等を施すことにより，CEK,CLS,SECD等のabstract machineが得られることを示した．*
+
+      # Evalators and Abstract machines
+      * ここでのevaluatorとは，プログラム上の式を評価するものである．
+      * ここでのabstract machineとは，状態から状態への決定的な遷移系のことである．
+
+      ---
+
+      # SECD machine
+      SECD マシンとはラムダ計算式を評価する抽象機械で、 「値を貯めるスタック (stack)」「環境」「コード (code)」 「ダンプ (dump)」の四つ組の状態遷移操作の繰り返し
+      として定義されている。
+
+      * S: 値を貯めるスタック．
+      * E: 環境．C の自由変数のbindingを与える．
+      * C: コード． 今評価しようとしている式．
+      * D: ダンプ．
+
+      ダンプとは他の三つ組を一時的に保存するための領域で，関数呼び出しの際にダンプにその時のスタック、環境、コードが保存され、関 数のボディの処理後にダンプから戻される。また、J Operator という継続計算のオペレータではダンプの 中身をそのまま継続として取ってくる。これら以外で ダンプが使われることはない。よって、関数呼び出し 後にスタック、環境、コードを適切な状態に復元でき、かつ J Operator を実装しないのであれば、「スタッ ク」「環境」「コード」の三つ組の状態遷移により仮想 機械を構成することができる。
+
+      ---
+
+      # CEK machine
+      最もよく知られた Abstract machine は Peter Landin のSECD machine 1964 である．
+      CEK machine はよりシンプルで，最近（1985）のabstract machine である．
+      継続のアイデアをより明白に使っている．
+
+      * C はcontrolあるいは，codeを表している． 直感的に言うと，今評価しようとしている式である．
+      * E は環境を表している． C の自由変数のbindingを与える．
+      * K は継続を表している．現在の C が何をすればいつ終わるかを教えてくれる．
+
+      ???
+
+      #
+      * ほとんどのabstract machine は ad-hocな方法で得られてきた
+      * [CEK machine](http://matt.might.net/articles/cek-machines/)
+
+      ---
+
+      # Functinal Correspondence
+      Danvy は defunctionalization,refunctionalization(defunctionarizationの逆変換)を用いて，defunctionarizationの前後のプログラムが一対一に対応するのを意図し，その手法を functional correspondence と読んでいる．
+
+      CPS transformationおよび，defunctionarization等のような変換前後のプログラムのふるまいが等しくなる（observational equivalence 観測等価性）ことが保証される変換のみを用いれば，もとのevaluatorと最終的に導出されたabstract machineは対応したものになるという考え方．
+
+      ---
+
+      # Obserbational equivalence 観測等価性
+      与えられたシステムに対し，純粋にシステム外部から観測できる挙動に基づく等しさを観測等価性 (observational equivalence) と呼ぶ．
+
+      例えば，ソートを行うシステムを考えると，例え異なるアルゴリズムを用いていても，同じ入力を与えれば同じ出力になる．という意味で観測等価だと考える．
+
+      ---
+
+      # From abstract machines to evaluators
+      ![evalToAbst](file:///Users/yorisilo/Dropbox/tsukuba/lab/seminar/all/me/20150605/img/evalToAbst1.png)
+
+      ---
+
+      # recursive function to transition system
+      再帰関数は次の変換によって，遷移系に変換することができる．
+
+      1. localな関数が使われている場合 lambda-liftingを行う．
+
+      2. higher-order な関数の場合，closure conversionを行う．
+
+      3. CPS transformationを行う．
+
+      4. CPS transformationで用いられた継続をdefunctionarizationする
+      ---
+
+      # lambda lifting
+      * ローカル関数内部の自由変数を、関数の引数にして、上位関数から呼びだす際に必要な実引数を渡すというような変換のこと
+
+
+      * closureが参照している自由変数を引数に加え束縛変数にすることで，
+      自由変数の使用をなくし，ネストした関数の定義を平坦にすることが出来るようにすることである．
+      ---
+
+      # lambda liftingの例
+      ```haskell
+      power :: Int -> Int -> Int
+      power n x = go n
+        where go 0 = 1
+              go n = x * go (n-1)
+      ```
+
+      ```haskell
+      goLl :: Int -> Int -> Int
+      goLl 0 x = 1
+      goLl n x = x * (goLl (n-1) x)
+
+      powerLl :: Int -> Int -> Int
+      powerLl n x = goLl n x
+      ```
+      ---
+
+      # Closure conversion
+      * danvyが所望している Closure conversion の役割は，higher-order なものをfirst-orderな表現(closure:higher-orderな値と環境の組)に置き換えるときに使う．
+      * power関数はhigher-orderでないので，今回は必要ない．
+
+      * クロージャ変換は，関数本体に現れる自由変数を環境への明示的な参照へ変換する．この変換で,自由変数を持つ関数定義は環境を引数として受け取るように 変換され,自由変数の参照は受け取った環境への参照に変換される．この変換を行うと，関数は閉じたものとなりトップレベルで定義できるようになる．
+      <!-- * higher-orderなものを defunctionalization することと，関数適用のインライン展開によって，今回の目的であるクロージャ変換のしごとは達成される． -->
+      ---
+
+      # Closure conversionの例
+
+      ```haskell
+      adds :: Int -> Int -> Int -> Int
+      adds x y = go
+        where go z = x + y + z
+      ```
+
+      ```haskell
+      lookup' :: String -> [(String,Int)] -> Int
+      lookup' x [] = 0
+      lookup' x ((x',v):e)
+        | x == x' = v
+        | otherwise = lookup' x e
+
+
+      goClsCode :: [(String,Int)] -> Int -> Int
+      goClsCode env z = (lookup' "x" env) + (lookup' "y" env) + z
+
+      addsClsC :: [(String,Int)] -> Int -> Int
+      addsClsC e = goClsCode e
+
+      -- addsClsc [("x",2), ("y",3)] 3 ~> 8
+
+      ```
+
+      ???
+
+      * lookup' 関数は，変数の名前を参照して，その値を取り出すという操作を行っているが，環境における変数の場所は，決まっているのでインデックスアクセスを行うのが本当は効率が良い．
+
+      * ほんとはlookup'関数の返り値はMaybe型にして，見つけられた場合はJust v，見つけられない場合はNothingというようにするべきだけど，ここでは，足し算に注視しているので，見つけられなかった場合は0を返し，見つけられれば，そのvを返すようにしている．
+
+      * 変換後 のプログラムは，得られたトップレベルの関数定義のもとで評価される.そしてクロージャ変換後は,関数のクロージャが関数定義への参照と環境の組で表される.
+      クロージャ変換では，関数goを環境を引数にとるように変更し，自由変数 x と y の参照を環境への参照に置きかえる．クロージャ変換の結果得られるプログラムは以下のようになる.
+      * このプログラムでは，環境eを変数名と値の組のリストで表し，クロージャaddsClscを関数と環境の対で表している.
+
+      ---
+
+      # CPS transformation
+      * 継続（次に行う処理）を関数 (closure) で表して，それを引数に渡して実行すること．
+      ---
+
+      # CPS transformationの例
+      ```haskell
+      goLl :: Int -> Int -> Int
+      goLl 0 x = 1
+      goLl n x = x * (goLl (n-1) x)
+
+      powerLl :: Int -> Int -> Int
+      powerLl n x = goLl n x
+      ```
+
+      ```haskell
+      goCps :: Int -> Int -> (Int -> Int) -> Int
+      goCps 0 x k = k 1
+      goCps n x k = goCps (n-1) x (\v -> k x*v)
+
+      powerCps :: Int -> Int -> Int
+      powerCps n x = goCps n x (\x -> x)
+      ```
+      ---
+
+      # Defunctionalization
+
+      * higher-order な関数を first-order な関数へ変換する．
+
+      * CPS transformation により，closure（継続を表すために導入したclosure）を生成するようになっているので，
+      それをclosureを行わずに同等の処理を行う関数へ変換する．
+
+      ---
+
+      # Defunctionalization の例
+
+      ```haskell
+      goCps :: Int -> Int -> (Int -> Int) -> Int
+      goCps 0 x k = k 1
+      goCps n x k = goCps (n-1) x (\v -> k x*v)
+
+      powerCps :: Int -> Int -> Int
+      powerCps n x = goCps n x (\x -> x)
+      ```
+
+      ```haskell
+      data Cont = Stop
+                | Mult Int Cont
+
+      applyCont :: Cont -> Int -> Int
+      applyCont Stop v       = v
+      applyCont (Mult x k) v = applyCont k (x*v)
+
+      goDf :: Int -> Int -> Cont -> Int
+      goDf 0 x k = applyCont k 1
+      goDf n x k = goDf (n-1) x (Mult x k)
+
+      powerDf :: Int -> Int -> Int
+      powerDf n x = goDf n x Stop
+      ```
+      ---
+
+      <!-- |            |            |            | -->
+      <!-- |:----------:|:----------:|:----------:| -->
+      <!-- | ( n,x )    |     -> start|  ( n x Stop )| -->
+      <!-- | ( 0,x,k )  |     -> go   |    ( k 1 )   | -->
+      <!-- | ( n,x,k)   |     -> go   |    ( n-1 x (Mult x k) ) | -->
+      <!-- | ( (Mult x k) v )         |    -> app | ( k x*v )      | -->
+      <!-- | ( Stop v ) |-> end       |   ( v )   | -->
+
+      # Abstract machine
+
+      ```haskell
+      data Cont = Stop
+                | Mult Int Cont
+
+      applyCont :: Cont -> Int -> Int
+      applyCont Stop v       = v
+      applyCont (Mult x k) v = applyCont k (x*v)
+
+      goDf :: Int -> Int -> Cont -> Int
+      goDf 0 x k = applyCont k 1
+      goDf n x k = goDf (n-1) x (Mult x k)
+
+      powerDf :: Int -> Int -> Int
+      powerDf n x = goDf n x Stop
+      ```
+
+      ![状態遷移規則](file:///Users/yorisilo/Dropbox/tsukuba/lab/seminar/all/me/20150605/img/Abst2.png)
+
+      ???
+
+      各関数の引数が状態を表し，
+      各関数はひとつのアクションを実行し，新しい状態へと移行する．
+      つまり，以下の様な状態遷移系の機械(Abstract machine)とみなすことができる．
+
+      ---
+
+       # なぜこのような変換をするのか （my opinion）
+       evaluator内には，自由変数を含むような関数があったり，関数がネストしていたりしていて，遷移システムとしてみなすには複雑である．
+
+      そこで，functional correspondenceにおけるプログラム変換を行うことにより，関数を平坦化し，自由変数を含まない形の関数（コンビネータ）への変換等を行い，それらの関数の引数を状態とみなし，ある状態から状態への遷移システム(abstract machine)として記述することができる．
+      ---
+
+      # Conclusion
+      * danvyは， lambda calculus の evaluator と abstract machine のそれぞれの変換を functional correspodence という考え方を導入することで，統一的な方法でそれらが導出できることを示した．
+      * 変換後のプログラムが等しいということを，観測等価性が満たされば，等しいとした．
+      * 今回は，その functional correspodence で導入している変換について段階を追いながら説明を行った．
+
+      ???
+
+      再帰関数は次の変換によって，遷移系に変換することができる．
+
+      1. localな関数が使われている場合 lambda-liftingを行う．
+
+      2. higher-order な関数の場合，closure conversionを行う．
+
+      3. CPS transformationを行う．
+
+      4. CPS transformationで用いられた継続をdefunctionarizationする
+
+
+    </textarea>
+    <script src="https://gnab.github.io/remark/downloads/remark-latest.min.js">
+    </script>
+    <script>
+      var q = window.location.search.substring(1);
+      var slideshow = remark.create();
+      MathJax.Hub.Config({
+      tex2jax: {
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+      }
+      });
+      MathJax.Hub.Queue(function() {
+      $(MathJax.Hub.getAllJax()).map(function(index, elem) {
+      return(elem.SourceElement());
+      }).parent().addClass('has-jax');
+      });
+      MathJax.Hub.Configured();
+    </script>
+  </body>
+</html>

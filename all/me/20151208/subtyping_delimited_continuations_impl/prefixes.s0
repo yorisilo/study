@@ -1,0 +1,6 @@
+let prefixes = \xs. 
+    let w = \l. case l { 
+            Nil -> @k. Nil 
+          | Cons (x, xs) -> Cons (x, @k. < Cons(k [], < k (w xs) >) >) 
+    } in <w xs>
+in prefixes [1,2,3]

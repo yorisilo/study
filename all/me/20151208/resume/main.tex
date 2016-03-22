@@ -1,0 +1,117 @@
+\documentclass[9pt,a4paper,onecolumn]{jarticle}
+%
+\usepackage[dvipdfmx]{graphicx,color,hyperref}
+\usepackage{amsmath,amssymb,mathrsfs,amsthm}
+\usepackage{ascmac}
+
+\usepackage{centernot}
+\usepackage{fancybox}
+\usepackage{verbatim}
+\usepackage{jtygm}
+\usepackage{listings,jlisting}
+\usepackage{here,txfonts}
+\usepackage{url}
+\usepackage{bussproofs}
+\usepackage{latexsym}
+\usepackage{bm}
+
+\usepackage[margin=3cm]{geometry}
+
+\usepackage{setspace}
+% \setstretch{1.08} % ページ全体の行間を設定
+% \setlength{\textheight}{38\baselineskip}
+\setlength{\columnsep}{12mm}
+
+\theoremstyle{definition}
+\newtheorem{theo}{定理}[section]
+\newtheorem{defi}{定義}[subsection]
+\newtheorem{lemm}{補題}[section]
+\renewcommand\proofname{\bf 証明}
+
+\newcommand{\cn}{\centernot}
+\newcommand{\la}{\lambda}
+\newcommand{\ri}{\longrightarrow}
+\newcommand{\map}{\mapsto}
+\newcommand{\id}{\text{id }}
+
+\title {\vspace{-3cm}全体ゼミ}
+\date{20151208}
+\author{筑波大学 プログラム論理研究室 \\ 大石 純平}
+% \pagestyle{empty}
+
+\begin {document}
+\maketitle
+% \thispagestyle{empty}
+
+%\input {readme}
+
+\section{論文紹介します}
+
+\subsection*{読んだ論文}
+\begin{itemize}
+\item Subtyping Delimited Continuations 2011
+\item Marek Materzok, Dariusz Biernacki
+\end{itemize}
+
+\subsection*{概要}
+
+Danvy と Filinski のshit/resetを一般化した shift0/reset0 という first-class な限定継続の部分型づけをもつ型システムを提案した．
+
+\subsection*{論文紹介の目的}
+\begin{itemize}
+\item shift0/reset0 を含んだラムダ計算の体系の紹介
+\item answer type や subtyping をもつ型システムの紹介
+\end{itemize}
+
+\section{shift/resetの型システム}
+Danvy and  Filinski の 型判断は以下のようになっている．
+
+\begin{align}
+  \Gamma; \gamma \vdash e : \alpha; \delta
+\end{align}
+これは，型環境 $\Gamma$ において，$e$ は，$\alpha$ 型を持ち，
+context は $\alpha \to \gamma$ 型であり，
+answer type を $\gamma$ から $\delta$ へ変える ということを意味する．
+
+また，以下の関数の型について説明する．
+
+\begin{align}
+  \beta; \gamma \to \alpha; \delta
+\end{align}
+これは，$\beta$型の値が与えられて，$\alpha \to \gamma$ というcontext で，評価されると，$\delta$ 型の answer type を得るような関数である．
+
+次に，reset, shift の型付け規則をみてみる．
+ホワイトボードで説明する．
+
+\begin{align}
+  \frac{\Gamma; \alpha \vdash e : \alpha; \gamma}{\Gamma; \delta \vdash <e> : \gamma; \delta} \text{RESET}
+\end{align}
+
+\begin{align}
+  \frac{\Gamma; f:(\alpha; \rho \to \gamma; \rho); \beta \vdash e: \beta; \delta}{\Gamma; \gamma \vdash S f.e : \alpha; \delta} \text{SHIFT}
+\end{align}
+
+\section{shift0/reset0の型システム}
+shift0/reset0 の場合は，アクセスできるのは top context だけでないので，より多くのcontextの情報が必要となる．なので，以下の様なanotationを導入する．
+
+\begin{align}
+   anotation \,\, \sigma &::= \epsilon \, |  \, [\tau \sigma] \tau \sigma \\
+   type \,\, \tau &::= \alpha \, | \, \tau \overset{\delta} \to \tau
+\end{align}
+
+型判断
+\begin{align}
+  \Gamma \vdash e : \tau'[\tau_1 \sigma_1] ... \tau_n'[\tau_n \sigma_n] \tau \epsilon
+\end{align}
+
+%\section{まとめ}
+
+
+\end{document}
+
+% 参考 http://qiita.com/mountcedar/items/e7603c2eb65661369c3b
+
+%%% Local Variables:
+%%% mode: japanese-latex
+%%% TeX-master: t
+%%% End:

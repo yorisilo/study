@@ -1,0 +1,119 @@
+(define s1 "Author:  Walid Taha, Fri Jan 25 05:16:39 CST 2008")
+(define s2 "An aggregate benchmark for aloe")
+(define s3 "Parts are take from Clingers R6RS benchmarks at ")
+(define s4 "http://www.ccs.neu.edu/home/will/Twobit/benchmarksAboutR6.html")
+
+(define y (lambda (f) ((lambda (x) (f (lambda (v) ((x x) v))))
+                       (lambda (x) (f (lambda (v) ((x x) v)))))))
+
+(define id (lambda (x) x))
+
+(define efact (y (lambda (fact) (lambda (n)
+   (cond ((= 0 n) 1)
+          (else   (* n (fact (- n 1)))))))))
+
+(define efib (y (lambda (fib) (lambda (n)
+   (cond ((= 0 n) 0)
+         (else (cond ((= 0 (- n 1)) 1)
+                     (else (+ (fib (- n 1)) (fib (- n 2)))))))))))
+
+(define lfact (lambda (n)
+   (cond ((= 0 n) 1)
+          (else   (* n (lfact (- n 1)))))))
+
+(define lfib (lambda (n)
+   (cond ((= 0 n) 0)
+          (else (cond ((= 0 (- n 1)) 1)
+                       (else (+ (lfib (- n 1)) (lfib (- n 2)))))))))
+
+(define (rfact n)
+   (cond ((= 0 n) 1)
+          (else   (* n (rfact (- n 1))))))
+
+(define (rfib n)
+   (cond ((= 0 n) 0)
+          (else (cond ((= 0 (- n 1)) 1)
+                       (else (+ (rfib (- n 1)) (rfib (- n 2))))))))
+
+(define (dtak x y z)
+  (if (not (< y x))
+      z
+      (dtak (dtak (- x 1) y z)
+            (dtak (- y 1) z x)
+            (dtak (- z 1) x y))))
+
+(define (listn n)
+  (if (= n 0)
+    empty
+    (cons n (listn (- n 1)))))
+
+(define (shorterp x y)
+  (and (not (empty? y))
+       (or (empty? x)
+           (shorterp (cdr x)
+                     (cdr y)))))
+
+(define (mas x y z)
+  (if (not (shorterp y x))
+      z
+      (mas (mas (cdr x) y z)
+           (mas (cdr y) z x)
+           (mas (cdr z) x y))))
+
+(define (len l)
+  (cond ((empty? l) 0)
+        (else (+ 1 (len (cdr l))))))
+
+(define (ltak x y z)
+  (len (mas (listn x) (listn y) (listn z))))
+
+(define (ktak x y z k)
+    (if (not (< y x))
+        (k z)
+        (ktak (- x 1)
+             y
+             z
+             (lambda (v1)
+               (ktak (- y 1)
+                    z
+                    x
+                    (lambda (v2)
+                      (ktak (- z 1)
+                           x
+                           y
+                           (lambda (v3)
+                             (ktak v1 v2 v3 k)))))))))
+
+(define (ctak x y z) (ktak x y z (lambda (a) a)))
+
+(define (insert a l)
+  (cond ((empty? l) (cons a empty))
+        (else (cond ((< a (car l)) (cons a l))
+                    (else (cons (car l) (insert a (cdr l))))))))
+
+(define (rev_acc l acc)
+  (cond ((empty? l) acc)
+        (else (rev_acc (cdr l) (cons (car l) acc)))))
+
+(define (rev l)
+  (rev_acc l empty))
+
+(define (sort l)
+  (cond ((empty? l) empty)
+        (else (insert (car l) (sort (cdr l))))))
+
+(define (test)
+   (and
+     (= 120 (efact 5) (lfact 5) (rfact 5))
+     (=   5 (efib 5)  (lfib 5)  (rfib 5))
+     (=   4 (ctak 7 4 2) (ltak 7 4 2))
+     (or true 7 (dtak 18 12 6) (ltak 18 12 6))
+     (= (len (listn 100)) (len (sort (rev (listn 100)))))
+   ))
+
+(define (rtest n)
+   (if (= 0 n)
+	true
+	(begin (test) (rtest (- n 1)))))
+
+(rtest 1000)

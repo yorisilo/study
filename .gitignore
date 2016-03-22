@@ -1,0 +1,12 @@
+*.aux
+*.fls
+*.log
+*.nav
+*.out
+*.snm
+*.synctex.gz
+*.toc
+*.fdb_latexmk
+*.dvi
+_region_.tex
+auto/

@@ -1,0 +1,643 @@
+\documentclass[10pt,a4paper]{jarticle}
+%
+\usepackage[dvipdfmx]{graphicx,color,hyperref}
+\usepackage{amsmath,amssymb,mathrsfs,amsthm}
+\usepackage{ascmac}
+
+\usepackage{centernot}
+\usepackage{fancybox}
+\usepackage{verbatim}
+\usepackage{jtygm}
+\usepackage{listings,jlisting}
+\usepackage{here,txfonts}
+\usepackage{url}
+\usepackage{bussproofs}
+\usepackage{latexsym}
+\usepackage{bm}
+
+% \usepackage[margin=0.15cm]{geometry}
+
+\theoremstyle{definition}
+\newtheorem{theo}{定理}[section]
+\newtheorem{defi}{定義}[subsection]
+\newtheorem{lemm}{補題}[section]
+\renewcommand\proofname{\bf 証明}
+
+\newcommand{\cn}{\centernot}
+\newcommand{\la}{\lambda}
+\newcommand{\ri}{\longrightarrow}
+\newcommand{\map}{\mapsto}
+\newcommand{\id}{\text{id }}
+
+\title {\vspace{-3cm}全体ゼミ}
+\date{20150710}
+\author{筑波大学 プログラム論理研究室 \\ 大石 純平}
+% \pagestyle{empty}
+
+\begin {document}
+\maketitle
+% \thispagestyle{empty}
+
+%\input {readme}
+
+\section{論文紹介します}
+
+\subsection*{読んだ論文}
+\begin{itemize}
+\item A Gentle Introduction to Multi-stage Programming, Part II
+\item Walid Taha
+\end{itemize}
+
+\subsection*{論文紹介の目的}
+\begin{itemize}
+\item Staging の技術を使って，interpreter の書き方を学ぶ．
+\end{itemize}
+
+\section{概要}
+A Gentle Introduction to Multi-stage Programming のpart I では，
+
+\begin{enumerate}
+\item インタプリタを書いて，その正当性をチェック
+\item ステージングの annotation を加えることにより ステージインタプリタへ
+\item ステージングの実装のパフォーマンスのチェック
+\end{enumerate}
+の3つのステップからなるアプローチを紹介した．
+満足するステージングに到達するために，CPS変換が必要である．
+
+part I では，Lint \footnote{Lintは， intergerという1つの型のみを持ち，integerからintegerへの関数のみを持つような言語} と呼ばれるシンプルな言語に焦点を当てていた．
+
+part II では， Aloe と呼ばれる Scheme 言語のサブセット言語に焦点を当てる．
+そのインタプリタにおいては，
+型のタグを付けたり，外したりということが Over head となる．
+それを解決するために，CPS変換，ステージングの技術を用いる．
+そのように，ステージングの知識のレパートリーを増やすことが目的である．
+
+% 動的型付け言語を実装することができるというように，ステージングの専門知識のレパートリーを拡大することを目的とする．
+
+\section{Parsing}
+
+{\small
+\begin{verbatim}
+s-expression ::= integer | symbol | string | (s-expression*)
+\end{verbatim}}
+
+上記のs-expression syntax の式に対して， parse が成功すると，
+以下の様な OCaml の型の値が返ってくる．
+
+{\small
+\begin{verbatim}
+type sxp =
+| I of int (* Integer *) | A of string (* Atoms (symbols) *)
+| S of string (* String *) | L of sxp list (* List *)
+\end{verbatim}}
+
+\section{Interpreter}
+Aloeとは，
+bool, integer, string, mutable variable, mutable list, higher-order function を含む
+scheme のサブセット言語である．
+
+型なしの言語のインタプリタを書くときに考慮すべき最初のことは，言語がサポートする値の種類を決定することである．
+
+{\small
+\begin{verbatim}
+type dom = Bool of bool
+         | Int of int
+         | Str of string
+         | Fun of int * (dom list -> dom)
+         | Undefined
+         | Void
+         | Empty
+         | Cons of dom ref * dom ref
+\end{verbatim}}
+
+  \begin{itemize}
+  \item 3 base types
+    \begin{itemize}
+    \item booleans
+    \item integers
+    \item strings
+    \end{itemize}
+  \item function
+    \begin{itemize}
+    \item 各関数の値は，それが期待する引数の個数を表す整数でタグ付けされる．
+    \end{itemize}
+  \item Undefined と Void
+    \begin{itemize}
+    \item Undefined は初期化されていない場所に対して使用される．
+    \item Void は 副作用のある計算から結果が存在しないことを示すものである．
+    \end{itemize}
+  \item Empty と Cons
+    \begin{itemize}
+    \item Empty は空の配列
+    \item Cons は配列
+    \end{itemize}
+  \end{itemize}
+
+{\small
+\begin{verbatim}
+type var = Val of dom | Ref of dom ref
+\end{verbatim}}
+Aloe は scheme のサブセット言語なので，
+いくらかは変数を割り当てることができるが，全ての変数は割り当てることができない．
+例えば，Aloe の関数の引数は immutable である．
+
+この違いを反映するために，全ての環境は，上記の型の値に名前をマップする必要がある．
+
+{\small
+\begin{verbatim}
+let ext env x v = fun y -> if x=y then v else env y
+\end{verbatim}}
+ext : 環境の中の一つの変数に対して新しいbindingを与える関数
+
+{\small
+\begin{verbatim}
+let rec lext env xl vl =
+  match xl with
+  | []    -> env
+  | x::xs -> match vl with
+             | [] -> raise (Error "Not enough arguments")
+             | y::ys -> lext (ext env x y) xs ys
+\end{verbatim}}
+lext: 一気に，環境の中の複数の変数に対して，bindingを与える関数
+
+\section{Concrete Syntax}
+
+{\small
+\begin{verbatim}
+I is the set of integers
+S is the set of strings
+A is the set of symbols ("A" for "Atomic")
+
+U ::= not|empty?|car|cdr
+B ::= + | - | * | < | > | = | cons | set-car! | set-cdr!
+E ::= true | false | empty | I | "S" | A | (U E) | (B E E)
+      | (cond(E E)(elseE))|(set!AE)|(andE E*)|(orE E*)
+      | (begin E E*) | (lambda (A*) E) | (E E*)
+
+P ::= E | (define A E)P | (define (A A*) E)P
+
+\end{verbatim}}
+
+  \begin{itemize}
+  \item I : integer 数字のシークエンスとして定義されている．
+  \item S : string 文字のシークエンス
+  \item A : symbol (atom) スペースの存在しない文字のシークエンス
+  \item U : unary operator (単項演算子)
+  \item B : binary operator (二項演算子)
+  \item E : expression  bool値，空のリストを表す empty が含まれていて，integer, string, symbol を埋め込む．
+  \item P : program  プログラムは，式，または，変数や関数定義のネストされた配列
+\end{itemize}
+
+で，ここで，注意することとしては，symbolに関しては曖昧性があることである．
+例えば， true っていう expression は E の定義の true ってやつと A っていうやつのいずれかに一致する．このような理由から，文字列の導出は常に，E の定義の一番左のやつから検討していく．
+
+\section{The Interpreter for Expressions}
+\begin{itemize}
+\item eval : 式(expression)に対するインタプリタ（まあインタプリタというよりは評価器）
+\item peval : プログラムに対するインタプリタ
+\end{itemize}
+
+\subsection{eval}
+
+{\small
+\begin{verbatim}
+let rec eval e env =
+  try (match e with
+      ...)
+  with
+      Error s -> (print_string ("\n"^(print e)^"\n");
+                  raise (Error s))
+\end{verbatim}}
+
+...の中身については，全部書くとアレなので，
+いくつかピックアップして説明する．
+
+\subsection{Lambda Abstraction}
+
+{\small
+\begin{verbatim}
+| L [A "lambda" ; L [S x] ; e] ->
+       Fun (1, fun l -> match l with [v] -> eval e (ext env x (Val v)))
+\end{verbatim}}
+1つの引数の場合．
+
+Funタグが付いた値を返す．そのFunタグが付いた値は 1つ目はそれが期待する引数の個数を表し（この場合は1）．2つ目はOCamlのラムダ抽象であり，それは，1つの要素のみからなるリストを引数と取る．
+そのOCamlのラムダ抽象の結果は，Aloeのラムダ抽象のbodyである式 e を評価した結果である．
+この式の評価は，環境 env のもとで，name x から値 Val v へのマッピングによって生じる．
+ラムダ抽象の引数を1つに固定させるという事実を反映するために，vにタグ Val を付ける．
+
+{\small
+\begin{verbatim}
+| L [A "lambda" ; L axs ; e] ->
+	     let l = List.length axs in
+	     Fun (l, fun v ->
+		               eval e (lext env
+			                  (List.map (function A x -> x) axs)
+			                  (List.map (fun x -> Val x) v)))
+\end{verbatim}}
+引数が複数の場合
+
+
+\subsection{Function Application}
+
+{\small
+\begin{verbatim}
+     | L [e1; e2] ->
+       let (1,f) = unFun (eval e1 env) in
+       let arg = eval e2 env in
+       f [arg]
+\end{verbatim}}
+1つの引数の場合
+
+パターンマッチでは，e1 は1つの引数を持つ関数であることを前提としている．
+まず最初の let statement では，式e1を評価し，Fun タグを除去する．
+第一成分が1であり，第二成分がfである．
+次のlet statement では，e1の引数であるe2 を評価し argとしている．
+最後に 1引数関数であるfにシングルトンリスト[arg]を渡す．
+
+{\small
+\begin{verbatim}
+     | L (e::es) ->
+	     let (i,f) = unFun (eval e env) in
+	     let args = List.map (fun e -> eval e env) es in
+	     let l = List.length args
+	     in if l=i
+	     then f args
+	     else raise (Error ("Function has "^(string_of_int l)^
+				                  " arguments but called with "^(string_of_int i)))
+\end{verbatim}}
+引数が複数の場合
+
+まず，e を評価し，
+それから es の要素全てに対して評価を行っていき，その結果を args(dom list) とする．
+それからargsの個数と e の期待する引数の個数とが一致していれば，関数適用を行い，
+それ以外の場合は，エラーが発生する．
+
+\subsection{peval}
+{\small
+\begin{verbatim}
+let rec peval p env =
+  match p with
+    | [e1] -> eval e1 env
+    | (L [A "define"; A x; e1])::p ->
+        let r = ref Undefined in
+        let env' = ext env x (Ref r) in
+        let v = eval e1 env' in
+        let _ = (r := v)
+        in peval p env'
+    | (L [A "define"; L ((A x)::xs); e1])::p ->
+        peval (L [A "define"; A x;
+                   L [A "lambda" ; L xs ; e1]]::p) env
+    | _ -> raise (Error "Program form not recognized")
+\end{verbatim}}
+
+\section{Converting into Continuation-Passing Style (CPS)}
+
+{\small
+\begin{verbatim}
+eval : sxp -> (string -> var) -> dom
+\end{verbatim}}
+CPS変換する前の eval
+
+{\small
+\begin{verbatim}
+keval : sxp -> (string -> var) -> (dom -> dom) -> dom
+\end{verbatim}}
+CPS変換後の eval
+
+
+継続を表す関数を加える．
+元のコードの返り値を全て継続に渡す．
+
+\subsection{interpreter}
+\subsubsection{keval}
+
+{\small
+\begin{verbatim}
+let rec keval e env k =
+  try
+    (match e with
+     ...)
+  with Error s -> (print_string ("\n"^(print e)^"\n");
+                   raise (Error s))
+\end{verbatim}}
+
+\subsubsection{Lambda Abstraction}
+{\small
+\begin{verbatim}
+     | L [A "lambda" ; L axs ; e] ->
+	     let l = List.length axs in
+         k (Fun (l, fun v ->
+         keval e (lext env
+                    (List.map (function A x -> x) axs)
+                    (List.map (fun x -> Val x) v))
+           (fun r -> r)))
+\end{verbatim}}
+
+ポイントは，keval への 継続として，恒等関数を渡しているところである．
+これは，
+
+\section{Staging the CPS-Converted Interpreter}
+ここでは，CPS変換したインタプリタを staging する際に発生する問題があるので，その問題について説明する．
+
+% MetaOCaml では，通常の値と，遅延（stage）の値を区別することができる．
+
+以下では，いわゆる environment classifier parameter を型から除いて説明する．
+例えば，('a, int) code は int code とする．
+
+{\small
+\begin{verbatim}
+keval : sxp -> (string -> var) -> (dom -> dom) -> dom
+\end{verbatim}}
+は以下のようにする．
+
+{\small
+\begin{verbatim}
+seval : sxp -> (string -> svar) -> (dom code -> dom code) -> dom code
+\end{verbatim}}
+
+--
+{\small
+\begin{verbatim}
+type var = Val of dom | Ref of dom ref
+\end{verbatim}}
+は以下のようにする．
+
+{\small
+\begin{verbatim}
+type svar = Val of dom code | Ref of (dom ref) code
+\end{verbatim}}
+
+\subsubsection{ここで，staging anotation の復習}
+\begin{itemize}
+\item bracket は 計算を遅らせる
+\item escape は bracket を外す．
+\item run は codeの評価を行う．
+\end{itemize}
+
+\subsection{Cases That Require Only Staging Annotations}
+{\small
+\begin{verbatim}
+     | A "true"   -> k .<Bool true>.
+     | I i -> k .<Int i>.
+     | A x ->
+	     (match env x with
+	      | Val v -> k v
+	      | Ref r -> k .<(Runcode.run .~r)>.)
+     | L [A "not"; e1] ->
+	     seval e1 env (fun r ->
+           k .<Bool (not(unBool .~r))>.)
+\end{verbatim}}
+継続に渡すものの外側をbracketに囲ませれば良い．
+
+\subsection{Lambda Abstraction}
+一つの例外を除いて，ラムダ抽象については，braket と escape を追加するだけで，stage化される．
+
+ラムダ抽象の引数の数はstaticに決まっている．
+なので，staticなパラメータリストから，個々のパラメータを抽出するコードを生成する．
+
+これは，引数の数を知っているという事実を利用して，引数のリストを eta-expanding することによって，達成できる．
+
+{\small
+\begin{verbatim}
+eta_list : int -> 'a list code -> 'a code list
+\end{verbatim}}
+{\small
+\begin{verbatim}
+let eta_list l v =
+  let rec el_acc l v a =
+    if l<=0 then [] else .<List.nth .~v a>. :: (el_acc (l-1) v (a+1))
+  in el_acc l v 0
+\end{verbatim}}
+
+{\small
+\begin{verbatim}
+keta_list : int -> 'a list code -> ('a code list -> 'b code) -> 'b code
+\end{verbatim}}
+{\small
+\begin{verbatim}
+let keta_list l v k =
+  let rec el_acc l v a k =
+    if l<=0
+    then k []
+    else
+      .<match .~v with
+	    | x::xs ->
+	      .~(el_acc (l-1) .<xs>. (a+1) (fun r ->
+	          k (.<x>. :: r)))
+	    | _ -> raise (Error "")>.
+  in el_acc l v 0 k
+\end{verbatim}}
+
+
+{\small
+\begin{verbatim}
+     | L [A "lambda" ; L axs ; e] ->
+	     let l = List.length axs
+	     in k .<Fun (l, fun v ->
+           .~(keta_list l .<v>. (fun r->
+               seval e (lext env
+                          (List.map (function A x -> x) axs)
+                          (List.map (fun x -> Val x) r))
+                 (fun r -> r))))>.
+\end{verbatim}}
+
+\subsection{Function Application}
+
+{\small
+\begin{verbatim}
+lift_list : ’a code list -> ’a list code
+\end{verbatim}}
+
+{\small
+\begin{verbatim}
+let rec lift_list l =
+  match l with
+  | [] -> .<[]>.
+  | x::xs -> .< .~x :: .~(lift_list xs)>.
+\end{verbatim}}
+
+{\small
+\begin{verbatim}
+| L (e::es) ->
+	     seval e env (fun r1 ->
+	         .<let (i,f) = unFun .~r1
+           in .~(kmap (fun e -> seval e env) es (fun r2 ->
+		           let args = r2 in
+               let l = List.length args
+		           in .<if l= i
+		           then let r = f .~(lift_list args) in .~(k .<r>.)
+		           else raise (Error ("Function has "^(string_of_int l)^
+                                  " arguments but called with "^
+                                  (string_of_int i)))>.))>.)
+\end{verbatim}}
+
+
+\section{The Interpretation of a Program as Partially Static Data Structures}
+
+In almost any imaginable language that we may consider, there are many programs that contain computation that can be performed before the inputs to the program are available. In other words, even when we ignore the possibility of having one of the inputs early, programs themselves are a source of partially static data. If we look closely at the way we have staged programs in the previous section, we notice that we made no attempt to search for or take advantage of such information. A standard source of partially static information is closed expressions, meaning expressions that contain no variables, and therefore, contain no unknown information. Some care must be taken with this notion, because some closed programs can diverge. Another, possibly more interesting and more profitable type of partially static information that can be found in programs in untyped languages is partial information about types. This information can be captured by the data type tags that allow the runtime of an untyped language to uniformly manipulate values of different types. Because the introduction and the elimination of such tags at runtime can be expensive, reducing such unnecessary work can be an effective optimization technique.
+
+\subsection{A Partially Static Type for Denotable Values}
+部分的に static に型情報を利用しやすくするために sdomという型を導入する．
+
+具体的には，dom code を生成するのでなく，stage用の型 sdom を生成するようにする．
+
+{\small
+\begin{verbatim}
+type sdom =
+  | SBool of bool code
+  | SInt of int code
+  | SStr of string code
+  | SFun of int * (sdom list -> sdom)
+  | SUndefined
+  | SVoid
+  | SEmpty
+  | SCons of (dom ref) code * (dom ref) code
+  | SAny of dom code
+\end{verbatim}}
+
+基本的には，static に値を知っているときに，上記コードコンストラクタに対応するタグをpushできる．
+SAnyというコンストラクタは，タグの追加に対して，staticな情報を持っていな場合を表している．
+特別なケースとして，Cons が挙げられる．それぞれの Cons cell は，mutable なので，ここで検討している同じ技術(タグの情報をpushする)はref コンストラクタに対しては使用できない．
+
+
+In essence, this type allows us to push tags out of the code constructor when we know their value statically. The last constructor allows us to also express the case when there is no additional static information about the tags (which was what we assumed all the time in the previous interpreter).
+An important special case above is the case of Cons. Because each of the components of a cons cell is mutable, we cannot use the same techniques that we consider here to push information about tags out of the ref constructor.
+A side effect of this type is that case analysis can become somewhat redundant, especially in cases in which we expect only a particular kind of data. To minimize and localize changes to our interpreter when we make this change, we introduce a matching function for each tag along the following lines:
+
+この種の副作用によって，case節において，特定の種類のデータを期待する時に冗長な変更が必要となる．
+各タグについて次のようなマッチング関数を用意する．
+
+{\small
+\begin{verbatim}
+let matchBool r k =
+   let m = "Expecting boolean value" in
+   match r with
+   | SBool b -> k b
+   | SAny c -> .<match .~c with Bool b -> .~(k .<b>.)
+                 | _ -> raise (Error m)>.
+   | _ -> k .<raise (Error m)>.
+\end{verbatim}}
+
+It is crucial in the last case that we do not raise an error immediately. We return to this point in the context of lazy language constructs.
+We also change the type for values stored in the environment as follows:
+
+{\small
+\begin{verbatim}
+type svar = Val of sdom | Ref of dom ref code
+\end{verbatim}}
+繰り返すが，タグの情報を ref コンストラクタからは引っ張ってくることはできない．
+副作用として，reference cell に格納されている値を変更してしまう事がある．
+
+
+\subsection{Refining the Staged Interpreter}
+\subsubsection{The Easy Cases}
+{\small
+\begin{verbatim}
+      | A "true"   -> k (SBool .<true>.)
+      | A "empty"  -> k SEmpty
+      | I i -> k (SInt .<i>.)
+      | S s -> k (SStr .<s>.)
+\end{verbatim}}
+これらのケースは，dom code から， sdom へ戻り値の型を変更すればよい．
+
+{\small
+\begin{verbatim}
+	  (match env x with
+	    | Val v -> k v
+	    | Ref r -> k (SAny .<(! .~r)>.))
+\end{verbatim}}
+Ref r のケースに注目する．
+sdom 型でなく，dom code 型を持っているため，static なタグの情報は r には存在しない．
+なので，SAny というタグを使用して，対応している．
+
+直感的に言うと，de-referencing が実行時に発生するので，その値のタグを静的に知る簡単な方法はないということです．
+
+\subsubsection{Reingroducing Information}
+Ground value はタグの static な情報の唯一のソースではない．
+一般的に言うと，最も primitive な計算の結果のタグが static に知られている．
+
+例えば，次のように論理否定のケースを絞り込むことができる．
+{\small
+\begin{verbatim}
+      | L [A "not"; e1] ->
+          xeval e1 env (fun r ->
+          matchBool r (fun x ->
+          k (SBool .<not .~x>.)))
+\end{verbatim}}
+Knowing that the tag always has to be SBool in the rest of the computation allows us to make sure that this tag does not occur in the generated code when this code fragment occurs in a context that expects a boolean.
+
+% タグが常に残りの計算で SBool を持つことを知ることは，bool 値を期待する文脈で
+
+同様に，タグの情報は Aloe の他のすべての primitive な operation によって 再導入される．
+
+\subsubsection{Strictness and Laziness}
+
+{\small
+\begin{verbatim}
+| L ((A "and") :: es) ->
+	     let rec all l k =
+	       (match l with
+	        | [] -> k .<true>.
+	        | x::xs ->
+		        seval x env (fun r ->
+		            .<if unBool .~r
+		            then .~(all xs k)
+		            else .~(k .<false>.)>.))
+	     in all es (fun r -> k .<Bool .~r>.)
+\end{verbatim}}
+前
+
+
+{\small
+\begin{verbatim}
+| L ((A "and") :: es) ->
+          let rec all l k =
+            (match l with
+              | [] -> k .<true>.
+              | x::xs ->
+                  xeval x env (fun r ->
+                  matchBool r (fun x ->
+                    .<if .~x
+                      then .~(all xs k)
+                      else .~(k .<false>.)>.)))
+         in all es (fun r -> k (SBool r))
+\end{verbatim}}
+後
+
+{\small
+\begin{verbatim}
+let matchBool r k =
+   let m = "Expecting boolean value" in
+   match r with
+   | SBool b -> k b
+   | SAny c -> .<match .~c with Bool b -> .~(k .<b>.) | _ -> raise (Error m)>.
+   | _ -> k .<raise (Error m)>.
+\end{verbatim}}
+
+%静的型システムとは異なり，動的言語は，
+
+if unBool を使う代わりに matchBoolを使うと，最後のケースに注意深くならないと，正しい結果を返さないだろう．
+
+特に，もしそのケースになれば直ちに例外を発生し，(and true 7) というような式はfailとなる．
+
+そのようなことは，あまりに厳密に，型を評価して確認したために起こる．
+
+それを評価した時にだけ，エラーを発生させる code fragment を返すことで，正しいセマンティクスが保存されていることを確認する．
+
+\section{coclusion}
+主にPart1 での技術を用いて，
+higher-order な関数と複数の型を持つ言語に対してのインタプリタの実装を示した．
+その際，特に動的言語に対して有用な最適化の技術を用いた．
+また，合理的なスピードアップが，ステージングを使用することにより，可能となった．
+この実装は，最も効果的なステージングインタプリタを目指してはいない．
+
+
+\end{document}
+
+% 参考 http://qiita.com/mountcedar/items/e7603c2eb65661369c3b
+
+%%% Local Variables:
+%%% mode: japanese-latex
+%%% TeX-master: t
+%%% End:

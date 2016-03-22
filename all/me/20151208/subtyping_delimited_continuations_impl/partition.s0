@@ -1,0 +1,11 @@
+let partition = \a. \l. 
+    let part = \l. case l { 
+            Nil -> [] 
+          | Cons (h,t) -> 
+                if h %> a 
+                    then Cons(h, part t)
+                    else if h == a 
+                        then @f. Cons(h, <f (part t)> ) 
+                        else @f. @g. Cons (h, <g <f (part t)>>) 
+    } in <<part l>>
+in partition 4 [7,3,9,1,4,2,7,4,1,3,8,2,4]
