@@ -1,0 +1,150 @@
+\documentclass[10pt,a4j,xcolor=dvipsnames,twocolumn]{jarticle}
+%
+%
+\usepackage[dvipdfmx]{graphicx,color,hyperref}
+\usepackage{amsmath,amssymb,mathrsfs,amsthm}
+\usepackage{ascmac}
+
+\usepackage{centernot}
+\usepackage{fancybox}
+\usepackage{verbatim}
+\usepackage{jtygm}
+\usepackage{listings,jlisting}
+\usepackage{here,txfonts}
+\usepackage{url}
+\usepackage{bussproofs}
+\usepackage{latexsym}
+\usepackage{bm}
+
+% \usepackage[margin=0.15cm]{geometry}
+\usepackage{setspace}
+% \setstretch{1.08} % ページ全体の行間を設定
+% \setlength{\textheight}{38\baselineskip}
+\setlength{\columnsep}{12mm}
+
+\theoremstyle{definition}
+\newtheorem{theo}{定理}[section]
+\newtheorem{defi}{定義}[subsection]
+\newtheorem{lemm}{補題}[section]
+\renewcommand\proofname{\bf 証明}
+
+\newcommand{\cn}{\centernot}
+\newcommand{\la}{\lambda}
+\newcommand{\ri}{\longrightarrow}
+\newcommand{\map}{\mapsto}
+\newcommand{\id}{\text{id }}
+
+\def\tightlist{}
+
+
+\title {\vspace{-2.0cm}QAレポート}
+\date{\today}
+\author{システム情報工学研究科 コンピュータサイエンス専攻 \\
+  博士課程前期1年 201520621 大石純平 \\
+}
+% \pagestyle{empty}
+
+\begin {document}
+\maketitle
+% \thispagestyle{empty}
+
+\begin{itemize}
+\item 研究題目: 多段階 let 挿入を行うコード生成言語の設計
+\item 主任指導教員: 亀山幸義
+\item 発表日時 2015/10/22
+\end{itemize}
+
+\section{質問}
+\label{sec:1}
+安全性と最適化について，let挿入を安全に行えるというのは分かったが，最適な位置にどうやって置くのか．
+安全性と最適化の両立はどのように行うのか．
+
+let文というものを適切な？安全な位置に挿入するときに，shift0/reset0というものを使うと，それを安全な場所に挿入できるということだと理解したが，安全であるが最適な場所かは分からないということか
+
+性能のほうで最適な位置を見つける技術はまだないということか
+
+\subsection{発表時の回答}
+Sudoらの型システムのアイデア\cite{Sudo2014}を用いる事によって，let文を適切な位置に挿入することを実現したい．
+
+はい．安全性のみを考えている．
+
+\subsection{改善した回答}
+各環境に応じた最適なコード（実行性能の高いコード）を自動的に生成するわけではない．
+端的にマルチステージの目的を言うと，コンパイラなどが自動的に最適化できないような人間の手でアドホックに行う最適化に対しての安全性を保証したいということである．
+つまり，その最適化を行う部分は人間の手で書くということになる．
+表現力を上げた体系（今回の場合だと例えば，多段階let挿入が行える体系）において本研究の型システムが生成後のコードに対して型エラーを起こさないようにすることで，生成後のコードの安全性が保たれる．
+
+\begin{itemize}
+\item コード生成言語にshift0/reset0\cite{Materzok2011}を加えることで多段階let挿入等ができるので表現力があがる．
+\item すると，shift0/reset0 をプログラマが用いることによって，多段階let挿入などの計算エフェクトを含むコードを書くことができるようになる．
+\item その際，本研究の型システムによってそのコードが型エラーを起こさなければ，生成後のコードが安全にコンパイル，実行できることを保証する．
+\end{itemize}
+
+\subsection{コメント}
+ステージングは最適化を自動的に行うようなものではなく，最適化を行うのはあくまでも我々の言語を使う人であるというステージングの立場を共有する必要があった．
+
+\section{質問}
+\label{sec:2}
+shift0/reset0を入れることでlet挿入が可能となるそうだが，それが，効率のよいプログラムを記述するための表現力を高めつつその安全性が保証されたということにどう結びつくのか？
+（私がもういちど聞き返す）
+shift0/reset0を入れることのメリットを教えてほしい．
+
+\subsection{発表時の回答}
+(let挿入を行うことのメリットは何かという質問だと勘違いをして)
+assert挿入の例を持ちだして，let挿入をすることのメリットを答えた．
+
+\subsection{改善した回答}
+shift0/reset0を入れることだけでは安全性には貢献しない．
+shift0/reset0を用いることによって得られる計算エフェクトを含むコード（たとえば，多段階let挿入）に対しての安全性を保証する型システムを作る必要がある．
+
+% shift0/reset0 の型システムとshift/reset の型システムと階層化shift/resetの比較をすることで質問に答えるとよかった．
+% まずshift0/reset0 の型システムと階層化shift/resetの型システムの比較をする．
+% 表現力としては同様な多段階let挿入ができたりと同等であると思う．また，安全性についてどちらのほうが安全なのかという質問に対しては両方共安全だとしか言えないが，安全性の証明はshift0/reset0のほうが簡潔になるだろう．またshift0/reset0の型推論が完全性を持つことが分かると，結果としては安全性が向上したとある意味ではいえるかもしれない．
+
+
+\section{質問}
+\label{sec:3}
+前の質問\ref{sec:1}に引き続いての質問．
+安全性をひとまず保証しようとしている？ただ精度（性能）を安全性もそのままにしながら精度（性能）を保証するにはどういう風にしていくのか？
+例えば，shift0/reset0 でなくて，shift/reset は安全性と精度（性能）はうまく保証されているのか？そうであるならば，同じような手法を使って精度（性能）を保証するということはできないのか？
+
+安全性も保証しながら精度も高いということの意味を教えてほしい．
+
+\subsection{発表時の回答}
+shift/reset で表現できないことがある．それをshift0/reset0では表現できる．その一つの例が多段階let挿入である．その多段階let挿入を用いることで安全性を保証しつつ効率のよいコードも書ける．
+
+精度が良いってのは最適なコードということ？（実行性能の高いコード？）
+ここで作りたいものというのは，最適なアルゴリズムを考えるのは，私ではなく使う人である．
+コード生成言語を使うことによって多数のパラメータに応じた環境に特化したコードが生成される．そのアルゴリズム自体は使う人が考える．我々は安全性は保証するというのが立ち位置である．
+
+\subsection{改善した回答}
+性能を上げるための最適化の話をしていたわけではない．
+表現力を上げた体系の安全性を型システムで抑えるということを行いたいということを話していた．
+
+ほとんどの人にとってはステージングでなくコンパイラを使うと思うが，
+ドメインに特化した高性能なコードを生成したいプログラマに対して自由にプログラムを書かせたい．コンパイラが自動的に最適化できないような，アドホックな人間の手で行うような最適化を我々の体系の言語で書かせる．なおかつその表現力の上がった体系の安全性を型システムで保証する．
+
+shift/resetを含むステージングの体系については，亀山ら\cite{Kameyama2009}がshift/resetの影響が変数スコープを超えることを制限する型システムを構築し，安全性を厳密に保証した．
+彼らの仕事は本研究でも参考にする．
+
+% しかし，好き勝手に書くとデバッグが大変になるので，ある程度の安全性を保証するようなフレームワークを与えるのがステージングである．
+
+\subsection{コメント}
+適切な位置にlet挿入を行うということを最適な位置にlet挿入を行うと口頭で話してしまったために混乱させてしまったように思う．
+全自動で最適化されたコードが生成されるわけではない．
+質問\ref{sec:1}，\ref{sec:2}と同様にステージングの立場を共有するべきだった．
+
+
+\addcontentsline{toc}{section}{参考文献}
+\bibliography{../bib/bibfile}
+\bibliographystyle{junsrt}
+
+
+\end{document}
+
+% 参考 http://qiita.com/mountcedar/items/e7603c2eb65661369c3b
+
+%%% Local Variables:
+%%% mode: japanese-latex
+%%% TeX-master: t
+%%% End:

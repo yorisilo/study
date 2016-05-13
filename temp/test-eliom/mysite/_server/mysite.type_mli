@@ -1,0 +1,9 @@
+val __eliom__compilation_unit_id__1036365299 : unit
+module Mysite_app : Eliom_registration.ELIOM_APPL
+val main_service :
+  (unit, unit, [< Eliom_service.service_method > `Get ],
+   [< Eliom_service.attached > `Attached ],
+   [< Eliom_service.service_kind > `Service ], [ `WithoutSuffix ], unit,
+   unit, [< Eliom_service.registrable > `Registrable ],
+   [> Eliom_service.appl_service ])
+  Eliom_service.service
