@@ -1,0 +1,106 @@
+\documentclass[10pt,a4paper,twocolumn]{jarticle}
+%
+\usepackage[dvipdfmx]{graphicx,color,hyperref}
+\usepackage{amsmath,amssymb,mathrsfs,amsthm}
+\usepackage{ascmac}
+
+\usepackage{centernot}
+\usepackage{fancybox}
+\usepackage{verbatim}
+\usepackage{jtygm}
+\usepackage{listings,jlisting}
+\usepackage{here,txfonts}
+\usepackage{url}
+\usepackage{bussproofs}
+\usepackage{latexsym}
+\usepackage{bm}
+
+% \usepackage[margin=0.15cm]{geometry}
+
+\theoremstyle{definition}
+\newtheorem{theo}{定理}[section]
+\newtheorem{defi}{定義}[subsection]
+\newtheorem{lemm}{補題}[section]
+\renewcommand\proofname{\bf 証明}
+
+\newcommand{\cn}{\centernot}
+\newcommand{\la}{\lambda}
+\newcommand{\ri}{\longrightarrow}
+\newcommand{\map}{\mapsto}
+\newcommand{\id}{\text{id }}
+
+\def\tightlist{}
+
+\title {\vspace{-4.2cm}全体ゼミ\\ コード生成 + shift0/reset0 の体系}
+\date{\today}
+\author{筑波大学 プログラム論理研究室 \\ 大石 純平}
+% \pagestyle{empty}
+
+\begin {document}
+\maketitle
+% \thispagestyle{empty}
+
+\section{モチベーション}
+効率のよいコードを生成するために表現力を上げたい．
+ここで表現力をあげるために，プログラムに副作用を許すプリミティブを導入する．
+限定継続のうちのひとつ，s0/r0 を用いる．
+
+\section{s0/r0 と コード，それぞれの体系の説明．}
+\subsection{s0/r0 の operation semantics 例を用いて説明}
+\begin{align}
+  \langle_0 E[S_0 k.e]\la \rangle_0 &\rightarrow e \{k := \la x. \langle_0 E[x] \rangle_0 \} \\
+  \langle_0 v \rangle_0 &\rightarrow v
+\end{align}
+
+\subsection{s/r との比較}
+\begin{align}
+  \langle_1 E[S_1 k.e]\la \rangle_1 &\rightarrow \langle_1 e \{k := \la x. \langle_1 E[x] \rangle_1 \} \rangle_1  \\
+  \langle_1 v \rangle_1 &\rightarrow v
+\end{align}
+
+\subsection{コード の operation semantics 例を用いて説明}
+コードの表現方法として，MetaOCaml のような，ブラケットとエスケープを用いるのでなく，
+コードコンビネータを使用している．
+なので，演算子や項などを構成する要素すべてに対して，通常レベルとコードレベルとの二種類のものを用意する必要がある．
+
+% \subsection{次に，let insertion の例を動かしてみる．}
+
+\subsection{コードの中に s0/r0 がある場合とかの例を考える}
+
+
+\subsection{困ること}
+% このoperation semantics ではこういう理由があるので，困るみたいな説明をして，そういった式は落とすようにしたい（型システムで制限したい）
+
+Scope extrusion
+\begin{itemize}
+\item 副作用とコード生成を組み合わせた時に発生する scope extrusion は，未束縛の変数が，元々の束縛されていた範囲を飛び出してしまうという問題
+\end{itemize}
+
+% ここまでは話したい
+\section{型システム}
+Scope extrusion が起きるのを型システムで制限する
+
+Idea
+\begin{itemize}
+\item 副作用とコード生成を組み合わせた時に発生する scope extrusion は，未束縛の変数が，元々の束縛されていた範囲を飛び出してしまうという問題を，コードレベルのラムダ抽象 $ \underline{\la} x.e $ の $x$ の方が固有変数条件を満たさなければならないという制約によって解決する．
+\item 変数のスコープの範囲を型によって表す．
+\end{itemize}
+
+\section{s0/r0 の型システム}
+\subsection{s0/r0 の型システムのダウンサイジングについて}
+
+\section{コード の型システム}
+
+
+\section{s0/r0 + コード の型システム}
+
+% \input {readme}
+
+\end{document}
+
+% 参考 http://qiita.com/mountcedar/items/e7603c2eb65661369c3b
+
+%%% Local Variables:
+%%% mode: japanese-latex
+%%% TeX-master: t
+%%% End:

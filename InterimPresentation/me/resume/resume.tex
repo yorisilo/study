@@ -1,0 +1,213 @@
+\documentclass[10pt,a4j,xcolor=dvipsnames,twocolumn]{jarticle}
+%
+\usepackage[dvipdfmx]{graphicx,color,hyperref}
+\usepackage{amsmath,amssymb,mathrsfs,amsthm}
+\usepackage{ascmac}
+
+\usepackage{centernot}
+\usepackage{fancybox}
+\usepackage{verbatim}
+\usepackage{jtygm}
+\usepackage{here,txfonts}
+\usepackage{url}
+\usepackage{bussproofs}
+\usepackage{latexsym}
+\usepackage{bm}
+
+% \usepackage[margin=0.15cm]{geometry}
+
+\usepackage{setspace}
+% \setstretch{1.08} % ページ全体の行間を設定
+% \setlength{\textheight}{38\baselineskip}
+\setlength{\columnsep}{12mm}
+
+\theoremstyle{definition}
+\newtheorem{theo}{定理}[section]
+\newtheorem{defi}{定義}[subsection]
+\newtheorem{lemm}{補題}[section]
+\renewcommand\proofname{\bf 証明}
+
+\newcommand{\cn}{\centernot}
+\newcommand{\la}{\lambda}
+\newcommand{\ri}{\longrightarrow}
+\newcommand{\map}{\mapsto}
+\newcommand{\id}{\text{id }}
+
+\usepackage{listings,jlisting}
+% \usepackage[scale=0.9]{DejaVuSansMono}
+
+\definecolor{DarkGreen}{rgb}{0,0.5,0}
+\definecolor{Magenta}{rgb}{1.0, 0.0, 1.0}
+
+\lstset{
+  language={[Objective]Caml},% プログラミング言語
+  basicstyle={\ttfamily\small},% ソースコードのテキストのスタイル
+  keywordstyle={\bfseries},% 予約語等のキーワードのスタイル
+  commentstyle={},% コメントのスタイル
+  stringstyle={},% 文字列のスタイル
+  frame=none,% ソースコードの枠線の設定 trlb (none だと非表示)
+  numbers=none,% 行番号の表示 (left だと左に表示)
+  numberstyle={},% 行番号のスタイル
+  xleftmargin=5pt,% 左余白
+  xrightmargin=5pt,% 右余白
+  keepspaces=true,% 空白を表示する
+  mathescape,% $ で囲った部分を数式として表示する ($ がソースコード中で使えなくなるので注意)
+  % 手動強調表示の設定
+  moredelim=[is][\itshape]{@/}{/@},
+  moredelim=[is][\color{red}]{@r\{}{\}@},
+  moredelim=[is][\color{blue}]{@b\{}{\}@},
+  moredelim=[is][\color{DarkGreen}]{@g\{}{\}@},
+  moredelim=[is][\color{Magenta}]{@m\{}{\}@}
+}
+
+% \title {\vspace{-2.0cm}多段階 let 挿入を行うコード生成言語の設計}
+\title {\vspace{-2.0cm}\Large{コード生成言語に限定継続 shift0/reset0 を加えた型システムの設計}}
+\date{2016年7月12日}
+\author{システム情報工学研究科 コンピュータサイエンス専攻 \\
+  博士課程前期2年 201520621 大石純平 \\
+  指導教員 亀山幸義
+}
+
+
+% \pagestyle{empty}
+
+\begin {document}
+
+\maketitle
+% \thispagestyle{empty}
+\section{はじめに}
+コード生成法は，プログラムの生産性・保守性と実行性能の高さを両立させら
+れるプログラミング手法として有力なものである．
+本研究室では，コード生成法をサポートするプログラム言語の信頼性・安全性
+を高める研究を行ってきている．
+すなわち，プログラム生成を行うことによって生成されるプログラムが安全に
+実行されることを，プログラムの生成段階より早い段階，
+すなわちプログラム生成を行うプログラムのコンパイル段階で検査することの
+できる言語体系およびシステムを構築することを目標としている．
+
+ここでいう安全性は，構文的に正しいプログラムであること，
+文字列同士の加算や乗算を決して行わない等の通常の型安全性を満たすことのほか，
+自由変数やプログラム特化後において利用できない変数に依存したプログラム
+を生成しないという，変数や変数スコープに関する性質を含む概念である．
+
+この研究での大きな課題は，従来のコード生成のためのプログラミング言語の
+多くが，純粋なラムダ計算に基づく関数型プログラミング言語を基礎としており，
+効率の良いコードを生成する多くの技法をカバーしていないことである．
+これを克服する体系，すなわち，効率良いプログラムを記述するための表現力を高めつつ，
+安全性が保証された体系が求められている．
+
+本研究の目的は，安全性が厳密に保証される計算体系の理論を構築し，さらにそれを実現する処理系を実装することを目的とする．このため，比較的最近になって理論的性質が解明され
+つつあるshift0/reset0 というコントロールオペレータに着目し，これをコー
+ド生成の体系に追加して得られた体系を構築して，上記の課題を解決すること
+を狙いとする．
+
+\section{準備}
+\subsection{マルチステージプログラミング}
+マルチステージプログラミングとはプログラムを生成する段階や，生成したプログラムを実行する段階など，複数のステージを持つプログラミングの手法である．
+プログラムを計算対象のデータとして扱うことで，プログラムの効率や，保守性，再利用性の両立が期待できる．
+例えば生成元のプログラムから，何らかの目的に特化したプログラムを生成を行い，保守や改変をしたい時は，生成元のプログラムに対して行えばよいので，生成後のコードについては手を加える必要が無い．そのような，マルチステージプログラミングを効果的に行うためには，言語レベルで，プログラムを生成，実行などが行える機構を備えることが望ましい．
+そのような言語として，本研究では，MetaOCamlというマルチステージプログラミングに対応したOCamlの拡張言語を用いる．
+
+\subsection{shift0/reset0}
+継続を扱う命令としてコントロールオペレータというものがある．継続とは，計算のある時点における残りの計算のことである．本研究では，shift0/reset0というコントロールオペレータを用いる．
+reset0は継続の範囲を限定する命令であり，shift0はその継続を捕獲するための命令である．
+
+shift/reset\cite{Danvy1990}では，複数の計算エフェクトを含んだプログラムは書くことができない．しかし，階層化shift/resetやshift0/reset0はこの欠点を克服している．
+階層化shift/reset\cite{Danvy1990}は，最大レベルの階層を固定する必要があるが，shift0/reset0では，shift0，reset0 というオペレータだけで，階層を表現する事ができるという利点がある．
+また，shift0/reset0は shift/reset よりも単純なCPS変換で意味が与えられていて，純粋なラムダ式で表せるために形式的に扱いやすいという利点がある．
+reset0は \lstinline|reset0(M)|というように表し，継続の範囲を\lstinline|M|に限定するという意味となる．
+shift0は \lstinline|shift0(fun k -> M)|というように表し，直近のreset0によって限定された継続を \lstinline|k| に束縛し，\lstinline|M|を実行するという意味となる．
+以下で，shift0/reset0の例を掲載する．
+
+\begin{lstlisting}
+  @r{reset0}@ (3 + (@r{shift0}@ k -> let x = 5 in k(x)))
+$\Rightarrow$ (let x = 5 in k(x))
+              where k = @r{reset0}@ (3 + [])
+$\Rightarrow$ (let x = 5 in @r{reset0}@ (3 + x))
+\end{lstlisting}
+この例は，let挿入をshift0/reset0により可能にする例である．
+shift0によって，まず\lstinline|let x = 5 in k(x)|が実行される．ここで，\lstinline|k|には，直近のreset0によって限定された継続である \lstinline|reset0 (3 + [])|が捕獲されている．その\lstinline|k|に\lstinline|x|を適用させることで，\lstinline|3 + x|が得られる．すると，\lstinline|let x = 5 in k (x)| は \lstinline|let x = 5 in 3 + x| に評価される．ここで，見方を変えると，reset0により限定された継続をshift0内部の \lstinline|k|に捕獲したというよりは，\lstinline|let x = 5 in 3 + x| がshift0によるスコープの外部に出てきたとも見える．このように，shift0/reset0を使うことで，let挿入が実現できることが分かる．
+
+\section{目的}
+プログラムによるプログラムの動的な生成を行い，保守性と性能の両立をはかりたい．
+また，生成するプログラムだけでなく，生成されたプログラムも型の整合性が静的に（生成前に）保証するようにしたい．
+
+コード生成のアプローチとしては，
+コード生成のプログラムは，高レベルの記述つまり，高階関数，代数的データ型などを利用し，注腸的なアルゴリズムの記述を行う．
+それによって生成されたコードは低レベルの記述がなされており高性能な実行が可能となる．また，特定のハードウェアや特定のパラメータを仮定したコードなので，様々な環境に対して対応できる．
+
+つまり，生成元のプログラムは抽象度を上げた記述をすることで，色々な状況(特定のハードウェア，特定のパラメータ)に応じたプログラムを生成することを目指す．
+そのようにすることで，生成後のコードには手を加えることなく，生成前のプログラムに対してのみ保守や改変をすれば良い．
+また，プログラム生成前に型検査に通っていれば，生成後のコードに型エラーは絶対に起こらないことが，型システムにより，保証される．
+
+しかし，コード生成において以下の様な信頼性への大きな不安がある．
+
+\begin{itemize}
+\item 構文的，意味的に正しくないプログラムを生成しやすい
+\item デバッグが容易ではない
+\item 効率のよいコード生成に必要な計算エフェクト（今回の場合だと限定継続のひとつであるshift0/reset0）を導入すると，従来理論ではコード生成プログラムの安全性は保証されない
+\end{itemize}
+
+効率のよいコードの生成を行うためには例えば，ネストしたループの順序の入れ替えやループ不変項，共通項のくくりだしなどを行う必要がある．
+それらを実現するためには，コード生成言語に副作用が必要である．
+
+\section{研究項目}
+表現力と安全性を兼ね備えたコード生成の体系としては，
+2009年の亀山らの研究\cite{Kameyama2009}が最初である．
+彼らは，MetaOCamlにおいてshift/resetとよばれるコントロールオペレータを
+使うスタイルでのプログラミングを提案するとともに，
+コントロールオペレータの影響が変数スコープを越えることを制限する型シス
+テムを構築し，安全性を厳密に保証した．
+Westbrookら\cite{Westbrook}は同様の研究を Java のサブセットを対象におこなった．
+須藤ら\cite{Sudo2014}は，書換え可能変数を持つコード生成体系に対して，
+部分型付けを導入した型システムを提案して，安全性を保証した．
+これらの体系は，安全性の保証を最優先した結果，表現力の上での制限が強く
+なっている．特に，let挿入とよばれるコード生成技法をシミュレートするた
+めには，shift/reset が必要であるが，複数の場所へのlet挿入を許すために
+は，複数の種類のshift/resetを組み合わせる必要がある．
+この目的のため，階層的shift/resetやマルチプロンプト
+shift/resetといった，shift/reset を複雑にしたコントロールオペレータを
+考えることができるが，その場合の型システムは非常に複雑になることが予想
+され，安全性を保証するための条件も容易には記述できない，等の問題点がある．
+
+本研究では，このような問題点を克服するため，shift/reset の意味論をわず
+かに変更した shift0/reset0 というコントロールオペレータに着目する．
+このコントロールオペレータは，長い間，研究対象となってこなかったが
+2011年以降，Materzok らは，部分型付けに基づく型システムや，
+関数的なCPS変換を与えるなど，簡潔で拡張が容易な理論的基盤をもつことを
+解明した\cite{Materzok2011,materzok2012}．
+特に，shift0/reset0 は shift/reset と同様のコントロールオペレータであ
+りながら，階層的shift/reset を表現することができる，という点で，
+表現力が高い．本研究では，これらの事実に基づき，これまでのshift/reset
+を用いたコード生成体系の知見を，shift0/reset0 を用いたコード生成体系の
+構築に活用するものである．
+
+\section{本研究の手法}
+shift0/reset0 を持つコード生成言語の型システムの設計を行い，
+深く入れ子になった内側からの，let挿入，assertion挿入の関数プログラミング的実現を目指すのだが，shift0/reset0 は shift/resetより強力であるため，型システムが非常に複雑である．
+また，コード生成言語の型システムも一定の複雑さを持っている．
+そのためにそれらを単純に融合させることは困難である．
+そこで，本研究では，shift0/reset0 の型システムをlet挿入等に絞るように単純化する．
+その型システムに対して，コード生成言語の型システムを融合させる．
+型システムの安全性の保証に関しては，Kameyama+ 2009\cite{Kameyama2009} と Sudo+ 2014\cite{Sudo2014} の手法を利用する．
+
+\subsection{本研究の型システム}
+
+
+\section{まとめと今後}
+let挿入がshit0/reset0で記述可能なことを実例によって提示した．また，shift0/reset0を導入した言語を考えると従来より，簡潔で，検証しやすい体系ができるというアイデアに基づいて，コード生成言語の型システムを構築することを提案した．
+% その一歩として，型のないshift0/reset0 を入れた体系である$\lambda ^{S0}$のインタプリタを実装した．
+Sudoらのコード生成言語の型システム\cite{Sudo2014}を利用し，shift0/reset0を組み込んだ体系について検討中である．
+今後，型システムの設計を完成させ健全性の証明および型検査器等の実装を行う
+
+%% 参考文献
+\addcontentsline{toc}{section}{参考文献}
+\bibliography{../bib/bibfile}
+\bibliographystyle{junsrt}
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: japanese-latex
+%%% TeX-master: t
+%%% End:
