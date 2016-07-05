@@ -1,0 +1,149 @@
+%
+%
+%
+\documentclass{jarticle}
+\textheight=23cm
+\textwidth=17cm
+\hoffset=-2cm
+\voffset=-2cm
+
+\usepackage{amsmath,amssymb}
+\usepackage{proof}
+
+\renewcommand{\baselinestretch}{2}
+
+\overfullrule=0pt
+
+\newcommand\fun[2]{\lambda{#1}.{#2}}
+
+\newcommand\Resetz{\textbf{reset0}}
+\newcommand\Shiftz{\textbf{shift0}}
+\newcommand\Throw{\textbf{throw}}
+\newcommand\resetz[1]{\Resetz~{#1}}
+\newcommand\shiftz[2]{\Shiftz~{#1}.{#2}}
+\newcommand\throw[2]{\Throw~{#1}~{#2}}
+
+\newcommand\cfun[2]{\underline{\lambda}{#1}.{#2}}
+
+\newcommand\cResetz{\underline{\textbf{reset0}}}
+\newcommand\cShiftz{\underline{\textbf{shift0}}}
+\newcommand\cThrow{\underline{\textbf{throw}}}
+\newcommand\cresetz[1]{\cResetz~{#1}}
+\newcommand\cshiftz[2]{\cShiftz~{#1}\to{#2}}
+\newcommand\cthrow[2]{\cThrow~{#1}~{#2}}
+
+\newcommand\cPlus{\underline{\textbf{+}}}
+
+\newcommand\cLet{\underline{\textbf{clet}}}
+\newcommand\cIn{\underline{\textbf{in}}}
+\newcommand\clet[3]{\cLet~{#1}={#2}~\cIn~{#3}}
+\newcommand\csp[1]{\texttt{\%}{#1}}
+\newcommand\code[1]{\texttt{<}{#1}\texttt{>}}
+
+\newcommand\codeT[2]{\langle{#1}\rangle^{#2}}
+\newcommand\contT[2]{({#1} \Rightarrow {#2})}
+
+\newcommand\ord{\ge}
+
+\begin{document}
+
+\begin{center}
+  \Large
+  Type system for Code Geneartion plus Shift0/Reset0
+  \\
+  2016/7/5, Kameyama
+\end{center}
+
+Assumption: we ignore answer types.
+(Later we will consider them.)
+
+\section{Syntax and Operational Semantics}
+
+\begin{align*}
+  e & ::= x \mid \fun{x}{e} \mid e~e
+      \mid \cfun{x}{e}
+      \mid \cresetz{e}
+      \mid \cshiftz{k}{e}
+      \mid \cthrow{k}{e}
+      \mid \clet{x}{e}{e}
+      \mid \cdots
+\end{align*}
+
+\section{Type System}
+
+\begin{align*}
+  t & ::= \textrm{BasicType} \mid t \to t \mid \codeT{t}{\gamma}
+\end{align*}
+
+Typing rule for code-level lambda:
+\[
+  \infer[(\gamma_1~\text{is eigen var})]
+  {\Gamma \vdash \cfun{x}{e} ~:~ \codeT{t_1\to t_2}{\gamma}}
+  {\Gamma,~\gamma_1 \ord \gamma,~x:\codeT{t_1}{\gamma_1} \vdash e
+    ~:~ \codeT{t_2}{\gamma_1}}
+\]
+
+Typing rule for code-level let (derived rule):
+\[
+  \infer[(\gamma_1~\text{is eigen var})]
+  {\Gamma \vdash \clet{x}{e_1}{e_2} ~:~ \codeT{t_2}{\gamma}}
+  {\Gamma \vdash e_1 ~:~ \codeT{t_1}{\gamma}
+    &\Gamma,~\gamma_1 \ord \gamma,~x:\codeT{t_1}{\gamma_1} \vdash
+    e_2 ~:~ \codeT{t_2}{\gamma_1}
+  }
+\]
+
+Typing rule for code-level reset0:
+\[
+  \infer{\Gamma \vdash \cresetz{e} ~:~ \codeT{t}{\gamma}}
+  {\Gamma \vdash e ~:~ \codeT{t}{\gamma}}
+\]
+
+Typing rule for code-level shift0:
+\[
+  \infer{\Gamma \vdash \cshiftz{k}{e} ~:~ \codeT{t_1}{\gamma_1}}
+  {\Gamma,~k:\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}
+    \vdash e ~:~ \codeT{t_0}{\gamma_0}
+    & \Gamma \models \gamma_1 \ord \gamma_0
+  }
+\]
+
+Typing rule for code-level throw:
+\[
+  \infer[(\gamma_3~\text{is eigen var})]
+  {\Gamma,~k:\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}
+    \vdash \cthrow{k}{e} ~:~ \codeT{t_0}{\gamma_2}}
+  {\Gamma,~
+    \gamma_3 \ord \gamma_1,~
+    \gamma_3 \ord \gamma_2
+    \vdash e ~:~ \codeT{t_1}{\gamma_3}
+    & \Gamma \models \gamma_2 \ord \gamma_0
+  }
+\]
+
+
+\section{Example}
+
+\begin{align*}
+  e_1 & = \cResetz ~~\cLet~x_1=\csp{3}~\cIn \\
+      & \phantom{=}~~ \cResetz ~~\cLet~x_2=\csp{5}~\cIn \\
+      & \phantom{=}~~ \cShiftz~k~\to~\cLet~y=t~\cIn \\
+      & \phantom{=}~~ \cThrow~k~(x_1~\cPlus~x_2~\cPlus~y)
+\end{align*}
+
+If $t=\csp{7}$ or $t=x_1$, then $e_1$ is typable.
+
+If $t=x_2$, then $e_1$ is not typable.
+
+\begin{align*}
+  e_2 & = \cResetz ~~\cLet~x_1=\csp{3}~\cIn \\
+      & \phantom{=}~~ \cResetz ~~\cLet~x_2=\csp{5}~\cIn \\
+      & \phantom{=}~~ \cShiftz~k_2~\to~ \cShiftz~k_1~\to~ \cLet~y=t~\cIn \\
+      & \phantom{=}~~ \cThrow~k_1~(\cThrow~k_2~(x_1~\cPlus~x_2~\cPlus~y))
+\end{align*}
+
+If $t=\csp{7}$, then $e_1$ is typable.
+
+If $t=x_2$ or $t=x_1$, then $e_1$ is not typable.
+
+\end{document}
