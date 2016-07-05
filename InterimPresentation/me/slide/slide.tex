@@ -433,7 +433,7 @@
 \subsection{型システム}
 \begin{frame}
   % \frametitle{型システムの設計方針}
-  \frametitle{変数スコープの利用}
+  \frametitle{変数スコープの利用 by Sudo}
   % スコープが変わるところは，classifier の順序だけで済んでる
   % 合流がある classifier について
   \begin{onlyenv}<1>
@@ -479,8 +479,8 @@
           &(\cThrow ~k ~\red{...}~)))\\
           &=> \\
           &(\cResetz ~\cLet~ y = e_1 ~\cIn~ \red{\gamma_0} \\
-          &(\cShiftz ~\blue{k} \to ~\cLet~ x = \red{\gamma_1} ~\cIn~ \red{\gamma_2} \\
-          &(\cThrow ~\magenta{k} ~\red{\gamma_3}~)))
+          &(\cShiftz ~\magenta{k} \to ~\cLet~ x = \red{\gamma_1} ~\cIn~ \red{\gamma_2} \\
+          &(\cThrow ~\blue{k} ~\red{\gamma_3}~)))
         \end{align*}
       \end{column}
 
@@ -488,8 +488,8 @@
         \center
         \includegraphics[clip,height=4cm]{./img/index.png}
         \begin{align*}
-          \blue{k} ~:~ \contT{\codeT{\cdot}{\gamma_0}}{\codeT{\cdot}{\gamma_1}}\\
-          \magenta{k} ~:~  \contT{\codeT{\cdot}{\gamma_3}}{\codeT{\cdot}{\gamma_2}}\\
+          \magenta{k} ~:~ \contT{\codeT{\cdot}{\gamma_1}}{\codeT{\cdot}{\gamma_0}}\\
+          \blue{k} ~:~  \contT{\codeT{\cdot}{\gamma_3}}{\codeT{\cdot}{\gamma_2}}\\
         \end{align*}
       \end{column}
     \end{columns}
