@@ -1,4 +1,4 @@
-\documentclass[10pt,a4j,xcolor=dvipsnames,twocolumn]{jarticle}
+\documentclass[10pt,a4j,twocolumn]{jarticle}
 %
 \usepackage[dvipdfmx]{graphicx,color,hyperref}
 \usepackage{amsmath,amssymb,mathrsfs,amsthm}
@@ -13,6 +13,40 @@
 \usepackage{bussproofs}
 \usepackage{latexsym}
 \usepackage{bm}
+
+\usepackage{proof}
+
+\newcommand\fun[2]{\lambda{#1}.{#2}}
+
+\newcommand\Resetz{\textbf{reset0}}
+\newcommand\Shiftz{\textbf{shift0}}
+\newcommand\Throw{\textbf{throw}}
+\newcommand\resetz[1]{\Resetz~{#1}}
+\newcommand\shiftz[2]{\Shiftz~{#1}.{#2}}
+\newcommand\throw[2]{\Throw~{#1}~{#2}}
+
+\newcommand\cfun[2]{\underline{\lambda}{#1}.{#2}}
+
+\newcommand\cResetz{\underline{\textbf{reset0}}}
+\newcommand\cShiftz{\underline{\textbf{shift0}}}
+\newcommand\cThrow{\underline{\textbf{throw}}}
+\newcommand\cresetz[1]{\cResetz~{#1}}
+\newcommand\cshiftz[2]{\cShiftz~{#1}\to{#2}}
+\newcommand\cthrow[2]{\cThrow~{#1}~{#2}}
+
+\newcommand\cPlus{\underline{\textbf{+}}}
+
+\newcommand\cLet{\underline{\textbf{clet}}}
+\newcommand\cIn{\underline{\textbf{in}}}
+\newcommand\clet[3]{\cLet~{#1}={#2}~\cIn~{#3}}
+\newcommand\csp[1]{\texttt{\%}{#1}}
+\newcommand\code[1]{\texttt{<}{#1}\texttt{>}}
+
+\newcommand\codeT[2]{\langle{#1}\rangle^{#2}}
+\newcommand\contT[2]{({#1} \Rightarrow {#2})}
+
+\newcommand\ord{\ge}
+
 
 % \usepackage[margin=0.15cm]{geometry}
 
@@ -71,7 +105,7 @@
 
 % \pagestyle{empty}
 
-\begin {document}
+\begin{document}
 
 \maketitle
 % \thispagestyle{empty}
@@ -192,6 +226,56 @@ shift0/reset0 を持つコード生成言語の型システムの設計を行い
 型システムの安全性の保証に関しては，Kameyama+ 2009\cite{Kameyama2009} と Sudo+ 2014\cite{Sudo2014} の手法を利用する．
 
 \subsection{本研究の型システム}
+
+\subsection{型付け例}
+\begin{align*}
+  e_2 & = \cResetz ~~\cLet~x_1=\csp{3}~\cIn \\
+      & \phantom{=}~~ \cResetz ~~\cLet~x_2=\csp{5}~\cIn \\
+      & \phantom{=}~~ \cShiftz~k_2~\to~ \cShiftz~k_1~\to~ \cLet~y=t~\cIn \\
+      & \phantom{=}~~ \cThrow~k_1~(\cThrow~k_2~(x_1~\cPlus~x_2~\cPlus~y))
+\end{align*}
+
+If $t=\csp{7}$, then $e_1$ is typable.
+
+If $t=x_2$ or $t=x_1$, then $e_1$ is not typable.
+
+
+\[
+  \infer{
+    \vdash
+    \cResetz ~~\cLet~x_1=\csp{3}~\cIn \\
+    \cResetz ~~\cLet~x_2=\csp{5}~\cIn \\
+    \cShiftz~k_2~\to~ \cShiftz~k_1~\to~ \cLet~y=t~\cIn \\
+    \cThrow~k_1~(\cThrow~k_2~(x_1~\cPlus~x_2~\cPlus~y)) ~:~ \codeT{int}{\gamma}}
+  {
+    \infer{
+      \vdash
+      \cLet~x_1=\csp{3}~\cIn \\
+      \cResetz ~~\cLet~x_2=\csp{5}~\cIn \\
+      \cShiftz~k_2~\to~ \cShiftz~k_1~\to~ \cLet~y=t~\cIn \\
+      \cThrow~k_1~(\cThrow~k_2~(x_1~\cPlus~x_2~\cPlus~y)) ~:~ \codeT{int}{\gamma}}
+    {
+      \vdash \csp{3} ~:~ \codeT{int}{\gamma}
+      &
+      \infer{
+        \gamma_1 \ord \gamma,~
+        x_1 ~:~ \codeT{int}{\gamma_1}
+        \vdash
+        \cResetz ~~\cLet~x_2=\csp{5}~\cIn \\
+        \cShiftz~k_2~\to~ \cShiftz~k_1~\to~ \cLet~y=t~\cIn \\
+        \cThrow~k_1~(\cThrow~k_2~(x_1~\cPlus~x_2~\cPlus~y)) ~:~ \codeT{int}{\gamma_1}}
+      {
+        \infer{
+          \gamma_1 \ord \gamma,~
+          x_1 ~:~ \codeT{int}{\gamma_1}
+          \vdash
+
+        }
+      }
+
+    }
+  }
+\]
 
 
 \section{まとめと今後}

@@ -1,0 +1,309 @@
+\documentclass[a4j]{jsarticle}
+\renewcommand{\kanjifamilydefault}{\gtdefault} % 日本語書体をゴシック体に
+\renewcommand{\familydefault}{\sfdefault} % 欧文書体をHelveticaに
+\title{Coroutineによる限定継続のシミュレーション}
+\date{\today}
+\author{薄井千春}
+
+\usepackage{ascmac}	% required for `\itembox' (yatex added)
+\usepackage{amssymb}
+\usepackage{prooftree}
+\usepackage{stmaryrd}
+\usepackage[top=1cm, bottom=1cm, left=1cm, right=1cm, includefoot]{geometry}
+
+\newcommand{\ceq}{\textit{Contextual equivalence}}
+\newcommand{\nfb}{\textit{normal form bisimilarity}}
+\newcommand{\bis}{\textit{bisimilarities}}
+\newcommand{\ab}{\textit{applicative bisimilarity}}
+\newcommand{\bab}{\textit{big step applicative bisimilarity}}
+\newcommand{\lml}{\(\lambda \mu\)-calculus}
+\newcommand{\dv}{\mathbin{/}}
+\newcommand{\sbstnm}[2]{\langle #1 \dv #2 \rangle}
+\newcommand{\srl}[1]{\llbracket #1 \rrbracket} % shift /reset to linear
+
+\newcommand{\sbst}[2]{#1 \left\{ #2 \right\}}
+\newcommand{\ra}{\rightarrow}
+\newcommand{\app}[2]{\left(#1 \, #2\right)} % lambda application
+\newcommand{\blambda}{\boldsymbol{\lambda}}
+
+\newcommand{\calt}{\mathcal{T}}
+\newcommand{\cald}{\mathcal{D}}
+\newcommand{\calr}{\mathcal{R}}
+\newcommand{\calw}{\mathcal{W}}
+\newcommand{\calk}{\mathcal{K}}
+\newcommand{\calq}{\mathcal{Q}}
+
+\newcommand{\interp}{\mathbf{interp}}
+\newcommand{\interpp}[2]{\mathbf{interp}~#1~#2}
+\newcommand{\resume}[2]{\mathbf{resume}~ #1 ~#2}
+\newcommand{\shift}[2]{\mathbf{shift_0}~ #1\ra ~#2}
+\newcommand{\create}[1]{\mathbf{create}\left(#1\right)}
+\newcommand{\letin}[3]{\mathbf{let}~#1~=~#2~\mathbf{in}~#3}
+\newcommand{\yield}[1]{\mathbf{yield}\left(#1\right)}
+\newcommand{\fun}[2]{\lambda #1. #2}
+\newcommand{\throw}[2]{\mathbf{throw}~#1~#2}
+\newcommand{\defeq}{\overset{\text{def}}=}
+\newcommand{\reset}{\mathbf{reset_0}}
+\newcommand{\Normal}{\mathbf{Normal}}
+\newcommand{\Yield}{\mathbf{Yield}}
+\usepackage{amsmath}	% required for `\align*' (yatex added)
+\usepackage{mathtools}
+\begin{document}
+\maketitle
+\section{変換規則と簡約例}
+\cite{Materzok_Subtyping_2011}
+\cite{sugiura}
+\cite{Anton2010}のFull Asymmetric Coroutine（FAC）の体系をもとに、以下のように項と評価文脈を拡張する。この体系を便宜上FAC+（プラス）と呼ぶことにする。
+\begin{align*}
+  e &\coloneqq \cdots ~|~ \interpp{e}{e} ~|~ \Normal ~e ~|~ \Yield~e\\
+  v &\coloneqq \cdots ~|~ \Normal~e ~|~ \Yield~e \\
+  C &\coloneqq \cdots ~|~ \interpp{C}{v} ~|~ \interpp{e}{C} ~|~ \Normal ~C ~|~ \Yield ~C \\
+\end{align*}
+
+そして次の簡約規則を追加する（ちなみにDはラベルを含むような継続）。
+\begin{align*}
+  \langle D[C[\interpp{(\Normal(v))}{l}]], \theta, l_0 \rangle &\rightarrow \langle D[C[v]], \theta, l_0 \rangle \\
+  \langle D[C[\interpp{(\Yield(v))}{l}]], \theta, l_0 \rangle &\rightarrow \langle D[C[v~l]], \theta, l_0 \rangle
+\end{align*}
+
+\(shift_0 / reset_0\)の体系からFAC+への変換を次のように定義する。普通のラムダ項に関しては恒等であるので省略する。
+\begin{align*}
+  \reset ~ e &\defeq \letin{l}
+               {\create{ \fun{x}{\Normal(e)} } }
+               {\interpp{\left(\resume{l}{())}\right)}
+               {l}
+               } \\
+  \shift{k}{e} &\defeq \yield{\Yield(\fun{k}{e})} \\
+  \throw{k}{e} &\defeq \interpp{(\resume{k}{e})}{k} \\
+\end{align*}
+
+\(shift_0 / reset_0\)での主要な簡約が変換によってFAC+でシミュレーションされることを次のように示す。
+\begin{align*}
+  & \langle E_1[\reset (E_2[\shift{k}{e}])], \theta, l_0\rangle \\
+  =& \langle E_1[\letin{l}
+     {\create{\lambda x.\Normal(E_2[\shift{k}{e}])}}
+     {\interpp{(\resume{l}{()})}{l}}],
+     \theta,
+     l_0\rangle \\
+  \ra& \langle E_1[\letin{l}
+       {l_1}
+       {\interpp{(\resume{l}{()})}{l}}],
+       \theta[l_1\ra \lambda x.\Normal(E_2[\shift{k}{e}])],
+       l_0\rangle \\
+  \ra& \langle E_1[\interpp{(\resume{l_1}{()})}{l_1}],
+       \theta[l_1\ra \lambda x.\Normal(E_2[\shift{k}{e}])],
+       l_0\rangle \\
+  \ra& \langle E_1[\interpp{(l_0: (\lambda x.\Normal(E_2[\shift{k}{e}])) ~l_1)  }{l_1}],
+       \theta[l_1\ra nil],
+       l_1\rangle \\
+  \ra& \langle E_1[\interpp{(l_0: \Normal(E_2[\shift{k}{e}]))}{l_1}],
+       \theta[l_1\ra nil],
+       l_1\rangle \\
+  =&   \langle E_1[\interpp{(l_0: \Normal(E_2[\yield{\Yield(\fun{k}{e})}]))}{l_1}],
+     \theta[l_1\ra nil],
+     l_1\rangle \\
+  \ra & \langle E_1[\interpp{(\Yield(\fun{k}{e}))}{l_1}],
+        \theta[l_1 \ra \lambda x.\Normal(E_2[x])],
+        l_0\rangle \\
+  \ra & \langle E_1[(\fun{k}{e})~ l_1, \theta[l_1\ra \lambda x.\Normal(E_2[x])], l_0\rangle\\
+  \ra & \langle E_1[\sbst{e}{k:=l_1}, \theta[l_1\ra \lambda x.\Normal(E_2[x])], l_0\rangle\\
+  \\
+  &\langle E_1[\throw{l_1}{v}], \theta[l_1\ra \lambda x.\Normal(E_2[x])], l_0\rangle \\
+  =& \langle E_1[\interpp{(\resume{l_1}{v})}
+     {l_1}
+     ],
+     \theta[l_1\ra \lambda x.\Normal(E_2[x])],
+     l_0\rangle \\
+  \ra & \langle E_1[\interpp{(l_0 : \Normal(E_2[v]))}
+        {l_1}
+        ],
+        \theta[l_1\ra nil],
+        l_1\rangle \\
+  \ra & \langle E_1[\interpp{(\Normal(E_2[v])}{l_1}], \theta[l_1\ra nil], l_1\rangle \\
+  \ra & \langle E_1[E_2[v]], \theta[l_1\ra nil], l_1\rangle \\
+  \\
+  &\langle E_1[\reset v], \theta, l_0\rangle \\
+  =& \langle E_1[\letin{l}
+     {\create{(\lambda x.\Normal(v))}}
+     {\interpp{(\resume{l}{()})}{l} }
+     ],
+     \theta, l_0\rangle \\
+  \ra& \langle E_1[\letin{l}
+       {l_1}
+       {\interpp{(\resume{l}{()})}{l} }
+       ],
+       \theta[l_1\ra \lambda x.\Normal(v)], l_0\rangle \\
+  \ra & \langle E_1[\interpp{(\resume{l_1}{()})}{l_1}], \theta[l_1\ra \lambda x.\Normal(v)], l_0\rangle \\
+  \ra & \langle E_1[\interpp{(l_0: (\lambda x.\Normal(v)) ())}{l_1}], \theta[l_1\ra nil], l_1\rangle \\
+  \ra & \langle E_1[\interpp{(l_0: \Normal(v))}{l_1}], \theta[l_1\ra nil], l_1\rangle \\
+  \ra & \langle E_1[\interpp{(\Normal(v))}{l_1}], \theta[l_1\ra nil], l_0\rangle \\
+  \ra & \langle E_1[v], \theta[l_1\ra nil], l_0\rangle \\
+\end{align*}
+
+
+\section{より簡略化された変換}
+\begin{align*}
+  \reset ~ e &\defeq \letin{l}
+               {\create{ \fun{x}{\app{(\fun{x}{\fun{k}{x}})}}{e} } }
+               {\left(\resume{l}{())}\right)
+               ~l
+               } \\
+  \shift{k}{e} &\defeq \yield{\fun{k}{e}} \\
+  \throw{k}{e} &\defeq (\resume{k}{e})~k \\
+\end{align*}
+
+\begin{align*}
+  & \langle E_1[\reset (E_2[\shift{k}{e}])], \theta, l_0\rangle \\
+  =& \langle E_1[\letin{l}
+     {\create{ \fun{x}{\app{(\fun{x}{\fun{k}{x}})}}{E_2[\shift{k}{e}]} } }
+     {(\resume{l}{()})~l}],
+     \theta,
+     l_0\rangle \\
+  \ra& \langle E_1[\letin{l}
+       {l_1}
+       {(\resume{l}{()})~l}],
+       \theta[l_1\ra \lambda x.\app{(\fun{x}{\fun{k}{x}})}{E_2[\shift{k}{e}]}],
+       l_0\rangle \\
+  \ra& \langle E_1[(\resume{l_1}{()})~l_1],
+       \theta[l_1\ra \lambda x.\app{(\fun{x}{\fun{k}{x}})}{E_2[\shift{k}{e}]}],
+       l_0\rangle \\
+  \ra& \langle E_1[(l_0: (\lambda x.\app{(\fun{x}{\fun{k}{x}})}{E_2[\shift{k}{e}]} ~()) ~l_1],
+       \theta[l_1\ra nil],
+       l_1\rangle \\
+  \ra& \langle E_1[(l_0: \app{(\fun{x}{\fun{k}{x}})}{E_2[\shift{k}{e}]})~l_1],
+       \theta[l_1\ra nil],
+       l_1\rangle \\
+  =&   \langle E_1[(l_0: \app{(\fun{x}{\fun{k}{x}})}{E_2[\yield{\fun{k}{e}}]})~l_1],
+     \theta[l_1\ra nil],
+     l_1\rangle \\
+  \ra & \langle E_1[(\fun{k}{e})~l_1],
+        \theta[l_1 \ra \lambda x.((\fun{x}{\fun{k}{x}}) ~ E_2[x])],
+        l_0\rangle \\
+  \ra & \langle E_1[\sbst{e}{k:=l_1}, \theta[l_1\ra \lambda x.((\fun{x}{\fun{k}{x})}~E_2[x])], l_0\rangle\\
+  \\
+  &\langle E_1[\throw{l_1}{v}], \theta[l_1\ra \lambda x.((\fun{x}{\fun{k}{x}})~E_2[x])], l_0\rangle \\
+  =& \langle E_1[(\resume{l_1}{v})
+     ~l_1
+     ],
+     \theta[l_1\ra \lambda x.((\fun{x}{\fun{k}{x}})~E_2[x])],
+     l_0\rangle \\
+  \ra & \langle E_1[(l_0 : ((\lambda x.((\fun{x}{\fun{k}{x}})~E_2[x]))~v)
+        ~l_1
+        ],
+        \theta[l_1\ra nil],
+        l_1\rangle \\
+  \ra & \langle E_1[(l_0 : (\fun{x}{\fun{k}{x}})~E_2[v])
+        ~l_1
+        ],
+        \theta[l_1\ra nil],
+        l_1\rangle \\
+  \ra & \langle E_1[(\fun{k}{E_2[v]})~l_1], \theta[l_1\ra nil], l_0\rangle \\
+  \ra & \langle E_1[E_2[v]], \theta[l_1\ra nil], l_0\rangle \\
+  \\
+  &\langle E_1[\reset v], \theta, l_0\rangle \\
+  =& \langle E_1[\letin{l}
+     {\create{(\lambda x. \app{(\fun{x}{\fun{k}{x}})}{v})}}
+     {(\resume{l}{()})~l }
+     ],
+     \theta, l_0\rangle \\
+  \ra& \langle E_1[\letin{l}
+       {l_1}
+       {(\resume{l}{()})~l }
+       ],
+       \theta[l_1\ra \lambda x.\app{(\fun{x}{\fun{k}{x}})}{v}], l_0\rangle \\
+  \ra & \langle E_1[(\resume{l_1}{()})~l_1], \theta[l_1\ra \lambda x.\app{(\fun{x}{\fun{k}{x}})}{v}], l_0\rangle \\
+  \ra & \langle E_1[(l_0: (\lambda x.\app{(\fun{x}{\fun{k}{x}})}{v}) ())~l_1], \theta[l_1\ra nil], l_1\rangle \\
+  \ra & \langle E_1[(l_0: (\fun{k}{v})~l_1], \theta[l_1\ra nil], l_1\rangle \\
+  \ra & \langle E_1[v], \theta[l_1\ra nil], l_0\rangle \\
+\end{align*}
+
+
+\section{shift0/reset0の型システム}
+\begin{alignat*}{2}
+  &type & \tau & \coloneqq \alpha ~|~ \tau \ra \tau; \sigma\\
+  &annotation\,type & \quad \sigma &\coloneqq \epsilon ~|~ \tau \sigma
+\end{alignat*}
+\begin{align*}
+  \Gamma, x:\tau \vdash x : \tau \sigma
+  \quad
+  \begin{prooftree}
+    \Gamma , x:\tau_1 \vdash e : \tau_2 \sigma_1
+    \justifies
+    \Gamma \vdash \lambda x.e : (\tau_1 \ra \tau_2; \sigma_1) \sigma_2
+  \end{prooftree}
+  \\
+  \begin{prooftree}
+    \Gamma \vdash f : (\tau_1 \ra \tau_2 ; \sigma) \sigma \quad
+    \Gamma \vdash e : \tau_1 \sigma
+    \justifies
+    \Gamma \vdash f e : \tau_2 ; \sigma
+  \end{prooftree}
+  \quad
+  \begin{prooftree}
+    \Gamma, f : (\tau_1 \ra \tau_2 ; \sigma)  \vdash e : \tau_2 \sigma
+    \justifies
+    \Gamma \vdash \mathbf{shift_0}f \ra e : \tau_1 ; \sigma
+  \end{prooftree}
+  \\
+  \begin{prooftree}
+    \Gamma \vdash e : \tau \tau \sigma
+    \justifies
+    \Gamma \vdash \reset e : \tau \sigma
+  \end{prooftree}
+  \quad
+  \begin{prooftree}
+    \Gamma, f : (\tau_1 \ra \tau_2 ; \sigma)  \vdash e : \tau_1 \sigma
+    \justifies
+    \Gamma, f : (\tau_1 \ra \tau_2 ; \sigma)  \vdash \throw{f}{e} : \tau_2 \sigma
+  \end{prooftree}
+\end{align*}
+
+\section{Asynchronus Full Asymmetric Coroutine(Goroutine?)考えてみた}
+直列にコルーチンを実行した場合と同じ評価結果となること（透過的）を目指す。
+
+ラベルが通信チャネルに見える。
+「限定継続機構とfutureを持つ計算体系の透過的意味論」がshift/reset+futureだとすると、これはshift0/reset0+futureに対応する？
+resetは一つのスタックの内部での区切りを導入するもので、coroutineの起動もそれに似たような動作をする。「非同期的なreset」は、スタックを新たに割り当てるような動作？
+
+ラベル付き項\(l:e\)は現れない。代わりに、並列簡約を表す項と簡約の状態を表す構文要素stateを追加する。
+評価文脈CはK.Anton及びP.Thiemannのものと同じ。Fは任意の継続（評価文脈とは限らない）。
+
+\begin{alignat*}{2}
+  &state &\quad S &\coloneqq \langle e, \theta \rangle \\
+  &term  & e &\coloneqq \cdots ~|~ l \leftarrow S \\
+  &contexts & D & \coloneqq \square ~|~ C[l \leftarrow D]
+\end{alignat*}
+ラムダ項についての評価規則は省略する。
+\begin{align*}
+  \langle C[\create{v}],\theta \rangle
+  &\ra \langle  C[l], \theta[l \mapsto v] \rangle
+  \\
+  \langle C[\resume{l}{v}], \theta \rangle
+  &\ra \langle C[l\leftarrow\langle \theta (l)~v, \theta[l \mapsto nil] \rangle], \emptyset \rangle
+  \\
+  \langle C[l \leftarrow \langle C_0[\yield{v}], \theta_0 \rangle], \theta \rangle
+  &\ra \langle C[v],\theta_0 \cup \theta[l \mapsto \lambda x.C_0[x]] \rangle  \quad \mathbf{if} ~ dom(\theta) \cap dom(\theta_0) = \emptyset
+  \\
+  \langle C[l \leftarrow \langle v, \theta_0 \rangle], \theta \rangle
+  &\ra \langle C[v],\theta_0 \cup \theta \rangle \quad \mathbf{if} ~ dom(\theta) \cap dom(\theta_0) = \emptyset
+  \\
+  \langle F[l \leftarrow S], \theta \rangle
+  &\ra \langle F[l \leftarrow S'], \theta \rangle \quad \mathbf{if} ~ S \rightarrow S'
+  \\
+  \langle e, \theta[x \mapsto V] \rangle
+  &\ra \langle e, \theta[x \mapsto V']  \quad \mathbf{if} ~ V \rightarrow V'
+\end{align*}
+
+% 実質的に環境がロックの役割を果たしている。これは、表面上の話か？　ロックアルゴリズムとの関連は？
+
+
+% ただ、resumeの簡約規則でright to leftのままだと、\(C[\resume{l}{v}]\)となり、並列実行を表せないので、この体系ではresumeの簡約はleft to right\(C[\resume{l}{e}]\)にしなければならない？　そうするならばラムダ項の部分もそうするほうが整頓されていてよいと思う（なぜ元の体系ではright to leftなんだったか……？）。そもそも、そんなことをしなくても並列実行が表せているか。
+\bibliographystyle{junsrt}
+\bibliography{/Users/yorisilo/Dropbox/tsukuba/lab/study/bib/readcube_export.bib,/Users/yorisilo/Dropbox/tsukuba/lab/study/bib/bibfile.bib}
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: japanese-latex
+%%% TeX-master: t
+%%% End:
