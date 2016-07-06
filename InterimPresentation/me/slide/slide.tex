@@ -188,11 +188,26 @@
   \end{itemize}
 \end{frame}
 
-% \subsection{コード生成の例}
-% \begin{frame}
-%   \frametitle{power関数のコード化}
+\subsection{コード生成の例}
+\begin{frame}
+  \frametitle{power関数のコード化}
+  \begin{align*}
+    \text{power} ~x~ ~n~ &~=~ x &\text{if} ~~n = 1 \\
+                         &~~~\phantom{=}~ x * \text{power}(x, n-1) &\text{if} ~~n > 1
+  \end{align*}
 
-% \end{frame}
+  \pause
+  8に特化したコードの生成を行う
+  \begin{align*}
+    \text{gen\_power} ~x~ ~8~ =~ ~x~ * ~x~ * ~x~ * ~x~ * ~x~ * ~x~ * ~x~ * ~x~
+  \end{align*}
+  \pause
+  $\text{gen\_power} ~x~ ~8~$ は$\text{power} ~x~ ~8~$ より高速
+  \begin{itemize}
+  \item 関数呼び出しがない
+  \item 条件式がない
+  \end{itemize}
+\end{frame}
 
 \subsection{段階的計算の課題}
 
