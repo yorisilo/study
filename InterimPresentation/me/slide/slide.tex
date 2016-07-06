@@ -600,11 +600,11 @@
     \begin{columns}
       \begin{column}{0.5\textwidth}%% [横幅] 0.2\textwidth = ページ幅の 20 %
         \begin{align*}
-          &(\cResetz ~\cLet~ y = e_1 ~\cIn~ \red{...} \\
+          &(\cResetz ~\cLet~ y = \red{...} ~\cIn~ \red{...} \\
           &(\cShiftz ~k \to ~\cLet~ x = \red{...} ~\cIn~ \red{...}\\
           &(\cThrow ~k ~\red{...}~)))\\
           &=> \\
-          &(\cResetz ~\cLet~ y = e_1 ~\cIn~ \red{\gamma_0} \\
+          &(\cResetz ~\cLet~ y = \red{\gamma_0} ~\cIn~ \red{\gamma_1} \\
           &(\cShiftz ~\magenta{k} \to ~\cLet~ x = \red{\gamma_1} ~\cIn~ \red{\gamma_2} \\
           &(\cThrow ~\blue{k} ~\red{\gamma_3}~)))
         \end{align*}
