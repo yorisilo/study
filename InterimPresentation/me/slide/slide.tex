@@ -204,15 +204,27 @@
   \item パラメータに応じて，非常に多数のコードが生成される
     % \item 構文的，意味的に正しくないプログラムを生成しやすい
   \item 生成したコードのデバッグが容易ではない
+  \item [⇒]コード生成の前に安全性を保証したい
   \end{itemize}
 
   \uncover<2->{従来研究}
   \begin{itemize}
   \item<2-> コード生成プログラムが，安全なコードのみを生成する事を保証
-  \item<2-> 安全なコード: 構文，型，変数束縛が正しいプログラム
     % \item<2-> let挿入等を実現する\alert{計算エフェクトを含む場合の安全性保証の研究は未整備}
-  \item<2-> \alert{let挿入}等を実現する\alert{計算エフェクトを含む場合の安全性保証は研究途上}
+  \item<3-> 安全なコード: 構文，型，変数束縛が正しいプログラム
+  \item<4-> \alert{let挿入}等を実現する\alert{計算エフェクトを含む場合の安全性保証は研究途上}
   \end{itemize}
+\end{frame}
+
+\subsection{安全性の静的保証}
+
+\begin{frame}[fragile]
+  \frametitle{安全性の静的保証}
+  \begin{exampleblock}{安全性の静的保証}
+    動的に生成されたコードのデバッグは困難\\
+    ⇒ コード生成の前に安全性を保証したい
+  \end{exampleblock}
+
 \end{frame}
 
 \subsection{限定継続}
@@ -308,7 +320,7 @@
     & \red{\cResetz} ~~\cLet~x_1=\csp{3}~\cIn \\
     & \blue{\cResetz} ~~\cLet~x_2=\csp{5}~\cIn \\
     & \blue{\cShiftz}~\blue{k_2}~\to~ \red{\cShiftz}~\red{k_1}~\to~ \magenta{\cLet~y=t~\cIn} \\
-    & \cThrow~\red{k_1}~(\cThrow~\blue{k_2}~(x_1~\cPlus~x_2~\cPlus~y))
+    & \red{k_1}~(~\blue{k_2}~(x_1~\cPlus~x_2~\cPlus~y))
   \end{align*}
 \end{frame}
 
@@ -319,7 +331,7 @@
       & \red{\cResetz} ~~\cLet~x_1=\csp{3}~\cIn \\
       & \blue{\cResetz} ~~\cLet~x_2=\csp{5}~\cIn \\
       & \blue{\cShiftz}~\blue{k_2}~\to~ \red{\cShiftz}~\red{k_1}~\to~ \magenta{\cLet~y=t~\cIn} \\
-      & \cThrow~\red{k_1}~(\cThrow~\blue{k_2}~(x_1~\cPlus~x_2~\cPlus~y))
+      & \red{k_1}~(~\blue{k_2}~(x_1~\cPlus~x_2~\cPlus~y))
     \end{align*}
   \end{onlyenv}
 
@@ -334,7 +346,7 @@
 \end{frame}
 
 \begin{frame}
-  \frametitle{多段階let挿入}
+  \frametitle{多段階let挿入の結果}
   \begin{align*}
     & \cLet~x_1=\csp{3}~\cIn \\
     & \cLet~x_2=\csp{5}~\cIn \\
@@ -352,16 +364,6 @@
     & \cLet~x_2=\csp{5}~\cIn \\
     & (x_1~\cPlus~x_2~\cPlus~y)
   \end{align*}
-\end{frame}
-\subsection{安全性の静的保証}
-
-\begin{frame}[fragile]
-  \frametitle{安全性の静的保証}
-  \begin{exampleblock}{安全性の静的保証}
-    動的に生成されたコードのデバッグは困難\\
-    ⇒ コード生成の前に安全性を保証したい
-  \end{exampleblock}
-
 \end{frame}
 
 \section{研究の目的}
@@ -465,6 +467,25 @@
 \end{frame}
 
 \subsection{多段階let 挿入}
+\begin{frame}[fragile]
+  \frametitle{多段階let 挿入}
+  \begin{align*}
+    & \cLet~x_1=\csp{3}~\cIn \\
+    & \cLet~x_2=\csp{5}~\cIn \\
+    & \magenta{\cLet~y=t~\cIn} \\
+    & (x_1~\cPlus~x_2~\cPlus~y)
+  \end{align*}
+
+  \pause
+
+  \begin{align*}
+    & \red{\cResetz} ~~\cLet~x_1=\csp{3}~\cIn \\
+    & \blue{\cResetz} ~~\cLet~x_2=\csp{5}~\cIn \\
+    & \blue{\cShiftz}~\blue{k_2}~\to~ \red{\cShiftz}~\red{k_1}~\to~ \magenta{\cLet~y=t~\cIn} \\
+    & \cThrow~\red{k_1}~(\cThrow~\blue{k_2}~(x_1~\cPlus~x_2~\cPlus~y))
+  \end{align*}
+\end{frame}
+
 \begin{frame}
   \frametitle{shift0/reset0 による多段階let挿入}
     \begin{onlyenv}<1>
@@ -503,26 +524,32 @@
   \begin{onlyenv}<4>
     \begin{align*}
       & \magenta{\cLet~y=t~\cIn} \\
-      & \red{\cResetz} ~~\cLet~x_1=\csp{3}~\cIn \\
-      & \blue{\cResetz} ~~\cLet~x_2=\csp{5}~\cIn \\
+      & \cLet~x_1=\csp{3}~\cIn \\
+      & \cLet~x_2=\csp{5}~\cIn \\
       & (x_1~\cPlus~x_2~\cPlus~y)
     \end{align*}
   \end{onlyenv}
+\end{frame}
 
-  \begin{onlyenv}<5>
-    \begin{align*}
-      & \red{\cResetz} ~~\cLet~x_1=\csp{3}~\cIn \\
-      & \blue{\cResetz} ~~\cLet~x_2=\csp{5}~\cIn \\
-      & \blue{\cShiftz}~\blue{k_2}~\to~ \red{\cShiftz}~\red{k_1}~\to~ \magenta{\cLet~y=t~\cIn} \\
-      & \phantom{=}~~ \cThrow~\red{k_1}~(\cThrow~\blue{k_2}~(x_1~\cPlus~x_2~\cPlus~y))
-    \end{align*}
-    \begin{align*}
-      & \red{\cResetz} ~~\cLet~x_1=\csp{3}~\cIn \\
-      & \blue{\cResetz} ~~\cLet~x_2=\csp{5}~\cIn \\
-      & \blue{\cShiftz}~\blue{k_2}~\to~ \red{\cShiftz}~\red{k_1}~\to~ \magenta{\cLet~y=t~\cIn} \\
-      & \phantom{=}~~ \cThrow~\red{k_1}~(\cThrow~\blue{k_2}~(x_1~\cPlus~x_2~\cPlus~y))
-    \end{align*}
-  \end{onlyenv}
+\begin{frame}
+  \frametitle{shift0/reset0による多段階let挿入の結果}
+  \begin{align*}
+    & \cLet~x_1=\csp{3}~\cIn \\
+    & \cLet~x_2=\csp{5}~\cIn \\
+    & \magenta{\cLet~y=t~\cIn} \\
+    & (x_1~\cPlus~x_2~\cPlus~y)
+  \end{align*}
+  \pause
+  \begin{align*}
+    & \Rightarrow (\text{shift0/reset0 を付与})\\
+  \end{align*}
+  \pause
+  \begin{align*}
+    & \magenta{\cLet~y=t~\cIn} \\
+    & \cLet~x_1=\csp{3}~\cIn \\
+    & \cLet~x_2=\csp{5}~\cIn \\
+    & (x_1~\cPlus~x_2~\cPlus~y)
+  \end{align*}
 \end{frame}
 
 \subsection{型システム}
