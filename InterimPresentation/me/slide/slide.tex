@@ -295,30 +295,64 @@
 
 \begin{frame}[fragile]
   \frametitle{多段階let 挿入}
+  \begin{align*}
+    & \cLet~x_1=\csp{3}~\cIn \\
+    & \cLet~x_2=\csp{5}~\cIn \\
+    & \magenta{\cLet~y=t~\cIn} \\
+    & (x_1~\cPlus~x_2~\cPlus~y)
+  \end{align*}
 
+  \pause
+
+  \begin{align*}
+    & \red{\cResetz} ~~\cLet~x_1=\csp{3}~\cIn \\
+    & \blue{\cResetz} ~~\cLet~x_2=\csp{5}~\cIn \\
+    & \blue{\cShiftz}~\blue{k_2}~\to~ \red{\cShiftz}~\red{k_1}~\to~ \magenta{\cLet~y=t~\cIn} \\
+    & \cThrow~\red{k_1}~(\cThrow~\blue{k_2}~(x_1~\cPlus~x_2~\cPlus~y))
+  \end{align*}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{多段階let 挿入}
   \begin{onlyenv}<1>
-    \begin{exampleblock}{多段階let挿入}
-      \begin{align*}
-        e_2 & = \red{\cResetz} ~~\cLet~x_1=\csp{3}~\cIn \\
-            & \phantom{=}~~ \blue{\cResetz} ~~\cLet~x_2=\csp{5}~\cIn \\
-            & \phantom{=}~~ \blue{\cShiftz}~k_2~\to~ \red{\cShiftz}~k_1~\to~ \magenta{\cLet~y=t~\cIn} \\
-            & \phantom{=}~~ \cThrow~k_1~(\cThrow~k_2~(x_1~\cPlus~x_2~\cPlus~y))
-      \end{align*}
-    \end{exampleblock}
+    \begin{align*}
+      & \red{\cResetz} ~~\cLet~x_1=\csp{3}~\cIn \\
+      & \blue{\cResetz} ~~\cLet~x_2=\csp{5}~\cIn \\
+      & \blue{\cShiftz}~\blue{k_2}~\to~ \red{\cShiftz}~\red{k_1}~\to~ \magenta{\cLet~y=t~\cIn} \\
+      & \cThrow~\red{k_1}~(\cThrow~\blue{k_2}~(x_1~\cPlus~x_2~\cPlus~y))
+    \end{align*}
   \end{onlyenv}
 
   \begin{onlyenv}<2>
-    \begin{exampleblock}{多段階let挿入}
-      \begin{align*}
-        e_2 & \too \magenta{\cLet~y=t~\cIn} \\
-            & \phantom{\too}~~ \blue{\cResetz} ~~\cLet~x_2=\csp{5}~\cIn \\
-            & \phantom{\too}~~ \red{\cResetz} ~~\cLet~x_1=\csp{3}~\cIn \\
-            & \phantom{\too}~~ (x_1~\cPlus~x_2~\cPlus~y)
-      \end{align*}
-    \end{exampleblock}
+    \begin{align*}
+      & \magenta{\cLet~y=t~\cIn} \\
+      & \cLet~x_1=\csp{3}~\cIn \\
+      & \cLet~x_2=\csp{5}~\cIn \\
+      & (x_1~\cPlus~x_2~\cPlus~y)
+    \end{align*}
   \end{onlyenv}
 \end{frame}
 
+\begin{frame}
+  \frametitle{多段階let挿入}
+  \begin{align*}
+    & \cLet~x_1=\csp{3}~\cIn \\
+    & \cLet~x_2=\csp{5}~\cIn \\
+    & \magenta{\cLet~y=t~\cIn} \\
+    & (x_1~\cPlus~x_2~\cPlus~y)
+  \end{align*}
+  \pause
+  \begin{align*}
+    & \Rightarrow (\text{shift0/reset0 を付与})\\
+  \end{align*}
+  \pause
+  \begin{align*}
+    & \magenta{\cLet~y=t~\cIn} \\
+    & \cLet~x_1=\csp{3}~\cIn \\
+    & \cLet~x_2=\csp{5}~\cIn \\
+    & (x_1~\cPlus~x_2~\cPlus~y)
+  \end{align*}
+\end{frame}
 \subsection{安全性の静的保証}
 
 \begin{frame}[fragile]
@@ -428,6 +462,67 @@
       \includegraphics[clip,height=3.2cm]{./img/code_s0r0.png}
     \end{column}
   \end{columns}
+\end{frame}
+
+\subsection{多段階let 挿入}
+\begin{frame}
+  \frametitle{shift0/reset0 による多段階let挿入}
+    \begin{onlyenv}<1>
+    \begin{align*}
+      & \red{\cResetz} ~~\cLet~x_1=\csp{3}~\cIn \\
+      & \blue{\cResetz} ~~\cLet~x_2=\csp{5}~\cIn \\
+      & \blue{\cShiftz}~\blue{k_2}~\to~ \red{\cShiftz}~\red{k_1}~\to~ \magenta{\cLet~y=t~\cIn} \\
+      & \phantom{=}~~ \cThrow~\red{k_1}~(\cThrow~\blue{k_2}~(x_1~\cPlus~x_2~\cPlus~y))
+    \end{align*}
+  \end{onlyenv}
+
+  \begin{onlyenv}<2>
+    \begin{align*}
+      & \red{\cResetz} ~~\cLet~x_1=\csp{3}~\cIn \\
+      & \blue{\cResetz} ~~\cLet~x_2=\csp{5}~\cIn \\
+      & \blue{\cShiftz}~\blue{k_2}~\to~ \red{\cShiftz}~\red{k_1}~\to~ \magenta{\cLet~y=t~\cIn} \\
+      & \cThrow~\red{k_1}~(\cThrow~\blue{k_2}~(x_1~\cPlus~x_2~\cPlus~y))
+    \end{align*}
+    \begin{align*}
+      \red{k_1} &= \cLet~x_1=\csp{3}~\cIn  \\
+      \blue{k_2} &= \cLet~x_2=\csp{5}~\cIn  \\
+    \end{align*}
+  \end{onlyenv}
+
+  \begin{onlyenv}<3>
+    \begin{align*}
+      & \magenta{\cLet~y=t~\cIn} \\
+      & \cThrow~\red{k_1}~(\cThrow~\blue{k_2}~(x_1~\cPlus~x_2~\cPlus~y))
+    \end{align*}
+    \begin{align*}
+      \red{k_1} &= \cLet~x_1=\csp{3}~\cIn  \\
+      \blue{k_2} &= \cLet~x_2=\csp{5}~\cIn  \\
+    \end{align*}
+  \end{onlyenv}
+
+  \begin{onlyenv}<4>
+    \begin{align*}
+      & \magenta{\cLet~y=t~\cIn} \\
+      & \red{\cResetz} ~~\cLet~x_1=\csp{3}~\cIn \\
+      & \blue{\cResetz} ~~\cLet~x_2=\csp{5}~\cIn \\
+      & (x_1~\cPlus~x_2~\cPlus~y)
+    \end{align*}
+  \end{onlyenv}
+
+  \begin{onlyenv}<5>
+    \begin{align*}
+      & \red{\cResetz} ~~\cLet~x_1=\csp{3}~\cIn \\
+      & \blue{\cResetz} ~~\cLet~x_2=\csp{5}~\cIn \\
+      & \blue{\cShiftz}~\blue{k_2}~\to~ \red{\cShiftz}~\red{k_1}~\to~ \magenta{\cLet~y=t~\cIn} \\
+      & \phantom{=}~~ \cThrow~\red{k_1}~(\cThrow~\blue{k_2}~(x_1~\cPlus~x_2~\cPlus~y))
+    \end{align*}
+    \begin{align*}
+      & \red{\cResetz} ~~\cLet~x_1=\csp{3}~\cIn \\
+      & \blue{\cResetz} ~~\cLet~x_2=\csp{5}~\cIn \\
+      & \blue{\cShiftz}~\blue{k_2}~\to~ \red{\cShiftz}~\red{k_1}~\to~ \magenta{\cLet~y=t~\cIn} \\
+      & \phantom{=}~~ \cThrow~\red{k_1}~(\cThrow~\blue{k_2}~(x_1~\cPlus~x_2~\cPlus~y))
+    \end{align*}
+  \end{onlyenv}
 \end{frame}
 
 \subsection{型システム}
@@ -587,8 +682,8 @@
 
   \begin{align*}
     e_2 & \too \red{\cLet~y=t~\cIn} \\
-        & \phantom{\too}~~ \cResetz ~~\cLet~x_2=\csp{5}~\cIn \\
         & \phantom{\too}~~ \cResetz ~~\cLet~x_1=\csp{3}~\cIn \\
+        & \phantom{\too}~~ \cResetz ~~\cLet~x_2=\csp{5}~\cIn \\
         & \phantom{\too}~~ (x_1~\cPlus~x_2~\cPlus~y)
   \end{align*}
 
