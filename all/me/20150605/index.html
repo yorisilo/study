@@ -1,22 +1,22 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html>
   <head>
     <title>全体ゼミ 20150605</title>
     <meta charset="utf-8">
     <style>
-      @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
-      @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
-      @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+     @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+     @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
+     @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
 
-      body { font-family: 'Droid Serif'; }
-      h1, h2, h3 {
-      font-family: 'Yanone Kaffeesatz';
-      font-weight: normal;
-      }
-      .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
-      .remark-code-line {
-        word-wrap: break-word;
-      }
+     body { font-family: 'Droid Serif'; }
+     h1, h2, h3 {
+       font-family: 'Yanone Kaffeesatz';
+       font-weight: normal;
+     }
+     .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+     .remark-code-line {
+       word-wrap: break-word;
+     }
     </style>
   </head>
   <body>
@@ -115,7 +115,7 @@
       ---
 
       # From abstract machines to evaluators
-      ![evalToAbst](file:///Users/yorisilo/Dropbox/tsukuba/lab/seminar/all/me/20150605/img/evalToAbst1.png)
+      ![evalToAbst](file:///Users/yorisilo/Dropbox/tsukuba/lab/study/all/me/20150605/img/evalToAbst1.png)
 
       ---
 
@@ -290,7 +290,7 @@
       powerDf n x = goDf n x Stop
       ```
 
-      ![状態遷移規則](file:///Users/yorisilo/Dropbox/tsukuba/lab/seminar/all/me/20150605/img/Abst2.png)
+      ![状態遷移規則](file:///Users/yorisilo/Dropbox/tsukuba/lab/study/all/me/20150605/img/Abst2.png)
 
       ???
 
@@ -328,19 +328,19 @@
     <script src="https://gnab.github.io/remark/downloads/remark-latest.min.js">
     </script>
     <script>
-      var q = window.location.search.substring(1);
-      var slideshow = remark.create();
-      MathJax.Hub.Config({
-      tex2jax: {
-      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre']
-      }
-      });
-      MathJax.Hub.Queue(function() {
-      $(MathJax.Hub.getAllJax()).map(function(index, elem) {
-      return(elem.SourceElement());
-      }).parent().addClass('has-jax');
-      });
-      MathJax.Hub.Configured();
+     var q = window.location.search.substring(1);
+     var slideshow = remark.create();
+     MathJax.Hub.Config({
+       tex2jax: {
+         skipTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+       }
+     });
+     MathJax.Hub.Queue(function() {
+       $(MathJax.Hub.getAllJax()).map(function(index, elem) {
+         return(elem.SourceElement());
+       }).parent().addClass('has-jax');
+     });
+     MathJax.Hub.Configured();
     </script>
   </body>
 </html>
