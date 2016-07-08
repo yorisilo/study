@@ -51,7 +51,11 @@
 \newcommand\blue[1]{\textcolor{blue}{#1}}
 
 \newcommand\forin[2]{\textbf{for}~{#1}~\textbf{to}~{#2}~\textbf{in}}
-\newcommand\cforin[2]{\underline{\textbf{for}}~{#1}~\textbf{to}~{#2}~\underline\textbf{in}}
+\newcommand\cforin[2]{\underline{\textbf{cfor}}~{#1}~\underline{\textbf{to}}~{#2}~\underline{\textbf{in}}}
+\newcommand\Let{\textbf{let}}
+\newcommand\In{\textbf{in}}
+\newcommand\cArray[1]{\underline{[{#1}]}}
+\newcommand\cArrays[2]{\underline{[{#1}][{#2}]}}
 
 % スライドのテーマ
 \usetheme{sumiilab}
@@ -289,7 +293,7 @@
     \begin{align*}
       & \forin{i = 0}{n} \\
       & ~~\forin{j = 0}{m} \\
-      & ~~~~\magenta{y = t} ~~~~~~~~~~\text{--- t がi,j に依存した式 } \\
+      & ~~~~\magenta{\Let ~y ~= ~t ~\In} ~~~~~~~~~~\text{--- t がi,j に依存した式 } \\
       & ~~~~a[i][j] = b[i] + y \\
     \end{align*}
   \end{onlyenv}
@@ -297,7 +301,7 @@
   \begin{onlyenv}<3>
     \begin{align*}
       & \forin{i = 0}{n} \\
-      & ~~\magenta{y = t} ~~~~~~~~~~\text{--- t がi にのみ依存し jには依存しない式 } \\
+      & ~~\magenta{\Let ~y ~= ~t ~\In} ~~~~~~~~~~\text{--- t がi にのみ依存し jには依存しない式 } \\
       & ~~\forin{j = 0}{m} \\
       & ~~~~a[i][j] = b[i] + y \\
     \end{align*}
@@ -305,7 +309,7 @@
 
   \begin{onlyenv}<4>
     \begin{align*}
-      & \magenta{y = t} ~~~~~~~~~~\text{--- t がi にも j にも依存しない式} \\
+      & \magenta{\Let ~y ~= ~t ~\In} ~~~~~~~~~~\text{--- t がi にも j にも依存しない式} \\
       & ~~\forin{i = 0}{n} \\
       & ~~~~\forin{j = 0}{m} \\
       & ~~~~a[i][j] = b[i] + y \\
@@ -339,55 +343,55 @@
 % \begin{frame}
 %   \frametitle{shift0 / reset0}
 %   %   \begin{align*}
-          %   %           (\cResetz ~...~ (\cShiftz ~k \to ~e~) ~...~)
-          %   %         \end{align*}
+%   %     (\cResetz ~...~ (\cShiftz ~k \to ~e~) ~...~)
+%   %   \end{align*}
 
-          %   %           \begin{onlyenv}<1>
-          %   %           \begin{align*}
-          %   %           5 ~*~ (\cResetz ~3 ~+~ (\cShiftz ~k \to ~k ~4))
-          %   %         \end{align*}
-          %   %           \end{onlyenv}
+%   %   \begin{onlyenv}<1>
+%   %     \begin{align*}
+%   %       5 ~*~ (\cResetz ~3 ~+~ (\cShiftz ~k \to ~k ~4))
+%   %     \end{align*}
+%   %   \end{onlyenv}
 
-          %   %           \begin{onlyenv}<2>
-          %   %           \begin{align*}
-          %   %           5 * \cResetz 1 + (\cShiftz ~k \to k 1)
-          %   %         \end{align*}
-          %   %           \end{onlyenv}
+%   %   \begin{onlyenv}<2>
+%   %     \begin{align*}
+%   %       5 * \cResetz 1 + (\cShiftz ~k \to k 1)
+%   %     \end{align*}
+%   %   \end{onlyenv}
 
-          %         \end{frame}
+% \end{frame}
 
-          %         \subsection{コントロールオペレータ}
+% \subsection{コントロールオペレータ}
 
-          %         \begin{frame}[fragile]
-          %           \frametitle{shift0/reset0とshift/reset}
-          %   %           shift0/reset0はshift/reset とほぼ同様な計算規則で定義されている．その差は僅かです
-          %   %           しかし shiftは直近のresetまでのプログラムの部分を切り取ることができますが，それ以上の2番目3番目のresetまでのプログラムの部分を切り取ることはできません．
-          %   %           一方でMaterzokらによってshift0をうまく使うことによって直近のshift0だけでなく，2番目3番目のreset0までのプログラムの部分を切り取ることができることがわかっています．
+% \begin{frame}[fragile]
+%   \frametitle{shift0/reset0とshift/reset}
+%   shift0/reset0はshift/reset とほぼ同様な計算規則で定義されている．その差は僅かです
+%   しかし shiftは直近のresetまでのプログラムの部分を切り取ることができますが，それ以上の2番目3番目のresetまでのプログラムの部分を切り取ることはできません．
+%   一方でMaterzokらによってshift0をうまく使うことによって直近のshift0だけでなく，2番目3番目のreset0までのプログラムの部分を切り取ることができることがわかっています．
 
-          %   %           このような働きを持つオペレータはコード生成に非常に有用であることに着目してこの研究をはじめました．Materzokらはラムダ計算に対してshift0/reset0の性質を解明したのですが，本研究ではこれをコード生成言語の多段階let挿入に使えることを思いつき，そのような体系を作りたいというのが本研究の基本着想です．
+%   このような働きを持つオペレータはコード生成に非常に有用であることに着目してこの研究をはじめました．Materzokらはラムダ計算に対してshift0/reset0の性質を解明したのですが，本研究ではこれをコード生成言語の多段階let挿入に使えることを思いつき，そのような体系を作りたいというのが本研究の基本着想です．
 
-          %           shift0/reset0とshift/resetはわずかに異なる
+%   shift0/reset0とshift/resetはわずかに異なる
 
-          %   %           より簡潔なCPSの意味論をもち，
-          %   %           それでいて，表現力は階層的shift/resetを完全に表現できる．（例えば多段階let挿入が可能）
-          %   %           ごく最近2011年以降研究されている．
-          %           \begin{center}
-          %             shift0/reset0: $\langle K [S_0 f.e] \rangle \rightsquigarrow e \{ f / \lambda x . \langle K [x] \rangle \}$\\
-          %             shift/reset:  \,\,\,\,$\langle K [S f.e] \rangle \rightsquigarrow \langle e \{ f / \lambda x . \langle K [x] \rangle \} \rangle $
-          %           \end{center}
+%   より簡潔なCPSの意味論をもち，
+%   それでいて，表現力は階層的shift/resetを完全に表現できる．（例えば多段階let挿入が可能）
+%   ごく最近2011年以降研究されている．
+%   \begin{center}
+%     shift0/reset0: $\langle K [S_0 f.e] \rangle \rightsquigarrow e \{ f / \lambda x . \langle K [x] \rangle \}$\\
+%     shift/reset:  \,\,\,\,$\langle K [S f.e] \rangle \rightsquigarrow \langle e \{ f / \lambda x . \langle K [x] \rangle \} \rangle $
+%   \end{center}
 
-          %   %           shift0は，直近のreset0より，遠くのreset0までアクセスできる．
-          %           \begin{columns}
-          %             \begin{column}{.5\textwidth}
-          %               \includegraphics[clip,width=8cm]{./img/sr.png}
-          %             \end{column}
+%   shift0は，直近のreset0より，遠くのreset0までアクセスできる．
+%   \begin{columns}
+%     \begin{column}{.5\textwidth}
+%       \includegraphics[clip,width=8cm]{./img/sr.png}
+%     \end{column}
 
-          %             \begin{column}{.5\textwidth}
-          %               \includegraphics[clip,width=8cm]{./img/s0r0.png}
-          %             \end{column}
-          %           \end{columns}
+%     \begin{column}{.5\textwidth}
+%       \includegraphics[clip,width=8cm]{./img/s0r0.png}
+%     \end{column}
+%   \end{columns}
 
-          %         \end{frame}
+% \end{frame}
 
 \section{研究の目的}
 % s0/r0 にフォーカスした話をする．
@@ -512,52 +516,52 @@
   コード生成前
   \begin{onlyenv}<1>
     \begin{align*}
-      & \cLet~x_1=\csp{3}~\cIn \\
-      & \cLet~x_2=\csp{5}~\cIn \\
-      & \magenta{\cLet~y=t~\cIn} \\
-      & (x_1~\cPlus~x_2~\cPlus~y)
+      & \cforin{i = 0}{n} \\
+      & ~~\cforin{j = 0}{m} \\
+      & ~~~~\magenta{\cLet~y=t~\cIn} \\
+      & ~~~~~~(a\cArrays{i}{j} = b\cArray{i} + y)
     \end{align*}
   \end{onlyenv}
 
   \begin{onlyenv}<2>
     \begin{align*}
-      & \red{\cResetz} ~~\cLet~x_1=\csp{3}~\cIn \\
-      & \blue{\cResetz} ~~\cLet~x_2=\csp{5}~\cIn \\
-      & \blue{\cShiftz}~\blue{k_2}~\to~ \red{\cShiftz}~\red{k_1}~\to~ \magenta{\cLet~y=t~\cIn} \\
-      & \phantom{=}~~ \cThrow~\red{k_1}~(\cThrow~\blue{k_2}~(x_1~\cPlus~x_2~\cPlus~y))
+      & \red{\cResetz} ~~\cforin{i = 0}{n} \\
+      & ~~\blue{\cResetz} ~~\cforin{j = 0}{m} \\
+      & ~~~~\blue{\cShiftz}~\blue{k_2}~\to~ \red{\cShiftz}~\red{k_1}~\to~ \magenta{\cLet~y=t~\cIn} \\
+      & ~~~~~~\cThrow~\red{k_1}~(\cThrow~\blue{k_2}~(a\cArrays{i}{j} = b\cArray{i} + y))
     \end{align*}
   \end{onlyenv}
 
   \begin{onlyenv}<3>
     \begin{align*}
-      & \red{\cResetz} ~~\cLet~x_1=\csp{3}~\cIn \\
-      & \blue{\cResetz} ~~\cLet~x_2=\csp{5}~\cIn \\
-      & \blue{\cShiftz}~\blue{k_2}~\to~ \red{\cShiftz}~\red{k_1}~\to~ \magenta{\cLet~y=t~\cIn} \\
-      & \cThrow~\red{k_1}~(\cThrow~\blue{k_2}~(x_1~\cPlus~x_2~\cPlus~y))
+      & \red{\cResetz} ~~\cforin{i = 0}{n} \\
+      & ~~\blue{\cResetz} ~~\cforin{j = 0}{m} \\
+      & ~~~~\blue{\cShiftz}~\blue{k_2}~\to~ \red{\cShiftz}~\red{k_1}~\to~ \magenta{\cLet~y=t~\cIn} \\
+      & ~~~~~~\cThrow~\red{k_1}~(\cThrow~\blue{k_2}~(a\cArrays{i}{j} = b\cArray{i} + y))
     \end{align*}
     \begin{align*}
-      \red{k_1} &= \cLet~x_1=\csp{3}~\cIn  \\
-      \blue{k_2} &= \cLet~x_2=\csp{5}~\cIn  \\
+      \red{k_1} &= ~~\cforin{i = 0}{n} \\
+      \blue{k_2} &= ~~\cforin{j = 0}{m} \\
     \end{align*}
   \end{onlyenv}
 
   \begin{onlyenv}<4>
     \begin{align*}
       & \magenta{\cLet~y=t~\cIn} \\
-      & \cThrow~\red{k_1}~(\cThrow~\blue{k_2}~(x_1~\cPlus~x_2~\cPlus~y))
+      & ~~\cThrow~\red{k_1}~(\cThrow~\blue{k_2}~(a\cArrays{i}{j} = b\cArray{i} + y))
     \end{align*}
     \begin{align*}
-      \red{k_1} &= \cLet~x_1=\csp{3}~\cIn  \\
-      \blue{k_2} &= \cLet~x_2=\csp{5}~\cIn  \\
+      \red{k_1} &= ~~\cforin{i = 0}{n} \\
+      \blue{k_2} &= ~~\cforin{j = 0}{m} \\
     \end{align*}
   \end{onlyenv}
 
   \begin{onlyenv}<5>
     \begin{align*}
       & \magenta{\cLet~y=t~\cIn} \\
-      & \cLet~x_1=\csp{3}~\cIn \\
-      & \cLet~x_2=\csp{5}~\cIn \\
-      & (x_1~\cPlus~x_2~\cPlus~y)
+      & ~~\cforin{i = 0}{n} \\
+      & ~~~~\cforin{j = 0}{m} \\
+      & ~~~~~~(a\cArrays{i}{j} = b\cArray{i} + y)
     \end{align*}
   \end{onlyenv}
 \end{frame}
@@ -568,25 +572,24 @@
   \frametitle{型が付く例/付かない例}
   コード生成前
   \begin{align*}
-    e & = \cResetz ~~\cLet~x_1=\csp{3}~\cIn \\
-      & \phantom{=}~~ \cResetz ~~\cLet~x_2=\csp{5}~\cIn \\
-      & \phantom{=}~~ \cShiftz~k_2~\to~ \cShiftz~k_1~\to~ \red{\cLet~y=t~\cIn} \\
-      & \phantom{=}~~ \cThrow~k_1~(\cThrow~k_2~(x_1~\cPlus~x_2~\cPlus~y))
+    e & = \red{\cResetz} ~~\cforin{i = 0}{n} \\
+      & \phantom{=}~~\blue{\cResetz} ~~\cforin{j = 0}{m} \\
+      & \phantom{=}~~~~\blue{\cShiftz}~\blue{k_2}~\to~ \red{\cShiftz}~\red{k_1}~\to~ \magenta{\cLet~y=t~\cIn} \\
+      & \phantom{=}~~~~~~\cThrow~\red{k_1}~(\cThrow~\blue{k_2}~(a\cArrays{i}{j} = b\cArray{i} + y))
   \end{align*}
 
   \pause
 
   \begin{align*}
-    e & \too \red{\cLet~y=t~\cIn} \\
-      & \phantom{\too}~~ \cResetz ~~\cLet~x_1=\csp{3}~\cIn \\
-      & \phantom{\too}~~ \cResetz ~~\cLet~x_2=\csp{5}~\cIn \\
-      & \phantom{\too}~~ (x_1~\cPlus~x_2~\cPlus~y)
+    e & \too \magenta{\cLet~y=t~\cIn} \\
+      & \phantom{\too}~~\cforin{i = 0}{n} \\
+      & \phantom{\too}~~~~\cforin{j = 0}{m} \\
+      & \phantom{\too}~~~~~~(a\cArrays{i}{j} = b\cArray{i} + y)
   \end{align*}
 
   \pause
-  $t=\csp{7}$ のとき $e$ は型が付く
-
-  $t=x_2$ か $t=x_1$ のとき $e$ は型が付かない
+  $t=\csp{7}$ のとき $e$ は型が付く\\
+  $t=a\cArrays{i}{j}$ や $t=b\cArray{j}$ のとき $e$ は型が付かない
 \end{frame}
 
 \begin{frame}
