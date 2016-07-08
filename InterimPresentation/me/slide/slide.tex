@@ -168,7 +168,7 @@
 \section{概要}
 % \begin{frame}
 %   \frametitle{概要}
-%   % 図にする
+%   %   図にする
 %   コード生成法 : プログラムの実行性能の高さ，保守性・再利用性を両立
 %   \begin{itemize}
 %   \item<2-> コード生成言語の型安全性に関して破壊的代入を持つ言語体系に対するSudoらの研究がある
@@ -339,55 +339,55 @@
 % \begin{frame}
 %   \frametitle{shift0 / reset0}
 %   %   \begin{align*}
-%   %     (\cResetz ~...~ (\cShiftz ~k \to ~e~) ~...~)
-%   %   \end{align*}
+          %   %           (\cResetz ~...~ (\cShiftz ~k \to ~e~) ~...~)
+          %   %         \end{align*}
 
-%   %   \begin{onlyenv}<1>
-%   %     \begin{align*}
-%   %       5 ~*~ (\cResetz ~3 ~+~ (\cShiftz ~k \to ~k ~4))
-%   %     \end{align*}
-%   %   \end{onlyenv}
+          %   %           \begin{onlyenv}<1>
+          %   %           \begin{align*}
+          %   %           5 ~*~ (\cResetz ~3 ~+~ (\cShiftz ~k \to ~k ~4))
+          %   %         \end{align*}
+          %   %           \end{onlyenv}
 
-%   %   \begin{onlyenv}<2>
-%   %     \begin{align*}
-%   %       5 * \cResetz 1 + (\cShiftz ~k \to k 1)
-%   %     \end{align*}
-%   %   \end{onlyenv}
+          %   %           \begin{onlyenv}<2>
+          %   %           \begin{align*}
+          %   %           5 * \cResetz 1 + (\cShiftz ~k \to k 1)
+          %   %         \end{align*}
+          %   %           \end{onlyenv}
 
-% \end{frame}
+          %         \end{frame}
 
-% \subsection{コントロールオペレータ}
+          %         \subsection{コントロールオペレータ}
 
-% \begin{frame}[fragile]
-%   \frametitle{shift0/reset0とshift/reset}
-%   %   shift0/reset0はshift/reset とほぼ同様な計算規則で定義されている．その差は僅かです
-%   %   しかし shiftは直近のresetまでのプログラムの部分を切り取ることができますが，それ以上の2番目3番目のresetまでのプログラムの部分を切り取ることはできません．
-%   %   一方でMaterzokらによってshift0をうまく使うことによって直近のshift0だけでなく，2番目3番目のreset0までのプログラムの部分を切り取ることができることがわかっています．
+          %         \begin{frame}[fragile]
+          %           \frametitle{shift0/reset0とshift/reset}
+          %   %           shift0/reset0はshift/reset とほぼ同様な計算規則で定義されている．その差は僅かです
+          %   %           しかし shiftは直近のresetまでのプログラムの部分を切り取ることができますが，それ以上の2番目3番目のresetまでのプログラムの部分を切り取ることはできません．
+          %   %           一方でMaterzokらによってshift0をうまく使うことによって直近のshift0だけでなく，2番目3番目のreset0までのプログラムの部分を切り取ることができることがわかっています．
 
-%   %   このような働きを持つオペレータはコード生成に非常に有用であることに着目してこの研究をはじめました．Materzokらはラムダ計算に対してshift0/reset0の性質を解明したのですが，本研究ではこれをコード生成言語の多段階let挿入に使えることを思いつき，そのような体系を作りたいというのが本研究の基本着想です．
+          %   %           このような働きを持つオペレータはコード生成に非常に有用であることに着目してこの研究をはじめました．Materzokらはラムダ計算に対してshift0/reset0の性質を解明したのですが，本研究ではこれをコード生成言語の多段階let挿入に使えることを思いつき，そのような体系を作りたいというのが本研究の基本着想です．
 
-%   shift0/reset0とshift/resetはわずかに異なる
+          %           shift0/reset0とshift/resetはわずかに異なる
 
-%   %   より簡潔なCPSの意味論をもち，
-%   %   それでいて，表現力は階層的shift/resetを完全に表現できる．（例えば多段階let挿入が可能）
-%   %   ごく最近2011年以降研究されている．
-%   \begin{center}
-%     shift0/reset0: $\langle K [S_0 f.e] \rangle \rightsquigarrow e \{ f / \lambda x . \langle K [x] \rangle \}$\\
-%     shift/reset:  \,\,\,\,$\langle K [S f.e] \rangle \rightsquigarrow \langle e \{ f / \lambda x . \langle K [x] \rangle \} \rangle $
-%   \end{center}
+          %   %           より簡潔なCPSの意味論をもち，
+          %   %           それでいて，表現力は階層的shift/resetを完全に表現できる．（例えば多段階let挿入が可能）
+          %   %           ごく最近2011年以降研究されている．
+          %           \begin{center}
+          %             shift0/reset0: $\langle K [S_0 f.e] \rangle \rightsquigarrow e \{ f / \lambda x . \langle K [x] \rangle \}$\\
+          %             shift/reset:  \,\,\,\,$\langle K [S f.e] \rangle \rightsquigarrow \langle e \{ f / \lambda x . \langle K [x] \rangle \} \rangle $
+          %           \end{center}
 
-%   %   shift0は，直近のreset0より，遠くのreset0までアクセスできる．
-%   \begin{columns}
-%     \begin{column}{.5\textwidth}
-%       \includegraphics[clip,width=8cm]{./img/sr.png}
-%     \end{column}
+          %   %           shift0は，直近のreset0より，遠くのreset0までアクセスできる．
+          %           \begin{columns}
+          %             \begin{column}{.5\textwidth}
+          %               \includegraphics[clip,width=8cm]{./img/sr.png}
+          %             \end{column}
 
-%     \begin{column}{.5\textwidth}
-%       \includegraphics[clip,width=8cm]{./img/s0r0.png}
-%     \end{column}
-%   \end{columns}
+          %             \begin{column}{.5\textwidth}
+          %               \includegraphics[clip,width=8cm]{./img/s0r0.png}
+          %             \end{column}
+          %           \end{columns}
 
-% \end{frame}
+          %         \end{frame}
 
 \section{研究の目的}
 % s0/r0 にフォーカスした話をする．
@@ -470,11 +470,11 @@
 %   \pause
 %   shift0/reset0は単純なCPS変換，CPS意味論をもち，多段階let挿入が実現できるところに着目$\Rightarrow$ コード生成への応用
 
-%   %   本研究は単一のshift0/reset0で単純なCPS変換，CPS意味論を持つオペレータで多段階let挿入が実現できるところに着目して，これをコード生成に使おうというのが本研究の着想である．
-%   %   optional:
-%   %   従来研究でもマルチプロンプトや階層化shift/resetでは実現できるのだが，これやあれがあって，型システムがふくざつになったりする．シンプルな意味論がない．．．
+          %   %           本研究は単一のshift0/reset0で単純なCPS変換，CPS意味論を持つオペレータで多段階let挿入が実現できるところに着目して，これをコード生成に使おうというのが本研究の着想である．
+          %   %           optional:
+          %   %           従来研究でもマルチプロンプトや階層化shift/resetでは実現できるのだが，これやあれがあって，型システムがふくざつになったりする．シンプルな意味論がない．．．
 
-% \end{frame}
+          %         \end{frame}
 
 \subsection{本研究の手法}
 \begin{frame}
@@ -499,13 +499,13 @@
 %   \frametitle{shift0/reset0 による多段階let挿入}
 %   \begin{onlyenv}<1>
 %     \begin{align*}
-%       & \cforin{i = 0}{n} \\
-%       & \cforin{j = 0}{m} \\
-%       & \magenta{y = t} \\
-%       & a[i][j] = b[i] + y \\
-%     \end{align*}
-%   \end{onlyenv}
-% \end{frame}
+        %         & \cforin{i = 0}{n} \\
+        %                   & \cforin{j = 0}{m} \\
+        %                   & \magenta{y = t} \\
+        %                   & a[i][j] = b[i] + y \\
+        %       \end{align*}
+        %         \end{onlyenv}
+        %         \end{frame}
 
 \begin{frame}
   \frametitle{shift0/reset0 による多段階let挿入}
@@ -569,18 +569,18 @@
   コード生成前
   \begin{align*}
     e & = \cResetz ~~\cLet~x_1=\csp{3}~\cIn \\
-        & \phantom{=}~~ \cResetz ~~\cLet~x_2=\csp{5}~\cIn \\
-        & \phantom{=}~~ \cShiftz~k_2~\to~ \cShiftz~k_1~\to~ \red{\cLet~y=t~\cIn} \\
-        & \phantom{=}~~ \cThrow~k_1~(\cThrow~k_2~(x_1~\cPlus~x_2~\cPlus~y))
+      & \phantom{=}~~ \cResetz ~~\cLet~x_2=\csp{5}~\cIn \\
+      & \phantom{=}~~ \cShiftz~k_2~\to~ \cShiftz~k_1~\to~ \red{\cLet~y=t~\cIn} \\
+      & \phantom{=}~~ \cThrow~k_1~(\cThrow~k_2~(x_1~\cPlus~x_2~\cPlus~y))
   \end{align*}
 
   \pause
 
   \begin{align*}
     e & \too \red{\cLet~y=t~\cIn} \\
-        & \phantom{\too}~~ \cResetz ~~\cLet~x_1=\csp{3}~\cIn \\
-        & \phantom{\too}~~ \cResetz ~~\cLet~x_2=\csp{5}~\cIn \\
-        & \phantom{\too}~~ (x_1~\cPlus~x_2~\cPlus~y)
+      & \phantom{\too}~~ \cResetz ~~\cLet~x_1=\csp{3}~\cIn \\
+      & \phantom{\too}~~ \cResetz ~~\cLet~x_2=\csp{5}~\cIn \\
+      & \phantom{\too}~~ (x_1~\cPlus~x_2~\cPlus~y)
   \end{align*}
 
   \pause
@@ -607,7 +607,7 @@
   %   \end{align*}
   % \end{onlyenv}
 
-  \begin{onlyenv}<2>
+  \begin{onlyenv}<1>
     \begin{itemize}
     \item $\gamma$はスコープ変数を表す．
     \item ある範囲で使える\alert{自由変数の集合}と思ってもらえば良い．
@@ -619,6 +619,30 @@
       (\cResetz ~...^{\red{\gamma_0}}~ (\cShiftz ~k \to ~...^{\red{\gamma_1}}~ (\cThrow ~k ~...^{\red{\gamma_3}})))
     \end{align*}
   \end{onlyenv}
+\end{frame}
+
+\begin{frame}
+  % \frametitle{型システムの設計方針}
+  \frametitle{let挿入が型安全性を保つ条件}
+  % スコープが変わるところは，classifier の順序だけで済んでる
+  % 合流がある classifier について
+  従来の場合
+  \begin{onlyenv}<1>
+    \begin{columns}
+      \begin{column}{0.5\textwidth}%% [横幅] 0.2\textwidth = ページ幅の 20 %
+        \begin{align*}
+          &\cLet~ y = ...^{\red{\gamma_0}} ~\cIn~ ...^{\red{\gamma_1}} \\
+          &\cLet~ x = ...^{\red{\gamma_1}} ~\cIn~ ...^{\red{\gamma_2}} \\
+        \end{align*}
+      \end{column}
+
+      \begin{column}{0.5\textwidth}%% [横幅] 0.2\textwidth = ページ幅の 20 %
+        \center
+        \includegraphics[clip,height=4cm]{./img/normal_index.png}
+      \end{column}
+    \end{columns}
+  \end{onlyenv}
+
 \end{frame}
 
 \begin{frame}
