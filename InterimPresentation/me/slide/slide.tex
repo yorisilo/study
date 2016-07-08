@@ -50,6 +50,9 @@
 \newcommand\magenta[1]{\textcolor{magenta}{#1}}
 \newcommand\blue[1]{\textcolor{blue}{#1}}
 
+\newcommand\forin[1]{\textbf{for}~{#1}~\textbf{in}}
+\newcommand\cforin[1]{\underline{\textbf{for}}~{#1}~\underline\textbf{in}}
+
 % スライドのテーマ
 \usetheme{sumiilab}
 % ベースになる色を指定できる
@@ -64,7 +67,6 @@
 %% 発表会の名前とか（省略可）
 % \session{研究室ゼミ}
 %% スライドのタイトル
-% \title{多段階 let 挿入を行うコード生成言語の設計}
 \title{多段階let 挿入を行うコード生成言語の設計}
 %% 必要ならば，サブタイトルも
 % \subtitle{}
@@ -84,14 +86,14 @@
 \AtBeginSection[]{
   \begin{frame}
     \frametitle{アウトライン}
-    \tableofcontents[sectionstyle=show/shaded,subsectionstyle=show/show/hide]
+    \tableofcontents[sectionstyle=show/shaded,subsectionstyle=show/hide/hide]
   \end{frame}}
 % subsection の先頭に自動挿入される目次ページ（削除すると，表示されなくなる）
 % \AtBeginSubsection[]{
-%   \begin{frame}
-%     \frametitle{アウトライン}
-%     \tableofcontents[sectionstyle=show/shaded,subsectionstyle=show/shaded/hide]
-%   \end{frame}}
+% \begin{frame}
+%   \frametitle{アウトライン}
+%   \tableofcontents[sectionstyle=show/shaded,subsectionstyle=show/shaded/hide]
+% \end{frame}}
 
 %% 現在の section 以外を非表示にする場合は以下のようにする
 
@@ -166,11 +168,12 @@
 \section{概要}
 \begin{frame}
   \frametitle{概要}
+  % 図にする
+  コード生成法 : プログラムの実行性能の高さ，保守性・再利用性を両立
   \begin{itemize}
-  \item Sudo らが作ったコード体系の型システムでは，
-    \alert{破壊的代入}という副作用を扱うようなコード生成の安全性を保証した．
-  \item しかし，\alert{多段階のlet 挿入}を扱うようなコード生成の安全性は保証していなかった
-  \item[⇒] \alert{多段階のlet挿入}を安全に扱うために型システムを改良した．
+  \item<2-> コード生成言語の型安全性に関して破壊的代入を持つ言語体系に対するSudoらの研究がある
+  \item<3-> しかし，\alert{多段階のlet 挿入}を扱うようなコード生成言語の安全性は保証していなかった
+  \item<4-> [⇒] \alert{多段階のlet挿入}を安全に扱うために型システムを改良した．
   \end{itemize}
 \end{frame}
 
@@ -179,10 +182,9 @@
 \begin{frame}
   \frametitle{段階的計算 (Staged Computation)}
   \includegraphics[clip,width=12cm]{./img/prggen.png}
-
+  % この図を少し変更する
   \begin{itemize}
   \item コード生成ステージとコード実行ステージ
-  \item 「保守性・再利用性の高さ」と「実行性能の高さ」の両立
   \item[⇒] 段階的計算をサポートするプログラム言語 ⇒ コード生成言語
     % \item 生成するプログラムだけでなく，生成されたプログラムも型の整合性が静的に (生成前に) 保証される．
   \end{itemize}
@@ -193,7 +195,7 @@
   \frametitle{power関数のコード化}
   \begin{align*}
     \text{power} ~x~ ~n~ &~=~ x &\text{if} ~~n = 1 \\
-                         &~~~\phantom{=}~ x * \text{power}(x, n-1) &\text{if} ~~n > 1
+                         &~~~\phantom{=}~ x * \text{power} ~x~ (n-1)~ &\text{if} ~~n > 1
   \end{align*}
 
   \pause
@@ -212,23 +214,92 @@
 \subsection{段階的計算の課題}
 
 \begin{frame}
-  \frametitle{コード生成における課題}
+  \frametitle{コード生成の利点と課題}
   % もっとコンパクトに
-  生成されたコードの信頼性(正しさ)
+
+  利点
+  \begin{itemize}
+  \item 「保守性・再利用性の高さ」と「実行性能の高さ」の両立
+  \end{itemize}
+
+  \pause
+
+  課題
   \begin{itemize}
   \item パラメータに応じて，非常に多数のコードが生成される
     % \item 構文的，意味的に正しくないプログラムを生成しやすい
   \item 生成したコードのデバッグが容易ではない
   \item [⇒]コード生成の前に安全性を保証したい
   \end{itemize}
+\end{frame}
 
-  \uncover<2->{従来研究}
+\begin{frame}
+  \frametitle{従来研究}
   \begin{itemize}
-  \item<2-> コード生成プログラムが，安全なコードのみを生成する事を保証
+  \item コード生成プログラムが，安全なコードのみを生成する事を保証
     % \item<2-> let挿入等を実現する\alert{計算エフェクトを含む場合の安全性保証の研究は未整備}
-  \item<3-> 安全なコード: 構文，型，変数束縛が正しいプログラム
-  \item<4-> \alert{let挿入}等を実現する\alert{計算エフェクトを含む場合の安全性保証は研究途上}
+  \item 安全なコード: 構文，型，変数束縛が正しいプログラム
   \end{itemize}
+
+  \pause
+
+  しかし\alert{多段階let挿入}等を実現する\alert{計算エフェクトを含む場合のコード生成の安全性保証は研究途上}
+\end{frame}
+
+\subsection{shift0/reset0}
+
+\begin{frame}
+  \frametitle{多段階let挿入}
+  % 入れ子になったforループなどを飛び越えたコード移動を許す仕組みであり、ループ不変式の移動によって，効率的なコード生成に必要なプログラム技法
+
+  \begin{itemize}
+  \item 入れ子になったforループなどを飛び越えたコード移動を許す仕組み
+  \item ループ不変式の移動によって，効率的なコード生成に必要なプログラミング技法
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{多段階let 挿入の例}
+  \begin{align*}
+    & \forin{i = 1} \\
+    & \forin{j = 1} \\
+    & \magenta{y = t} \\
+    & a[i][j] = b[i] + y \\
+  \end{align*}
+
+  \pause
+  \begin{center}
+    $\Downarrow$
+  \end{center}
+
+  % $\Rightarrow (\text{shift0/reset0 を付与})$
+
+  \begin{onlyenv}<2>
+    \begin{align*}
+      & \forin{i = 1} \\
+      & \forin{j = 1} \\
+      & \magenta{y = t} ~~~~~~~~~~\text{--- t がi,j に依存した式 } \\
+      & a[i][j] = b[i] + y \\
+    \end{align*}
+  \end{onlyenv}
+
+  \begin{onlyenv}<3>
+    \begin{align*}
+      & \forin{i = 1} \\
+      & \magenta{y = t} ~~~~~~~~~~\text{--- t がi にのみ依存し jには依存しない式 } \\
+      & \forin{j = 1} \\
+      & a[i][j] = b[i] + y \\
+    \end{align*}
+  \end{onlyenv}
+
+  \begin{onlyenv}<4>
+    \begin{align*}
+      & \magenta{y = t} ~~~~~~~~~~\text{--- t がi にも j にも依存しない式} \\
+      & \forin{i = 1} \\
+      & \forin{j = 1} \\
+      & a[i][j] = b[i] + y \\
+    \end{align*}
+  \end{onlyenv}
 \end{frame}
 
 \subsection{限定継続}
@@ -247,8 +318,8 @@
       \end{itemize}
     \item \alert{shift0/reset0}
       \begin{itemize}
-        \item 2011年以降研究が活発化．
-        \item コード生成における\alert{多段階let挿入}が可能
+      \item 2011年以降研究が活発化．
+      \item コード生成における\alert{多段階let挿入}が可能
       \end{itemize}
     \end{itemize}
   \end{block}
@@ -256,21 +327,21 @@
 
 % \begin{frame}
 %   \frametitle{shift0 / reset0}
-%   % \begin{align*}
-%   %   (\cResetz ~...~ (\cShiftz ~k \to ~e~) ~...~)
-%   % \end{align*}
-
-%   % \begin{onlyenv}<1>
 %   %   \begin{align*}
-%   %     5 ~*~ (\cResetz ~3 ~+~ (\cShiftz ~k \to ~k ~4))
+%   %     (\cResetz ~...~ (\cShiftz ~k \to ~e~) ~...~)
 %   %   \end{align*}
-%   % \end{onlyenv}
 
-%   % \begin{onlyenv}<2>
-%   %   \begin{align*}
-%   %     5 * \cResetz 1 + (\cShiftz ~k \to k 1)
-%   %   \end{align*}
-%   % \end{onlyenv}
+%   %   \begin{onlyenv}<1>
+%   %     \begin{align*}
+%   %       5 ~*~ (\cResetz ~3 ~+~ (\cShiftz ~k \to ~k ~4))
+%   %     \end{align*}
+%   %   \end{onlyenv}
+
+%   %   \begin{onlyenv}<2>
+%   %     \begin{align*}
+%   %       5 * \cResetz 1 + (\cShiftz ~k \to k 1)
+%   %     \end{align*}
+%   %   \end{onlyenv}
 
 % \end{frame}
 
@@ -307,69 +378,6 @@
 
 % \end{frame}
 
-\subsection{shift0/reset0}
-
-\begin{frame}[fragile]
-  \frametitle{多段階let 挿入}
-  \begin{align*}
-    & \cLet~x_1=\csp{3}~\cIn \\
-    & \cLet~x_2=\csp{5}~\cIn \\
-    & \magenta{\cLet~y=t~\cIn} \\
-    & (x_1~\cPlus~x_2~\cPlus~y)
-  \end{align*}
-
-  \pause
-
-  \begin{align*}
-    & \red{\cResetz} ~~\cLet~x_1=\csp{3}~\cIn \\
-    & \blue{\cResetz} ~~\cLet~x_2=\csp{5}~\cIn \\
-    & \blue{\cShiftz}~\blue{k_2}~\to~ \red{\cShiftz}~\red{k_1}~\to~ \magenta{\cLet~y=t~\cIn} \\
-    & \red{k_1}~(~\blue{k_2}~(x_1~\cPlus~x_2~\cPlus~y))
-  \end{align*}
-\end{frame}
-
-\begin{frame}[fragile]
-  \frametitle{多段階let 挿入}
-  \begin{onlyenv}<1>
-    \begin{align*}
-      & \red{\cResetz} ~~\cLet~x_1=\csp{3}~\cIn \\
-      & \blue{\cResetz} ~~\cLet~x_2=\csp{5}~\cIn \\
-      & \blue{\cShiftz}~\blue{k_2}~\to~ \red{\cShiftz}~\red{k_1}~\to~ \magenta{\cLet~y=t~\cIn} \\
-      & \red{k_1}~(~\blue{k_2}~(x_1~\cPlus~x_2~\cPlus~y))
-    \end{align*}
-  \end{onlyenv}
-
-  \begin{onlyenv}<2>
-    \begin{align*}
-      & \magenta{\cLet~y=t~\cIn} \\
-      & \cLet~x_1=\csp{3}~\cIn \\
-      & \cLet~x_2=\csp{5}~\cIn \\
-      & (x_1~\cPlus~x_2~\cPlus~y)
-    \end{align*}
-  \end{onlyenv}
-\end{frame}
-
-\begin{frame}
-  \frametitle{多段階let挿入の結果}
-  \begin{align*}
-    & \cLet~x_1=\csp{3}~\cIn \\
-    & \cLet~x_2=\csp{5}~\cIn \\
-    & \magenta{\cLet~y=t~\cIn} \\
-    & (x_1~\cPlus~x_2~\cPlus~y)
-  \end{align*}
-  \pause
-  \begin{align*}
-    & \Rightarrow (\text{shift0/reset0 を付与})\\
-  \end{align*}
-  \pause
-  \begin{align*}
-    & \magenta{\cLet~y=t~\cIn} \\
-    & \cLet~x_1=\csp{3}~\cIn \\
-    & \cLet~x_2=\csp{5}~\cIn \\
-    & (x_1~\cPlus~x_2~\cPlus~y)
-  \end{align*}
-\end{frame}
-
 \section{研究の目的}
 % s0/r0 にフォーカスした話をする．
 \begin{frame}
@@ -404,14 +412,13 @@
 
   \medskip
   \pause
-% 文字は減らしたほうが良さそう よりってのは何に比べて？
+  % 文字は減らしたほうが良さそう よりってのは何に比べて？
   \begin{block}{本研究: 簡潔で強力なコントロールオペレータに基づくコード生成体系の構築}
     \begin{itemize}
     \item コントロールオペレータ shift0/reset0 を利用し，let挿入などのコード生成技法を表現
     \item 型システムを構築して型安全性を保証
     \end{itemize}
   \end{block}
-
 \end{frame}
 
 \section{研究の内容}
@@ -471,28 +478,31 @@
 \end{frame}
 
 \subsection{多段階let 挿入}
-\begin{frame}[fragile]
-  \frametitle{多段階let 挿入}
-  \begin{align*}
-    & \cLet~x_1=\csp{3}~\cIn \\
-    & \cLet~x_2=\csp{5}~\cIn \\
-    & \magenta{\cLet~y=t~\cIn} \\
-    & (x_1~\cPlus~x_2~\cPlus~y)
-  \end{align*}
 
-  \pause
-
-  \begin{align*}
-    & \red{\cResetz} ~~\cLet~x_1=\csp{3}~\cIn \\
-    & \blue{\cResetz} ~~\cLet~x_2=\csp{5}~\cIn \\
-    & \blue{\cShiftz}~\blue{k_2}~\to~ \red{\cShiftz}~\red{k_1}~\to~ \magenta{\cLet~y=t~\cIn} \\
-    & \cThrow~\red{k_1}~(\cThrow~\blue{k_2}~(x_1~\cPlus~x_2~\cPlus~y))
-  \end{align*}
-\end{frame}
+% \begin{frame}
+%   \frametitle{shift0/reset0 による多段階let挿入}
+%   \begin{onlyenv}<1>
+%     \begin{align*}
+%       & \cforin{i = 1} \\
+%       & \cforin{j = 1} \\
+%       & \magenta{y = t} \\
+%       & a[i][j] = b[i] + y \\
+%     \end{align*}
+%   \end{onlyenv}
+% \end{frame}
 
 \begin{frame}
   \frametitle{shift0/reset0 による多段階let挿入}
-    \begin{onlyenv}<1>
+  \begin{onlyenv}<1>
+    \begin{align*}
+      & \cLet~x_1=\csp{3}~\cIn \\
+      & \cLet~x_2=\csp{5}~\cIn \\
+      & \magenta{\cLet~y=t~\cIn} \\
+      & (x_1~\cPlus~x_2~\cPlus~y)
+    \end{align*}
+  \end{onlyenv}
+
+  \begin{onlyenv}<2>
     \begin{align*}
       & \red{\cResetz} ~~\cLet~x_1=\csp{3}~\cIn \\
       & \blue{\cResetz} ~~\cLet~x_2=\csp{5}~\cIn \\
@@ -501,7 +511,7 @@
     \end{align*}
   \end{onlyenv}
 
-  \begin{onlyenv}<2>
+  \begin{onlyenv}<3>
     \begin{align*}
       & \red{\cResetz} ~~\cLet~x_1=\csp{3}~\cIn \\
       & \blue{\cResetz} ~~\cLet~x_2=\csp{5}~\cIn \\
@@ -514,7 +524,7 @@
     \end{align*}
   \end{onlyenv}
 
-  \begin{onlyenv}<3>
+  \begin{onlyenv}<4>
     \begin{align*}
       & \magenta{\cLet~y=t~\cIn} \\
       & \cThrow~\red{k_1}~(\cThrow~\blue{k_2}~(x_1~\cPlus~x_2~\cPlus~y))
@@ -525,7 +535,7 @@
     \end{align*}
   \end{onlyenv}
 
-  \begin{onlyenv}<4>
+  \begin{onlyenv}<5>
     \begin{align*}
       & \magenta{\cLet~y=t~\cIn} \\
       & \cLet~x_1=\csp{3}~\cIn \\
@@ -556,6 +566,56 @@
   \end{align*}
 \end{frame}
 
+\subsection{型付けの例}
+
+\begin{frame}
+  \frametitle{型が付く例/付かない例}
+  \begin{align*}
+    e_2 & = \cResetz ~~\cLet~x_1=\csp{3}~\cIn \\
+        & \phantom{=}~~ \cResetz ~~\cLet~x_2=\csp{5}~\cIn \\
+        & \phantom{=}~~ \cShiftz~k_2~\to~ \cShiftz~k_1~\to~ \red{\cLet~y=t~\cIn} \\
+        & \phantom{=}~~ \cThrow~k_1~(\cThrow~k_2~(x_1~\cPlus~x_2~\cPlus~y))
+  \end{align*}
+
+  \pause
+
+  \begin{align*}
+    e_2 & \too \red{\cLet~y=t~\cIn} \\
+        & \phantom{\too}~~ \cResetz ~~\cLet~x_1=\csp{3}~\cIn \\
+        & \phantom{\too}~~ \cResetz ~~\cLet~x_2=\csp{5}~\cIn \\
+        & \phantom{\too}~~ (x_1~\cPlus~x_2~\cPlus~y)
+  \end{align*}
+
+  \pause
+  $t=\csp{7}$ のとき $e_2$ は型が付く
+
+  $t=x_2$ か $t=x_1$ のとき $e_2$ は型が付かない
+\end{frame}
+
+\begin{frame}
+  \frametitle{型が付く例/付かない例}
+  \begin{align*}
+    e_1 & = \cResetz ~~\cLet~x_1=\csp{3}~\cIn \\
+        & \phantom{=}~~ \cResetz ~~\cLet~x_2=\csp{5}~\cIn \\
+        & \phantom{=}~~ \cShiftz~k~\to~ \red{\cLet~y=t~\cIn} \\
+        & \phantom{=}~~ \cThrow~k~(x_1~\cPlus~x_2~\cPlus~y)
+  \end{align*}
+
+  \pause
+
+  \begin{align*}
+    e_1 & \too \cResetz ~~\cLet~x_1=\csp{3}~\cIn \\
+        & \phantom{\too}~~ \red{\cLet~y=t~\cIn} \\
+        & \phantom{\too}~~ \cResetz ~~\cLet~x_2=\csp{5}~\cIn \\
+        & \phantom{\too}~~ (x_1~\cPlus~x_2~\cPlus~y)
+  \end{align*}
+
+  \pause
+  $t=\csp{7}$ か $t=x_1$ のとき $e_1$ は型が付く
+
+  $t=x_2$ のとき $e_1$ は型が付かない
+
+\end{frame}
 \subsection{型システム}
 \begin{frame}
   % \frametitle{型システムの設計方針}
@@ -635,7 +695,7 @@
 %     \infer[(\gamma_1~\text{is eigen var})]
 %     {\Gamma \vdash \cfun{x}{e} ~:~ \codeT{t_1\to t_2}{\gamma}}
 %     {\Gamma,~\gamma_1 \ord \gamma,~x:\codeT{t_1}{\gamma_1} \vdash e
-%       ~:~ \codeT{t_2}{\gamma_1}}
+%     ~:~ \codeT{t_2}{\gamma_1}}
 %   \]
 
 %   Typing rule for code-level let (derived rule):
@@ -643,9 +703,9 @@
 %     \infer[(\gamma_1~\text{is eigen var})]
 %     {\Gamma \vdash \clet{x}{e_1}{e_2} ~:~ \codeT{t_2}{\gamma}}
 %     {\Gamma \vdash e_1 ~:~ \codeT{t_1}{\gamma}
-%       &\Gamma,~\gamma_1 \ord \gamma,~x:\codeT{t_1}{\gamma_1} \vdash
-%       e_2 ~:~ \codeT{t_2}{\gamma_1}
-%     }
+%     &\Gamma,~\gamma_1 \ord \gamma,~x:\codeT{t_1}{\gamma_1} \vdash
+%     e_2 ~:~ \codeT{t_2}{\gamma_1}
+%   }
 %   \]
 
 %   Typing rule for code-level reset0:
@@ -658,7 +718,7 @@
 %   \[
 %     \infer{\Gamma \vdash \cshiftz{k}{e} ~:~ \codeT{t_1}{\gamma_1}}
 %     {\Gamma,~k:\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}
-%       \vdash e ~:~ \codeT{t_0}{\gamma_0}}
+%     \vdash e ~:~ \codeT{t_0}{\gamma_0}}
 %   \]
 
 %   Typing rule for code-level throw:
@@ -666,69 +726,19 @@
 %     \infer[(\gamma_3~\text{is eigen var})]
 %     {\Gamma \vdash \cthrow{k}{e} ~:~ \codeT{t_0}{\gamma_2}}
 %     {\Gamma,~k:\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}},~
-%       \gamma_3 \ord \gamma_1,~
-%       \gamma_3 \ord \gamma_2
-%       \vdash e ~:~ \codeT{t_1}{\gamma_3}
-%       & \Gamma \models \gamma_2 \ord \gamma_0
-%     }
+%     \gamma_3 \ord \gamma_1,~
+%     \gamma_3 \ord \gamma_2
+%     \vdash e ~:~ \codeT{t_1}{\gamma_3}
+%     & \Gamma \models \gamma_2 \ord \gamma_0
+%   }
 %   \]
 % \end{frame}
-
-\subsection{型付けの例}
-\begin{frame}
-  \frametitle{型が付く例/付かない例}
-  \begin{align*}
-    e_1 & = \cResetz ~~\cLet~x_1=\csp{3}~\cIn \\
-        & \phantom{=}~~ \cResetz ~~\cLet~x_2=\csp{5}~\cIn \\
-        & \phantom{=}~~ \cShiftz~k~\to~ \red{\cLet~y=t~\cIn} \\
-        & \phantom{=}~~ \cThrow~k~(x_1~\cPlus~x_2~\cPlus~y)
-  \end{align*}
-
-  \pause
-
-  \begin{align*}
-    e_1 & \too \cResetz ~~\cLet~x_1=\csp{3}~\cIn \\
-        & \phantom{\too}~~ \red{\cLet~y=t~\cIn} \\
-        & \phantom{\too}~~ \cResetz ~~\cLet~x_2=\csp{5}~\cIn \\
-        & \phantom{\too}~~ (x_1~\cPlus~x_2~\cPlus~y)
-  \end{align*}
-
-  \pause
-  $t=\csp{7}$ か $t=x_1$ のとき $e_1$ は型が付く
-
-  $t=x_2$ のとき $e_1$ は型が付かない
-
-\end{frame}
-
-\begin{frame}
-  \frametitle{型が付く例/付かない例}
-  \begin{align*}
-    e_2 & = \cResetz ~~\cLet~x_1=\csp{3}~\cIn \\
-        & \phantom{=}~~ \cResetz ~~\cLet~x_2=\csp{5}~\cIn \\
-        & \phantom{=}~~ \cShiftz~k_2~\to~ \cShiftz~k_1~\to~ \red{\cLet~y=t~\cIn} \\
-        & \phantom{=}~~ \cThrow~k_1~(\cThrow~k_2~(x_1~\cPlus~x_2~\cPlus~y))
-  \end{align*}
-
-  \pause
-
-  \begin{align*}
-    e_2 & \too \red{\cLet~y=t~\cIn} \\
-        & \phantom{\too}~~ \cResetz ~~\cLet~x_1=\csp{3}~\cIn \\
-        & \phantom{\too}~~ \cResetz ~~\cLet~x_2=\csp{5}~\cIn \\
-        & \phantom{\too}~~ (x_1~\cPlus~x_2~\cPlus~y)
-  \end{align*}
-
-  \pause
-  $t=\csp{7}$ のとき $e_2$ は型が付く
-
-  $t=x_2$ か $t=x_1$ のとき $e_2$ は型が付かない
-\end{frame}
 
 \section{まとめと今後}
 \begin{frame}
   \frametitle{まとめと今後}
   \begin{itemize}
-  % \item コードの言語にshift0 reset0 を組み込んだ言語の設計を行った
+    % \item コードの言語にshift0 reset0 を組み込んだ言語の設計を行った
   \item コードの型システムに shift0 reset0 を組み込んだ 型システムの設計を行った
   \item その型システムによって型が付く場合と付かない場合の例をみた．
   \item 今後 answer type modification に対応した型システムを設計し，(subject reduction 等の)健全性の証明を行う
