@@ -274,45 +274,52 @@
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{多段階let 挿入の例}
+  \frametitle{多段階let 挿入，let挿入の例}
   \begin{align*}
     & \forin{i = 0}{n} \\
     & ~~\forin{j = 0}{m} \\
-    & ~~~~\magenta{y = t} \\
-    & ~~~~a[i][j] = b[i] + y \\
+    & ~~~~\magenta{\Let ~y ~= ~t ~\In} \\
+    & ~~~~~~a[i][j] = b[i] + y \\
   \end{align*}
-
-  \pause
-  \begin{center}
-    $\Downarrow$
-  \end{center}
 
   % $\Rightarrow (\text{shift0/reset0 を付与})$
 
-    \begin{onlyenv}<2>
+  \begin{onlyenv}<2>
+    \begin{center}
+      多段階let挿入\\
+      $\Downarrow$
+    \end{center}
     \begin{align*}
-      & \magenta{\Let ~y ~= ~t ~\In} ~~~~~~~~~~\text{--- t がi にも j にも依存しない式} \\
+      & \magenta{\Let ~y ~= ~t ~\In} ~~~~~~~~~~\tiny{\text{--- t がi にも j にも依存しない式}} \\
       & ~~\forin{i = 0}{n} \\
       & ~~~~\forin{j = 0}{m} \\
-      & ~~~~a[i][j] = b[i] + y \\
+      & ~~~~~~a[i][j] = b[i] + y \\
     \end{align*}
   \end{onlyenv}
 
   \begin{onlyenv}<3>
+    \begin{center}
+      普通のlet挿入\\
+      $\Downarrow$
+    \end{center}
     \begin{align*}
       & \forin{i = 0}{n} \\
-      & ~~\magenta{\Let ~y ~= ~t ~\In} ~~~~~~~~~~\text{--- t がi にのみ依存し jには依存しない式 } \\
-      & ~~\forin{j = 0}{m} \\
-      & ~~~~a[i][j] = b[i] + y \\
+      & ~~\magenta{\Let ~y ~= ~t ~\In} ~~~~~~~~~~\tiny{\text{--- t がi にのみ依存し jには依存しない式 }} \\
+      & ~~~~\forin{j = 0}{m} \\
+      & ~~~~~~a[i][j] = b[i] + y \\
     \end{align*}
   \end{onlyenv}
 
-    \begin{onlyenv}<4>
+  \begin{onlyenv}<4>
+    \begin{center}
+      多段階let 挿入でも let挿入でもない\\
+      $\Downarrow$
+    \end{center}
     \begin{align*}
       & \forin{i = 0}{n} \\
       & ~~\forin{j = 0}{m} \\
-      & ~~~~\magenta{\Let ~y ~= ~t ~\In} ~~~~~~~~~~\text{--- t がi,j に依存した式 } \\
-      & ~~~~a[i][j] = b[i] + y \\
+      & ~~~~\magenta{\Let ~y ~= ~t ~\In} ~~~~~~~~~~\tiny{\text{--- t がi,j に依存した式 }} \\
+      & ~~~~~~a[i][j] = b[i] + y \\
     \end{align*}
   \end{onlyenv}
 
@@ -561,18 +568,18 @@
   コード生成前
   \begin{align*}
     e & = \red{\cResetz} ~~\cforin{i = 0}{n} \\
-      & \phantom{=}~~\blue{\cResetz} ~~\cforin{j = 0}{m} \\
-      & \phantom{=}~~~~\blue{\cShiftz}~\blue{k_2}~\to~ \red{\cShiftz}~\red{k_1}~\to~ \magenta{\cLet~y=t~\cIn} \\
-      & \phantom{=}~~~~~~\cThrow~\red{k_1}~(\cThrow~\blue{k_2}~(a\cArrays{i}{j} = b\cArray{i} + y))
+      & \phantom{=}~~~~\blue{\cResetz} ~~\cforin{j = 0}{m} \\
+      & \phantom{=}~~~~~~ \blue{\cShiftz}~\blue{k_2}~\to~ \red{\cShiftz}~\red{k_1}~\to~ \magenta{\cLet~y=t~\cIn} \\
+      & \phantom{=}~~~~~~~~ \cThrow~\red{k_1}~(\cThrow~\blue{k_2}~(a\cArrays{i}{j} = b\cArray{i} + y))
   \end{align*}
 
   \pause
 
   \begin{align*}
     e & \too \magenta{\cLet~y=t~\cIn} \\
-      & \phantom{\too}~~\cforin{i = 0}{n} \\
-      & \phantom{\too}~~~~\cforin{j = 0}{m} \\
-      & \phantom{\too}~~~~~~(a\cArrays{i}{j} = b\cArray{i} + y)
+      & \phantom{\too}~~~~\cforin{i = 0}{n} \\
+      & \phantom{\too}~~~~~~\cforin{j = 0}{m} \\
+      & \phantom{\too}~~~~~~~~(a\cArrays{i}{j} = b\cArray{i} + y)
   \end{align*}
 
   \pause
@@ -606,10 +613,10 @@
   \center
   \includegraphics[clip,height=4cm]{./img/ecgraph.png}
   \begin{itemize}
-  \item $\gamma_1$ のコードレベル変数は $\gamma_2$ では使えない
-  \item $\gamma_1$ のコードレベル変数は $\gamma_1$ では使えない
-  \item $\gamma_1, \gamma_2$ のコードレベル変数は $\gamma_3$ で使える
-  \item[$\Rightarrow$] Sudoらの体系に $\cup$ を追加
+  \item<2-> $\gamma_1$ のコードレベル変数は $\gamma_2$ では使えない
+  \item<3-> $\gamma_2$ のコードレベル変数は $\gamma_1$ では使えない
+  \item<4-> $\gamma_1, \gamma_2$ のコードレベル変数は $\gamma_3$ で使える
+  \item<5->[$\Rightarrow$] Sudoらの体系に $\cup$ を追加
   \end{itemize}
 \end{frame}
 
