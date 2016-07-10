@@ -293,7 +293,7 @@ $t$によって，安全なコードか安全でないコードかが変わる�
 コードレベルの変数スコープと，型によるスコープの表現を表したのが下の図である．
 
 \begin{center}
-  \includegraphics[clip,height=3.5cm]{./img/eccletin.png}
+  \includegraphics[clip,height=3.5cm]{../img/resume_ec.png}
 \end{center}
 
 $\gamma$は変数のスコープを表し，そのスコープ内で使える自由変数の集合と思ってもらえば良い．
@@ -316,7 +316,7 @@ $\gamma$には，包含関係があり，それを $\gamma_1 \ord \gamma_0$ と�
 また，下のグラフは ECの順序を視覚的に表している図である．
 
 \begin{center}
-  \includegraphics[clip,height=4.5cm]{./img/resume_ecex.png}
+  \includegraphics[clip,height=4.5cm]{../img/resume_ecex.png}
 \end{center}
 計算を進めると，reset0 によって，切り取られた継続がshift0によって $k$へ捕獲され， throw によって，使用されることにより，計算の順序が変わり，計算後では$\gamma_1$ と $\gamma_2$ のスコープの包含関係が入れ替わっている事がわかる．
 
@@ -324,7 +324,7 @@ $\gamma$には，包含関係があり，それを $\gamma_1 \ord \gamma_0$ と�
 今までの，ECでは，計算の順序が変わることが無かったので，継続を任意の場所に貼り付けることを安全に行うことができなかった．しかし，ECのジョインというものを考えることで，shift0/reset0を用いたlet挿入のコード生成の型安全性の保証を行うことができる．
 
 \begin{center}
-  \includegraphics[clip,height=4cm]{./img/ecgraph.png}
+  \includegraphics[clip,height=4cm]{../img/ecgraph.png}
 \end{center}
 
 上図は下のことを視覚的に表したグラフである．
