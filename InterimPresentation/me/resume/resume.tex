@@ -47,6 +47,19 @@
 
 \newcommand\ord{\ge}
 
+\newcommand\too{\leadsto^*}
+\newcommand\pink[1]{\textcolor{pink}{#1}}
+\newcommand\red[1]{\textcolor{red}{#1}}
+\newcommand\green[1]{\textcolor{green}{#1}}
+\newcommand\magenta[1]{\textcolor{magenta}{#1}}
+\newcommand\blue[1]{\textcolor{blue}{#1}}
+
+\newcommand\forin[2]{\textbf{for}~{#1}~\textbf{to}~{#2}~\textbf{in}}
+\newcommand\cforin[2]{\underline{\textbf{cfor}}~{#1}~\underline{\textbf{to}}~{#2}~\underline{\textbf{in}}}
+\newcommand\Let{\textbf{let}}
+\newcommand\In{\textbf{in}}
+\newcommand\cArray[1]{\underline{[{#1}]}}
+\newcommand\cArrays[2]{\underline{[{#1}][{#2}]}}
 
 % \usepackage[margin=0.15cm]{geometry}
 
@@ -109,37 +122,35 @@
 \maketitle
 % \thispagestyle{empty}
 \section{はじめに}
-コード生成法は，プログラムの生産性・保守性と実行性能の高さを両立させら
-れるプログラミング手法として有力なものである．
-本研究室では，コード生成法をサポートするプログラム言語の信頼性・安全性
-を高める研究を行ってきている．
-すなわち，プログラム生成を行うことによって生成されるプログラムが安全に
-実行されることを，プログラムの生成段階より早い段階，
-すなわちプログラム生成を行うプログラムのコンパイル段階で検査することの
-できる言語体系およびシステムを構築することを目標としている．
+コード生成法は，プログラムの生産性・保守性と実行性能の高さを両立させられるプログラミング手法として有力なものである．
+本研究室では，コード生成法をサポートするプログラム言語の信頼性・安全性を高める研究を行ってきている．
+本研究は，コード生成法で必要とされる「多段階let挿入」等を簡潔に表現できるコントロールオペレータである shift0/reset0を持つコード生成言語とその型システムを構築し，生成されたコードの型安全性を保証する．
+
+% すなわち，プログラム生成を行うことによって生成されるプログラムが安全に
+% 実行されることを，プログラムの生成段階より早い段階，
+% すなわちプログラム生成を行うプログラムのコンパイル段階で検査することの
+% できる言語体系およびシステムを構築することを目標としている．
+
+多段階let挿入は，入れ子になったforループを飛び越えたコード移動を許す仕組みであり，ループ不変式の移動などのために必要である．
 
 ここでいう安全性は，構文的に正しいプログラムであること，
 文字列同士の加算や乗算を決して行わない等の通常の型安全性を満たすことのほか，
 自由変数やプログラム特化後において利用できない変数に依存したプログラム
 を生成しないという，変数や変数スコープに関する性質を含む概念である．
 
-この研究での大きな課題は，従来のコード生成のためのプログラミング言語の
-多くが，純粋なラムダ計算に基づく関数型プログラミング言語を基礎としており，
-効率の良いコードを生成する多くの技法をカバーしていないことである．
-これを克服する体系，すなわち，効率良いプログラムを記述するための表現力を高めつつ，
-安全性が保証された体系が求められている．
+%この研究での大きな課題は，従来のコード生成のためのプログラミング言語の多くが，純粋なラムダ計算に基づく関数型プログラミング言語を基礎としており，効率の良いコードを生成する多くの技法をカバーしていないことである．これを克服する体系，すなわち，効率良いプログラムを記述するための表現力を高めつつ，安全性が保証された体系が求められている．
 
-本研究の目的は，安全性が厳密に保証される計算体系の理論を構築し，さらにそれを実現する処理系を実装することを目的とする．このため，比較的最近になって理論的性質が解明され
-つつあるshift0/reset0 というコントロールオペレータに着目し，これをコー
-ド生成の体系に追加して得られた体系を構築して，上記の課題を解決すること
-を狙いとする．
+%本研究の目的は，安全性が厳密に保証される計算体系の理論を構築し，さらにそれを実現する処理系を実装することを目的とする．このため，比較的最近になって理論的性質が解明されつつあるshift0/reset0 というコントロールオペレータに着目し，これをコード生成の体系に追加して得られた体系を構築して，上記の課題を解決することを狙いとする．
+
+コード生成言語の型安全性に関して，破壊的代入を持つ体系に対する須藤らの研究\cite{Sudo2014}等があるが，本研究は，彼らの環境識別子に対する小さな拡張により，shift0/reset0 に対する型システムが構築できることを示す．
 
 \section{準備}
 \subsection{マルチステージプログラミング}
 マルチステージプログラミングとはプログラムを生成する段階や，生成したプログラムを実行する段階など，複数のステージを持つプログラミングの手法である．
 プログラムを計算対象のデータとして扱うことで，プログラムの効率や，保守性，再利用性の両立が期待できる．
 例えば生成元のプログラムから，何らかの目的に特化したプログラムを生成を行い，保守や改変をしたい時は，生成元のプログラムに対して行えばよいので，生成後のコードについては手を加える必要が無い．そのような，マルチステージプログラミングを効果的に行うためには，言語レベルで，プログラムを生成，実行などが行える機構を備えることが望ましい．
-そのような言語として，本研究では，MetaOCamlというマルチステージプログラミングに対応したOCamlの拡張言語を用いる．
+そのような言語のことをコード生成言語と呼ぶ．
+% そのような言語として，本研究では，MetaOCamlというマルチステージプログラミングに対応したOCamlの拡張言語を用いる．
 
 \subsection{shift0/reset0}
 継続を扱う命令としてコントロールオペレータというものがある．継続とは，計算のある時点における残りの計算のことである．本研究では，shift0/reset0というコントロールオペレータを用いる．
@@ -148,18 +159,56 @@ reset0は継続の範囲を限定する命令であり，shift0はその継続�
 shift/reset\cite{Danvy1990}では，複数の計算エフェクトを含んだプログラムは書くことができない．しかし，階層化shift/resetやshift0/reset0はこの欠点を克服している．
 階層化shift/reset\cite{Danvy1990}は，最大レベルの階層を固定する必要があるが，shift0/reset0では，shift0，reset0 というオペレータだけで，階層を表現する事ができるという利点がある．
 また，shift0/reset0は shift/reset よりも単純なCPS変換で意味が与えられていて，純粋なラムダ式で表せるために形式的に扱いやすいという利点がある．
-reset0は \lstinline|reset0(M)|というように表し，継続の範囲を\lstinline|M|に限定するという意味となる．
-shift0は \lstinline|shift0(fun k -> M)|というように表し，直近のreset0によって限定された継続を \lstinline|k| に束縛し，\lstinline|M|を実行するという意味となる．
-以下で，shift0/reset0の例を掲載する．
+我々の言語体系において，コードを扱うreset0は $\cResetz ~M$というように表し，これは，継続の範囲を$M$に限定するという意味である．
+コードを扱うshift0は $\cShiftz ~k ~\to ~M$というように表し，これは，直近のreset0によって限定された継続を $k$ に束縛し，$M$ を実行するという意味である．
+つまり，shift0 と reset0 は対応関係にあり，reset0で切り取った継続を，shift0によって，$k$ へと束縛し，その継続を使うことができるようになる．
 
-\begin{lstlisting}
-  @r{reset0}@ (3 + (@r{shift0}@ k -> let x = 5 in k(x)))
-$\Rightarrow$ (let x = 5 in k(x))
-              where k = @r{reset0}@ (3 + [])
-$\Rightarrow$ (let x = 5 in @r{reset0}@ (3 + x))
-\end{lstlisting}
-この例は，let挿入をshift0/reset0により可能にする例である．
-shift0によって，まず\lstinline|let x = 5 in k(x)|が実行される．ここで，\lstinline|k|には，直近のreset0によって限定された継続である \lstinline|reset0 (3 + [])|が捕獲されている．その\lstinline|k|に\lstinline|x|を適用させることで，\lstinline|3 + x|が得られる．すると，\lstinline|let x = 5 in k (x)| は \lstinline|let x = 5 in 3 + x| に評価される．ここで，見方を変えると，reset0により限定された継続をshift0内部の \lstinline|k|に捕獲したというよりは，\lstinline|let x = 5 in 3 + x| がshift0によるスコープの外部に出てきたとも見える．このように，shift0/reset0を使うことで，let挿入が実現できることが分かる．
+shift/reset\cite{Danvy1990} は，直近のreset による限定継続のスコープからひとつ上のスコープまでしか，継続を捕獲することができないが，shift0/reset0においては，直近の reset0内のスコープだけでなく，遠くの，reset0 で限定された継続を捕獲することができる．そのことによって，本研究の肝である多段階let挿入が可能となる．
+
+以下で，我々の言語体系におけるshift0/reset0 による多段階let挿入の例を掲載する．
+
+\begin{align*}
+    e &= \red{\cResetz} ~~\cLet~x_1=\csp{3}~\cIn \\
+      &\phantom{=}~~ \blue{\cResetz} ~~\cLet~x_2=\csp{5}~\cIn \\
+      &\phantom{=}~~ \blue{\cShiftz}~\blue{k_2}~\to~ \red{\cShiftz}~\red{k_1}~\to~ \magenta{\cLet~y=t~\cIn} \\
+      &\phantom{=}~~ \cThrow~\red{k_1}~(\cThrow~\blue{k_2}~(x_1~\cPlus~x_2~\cPlus~y))
+\end{align*}
+
+まず，
+$\blue{\cResetz}$によって，切り取られた継続 $\cLet~x_2=\csp{5}~\cIn$ が，
+$\blue{\cShiftz}$ によって，$\blue{k_2}$へと捕獲され，
+次に，
+$\red{\cResetz}$によって，切り取られた継続 $\cLet~x_2=\csp{3}~\cIn$ が，
+$\red{\cShiftz}$ によって，$\red{k_1}$へと捕獲される．
+
+わかりやすいところまで計算を進めると以下のようになり，
+\begin{align*}
+  e & \too \magenta{\cLet~y=t~\cIn} \\
+    & \phantom{\too}~~ \cThrow~\red{k_1}~(\cThrow~\blue{k_2}~(x_1~\cPlus~x_2~\cPlus~y))
+\end{align*}
+
+$\magenta{\cLet~y=t~\cIn}$ がトップに挿入されたことが分かる．
+$\cThrow$ は，切り取られた継続を引数に適用するための演算子である．
+つまり，
+\begin{align*}
+  e & \too \magenta{\cLet~y=t~\cIn} \\
+    & \cLet~x_1=\csp{3}~\cIn \\
+    & \cLet~x_2=\csp{5}~\cIn \\
+    & (x_1~\cPlus~x_2~\cPlus~y)
+\end{align*}
+
+となり，$\magenta{\cLet~y=t~\cIn}$ が 二重の $\cLet$を飛び越えて，挿入された事が分かる．
+このような操作は，shift/reset では不可能であり，階層的な shift0/reset0 であるからできることである．
+
+
+% \begin{lstlisting}
+% @r{reset0}@ (3 + (@r{shift0}@ k -> let x = 5 in k(x)))
+% $\Rightarrow$ (let x = 5 in k(x))
+% where k = @r{reset0}@ (3 + [])
+% $\Rightarrow$ (let x = 5 in @r{reset0}@ (3 + x))
+% \end{lstlisting}
+% この例は，let挿入をshift0/reset0により可能にする例である．
+% shift0によって，まず\lstinline|let x = 5 in k(x)|が実行される．ここで，\lstinline|k|には，直近のreset0によって限定された継続である \lstinline|reset0 (3 + [])|が捕獲されている．その\lstinline|k|に\lstinline|x|を適用させることで，\lstinline|3 + x|が得られる．すると，\lstinline|let x = 5 in k (x)| は \lstinline|let x = 5 in 3 + x| に評価される．ここで，見方を変えると，reset0により限定された継続をshift0内部の \lstinline|k|に捕獲したというよりは，\lstinline|let x = 5 in 3 + x| がshift0によるスコープの外部に出てきたとも見える．このように，shift0/reset0を使うことで，let挿入が実現できることが分かる．
 
 \section{目的}
 プログラムによるプログラムの動的な生成を行い，保守性と性能の両立をはかりたい．
@@ -191,7 +240,7 @@ shift0によって，まず\lstinline|let x = 5 in k(x)|が実行される．こ
 使うスタイルでのプログラミングを提案するとともに，
 コントロールオペレータの影響が変数スコープを越えることを制限する型シス
 テムを構築し，安全性を厳密に保証した．
-Westbrookら\cite{Westbrook}は同様の研究を Java のサブセットを対象におこなった．
+% Westbrookら\cite{Westbrook}は同様の研究を Java のサブセットを対象におこなった．
 須藤ら\cite{Sudo2014}は，書換え可能変数を持つコード生成体系に対して，
 部分型付けを導入した型システムを提案して，安全性を保証した．
 これらの体系は，安全性の保証を最優先した結果，表現力の上での制限が強く
@@ -216,71 +265,91 @@ shift/resetといった，shift/reset を複雑にしたコントロールオペ
 構築に活用するものである．
 
 \section{本研究の手法}
-shift0/reset0 を持つコード生成言語の型システムの設計を行い，
-深く入れ子になった内側からの，let挿入，assertion挿入の関数プログラミング的実現を目指すのだが，shift0/reset0 は shift/resetより強力であるため，型システムが非常に複雑である．
+shift0/reset0 を持つコード生成言語の型システムの設計を須藤らの研究\cite{Sudo2014}を元に行い，深く入れ子になった内側からの，let挿入，assertion挿入の関数プログラミング的実現を目指すのだが，shift0/reset0 は shift/resetより強力であるため，型システムが非常に複雑である．
 また，コード生成言語の型システムも一定の複雑さを持っている．
 そのためにそれらを単純に融合させることは困難である．
-そこで，本研究では，shift0/reset0 の型システムをlet挿入等に絞るように単純化する．
-その型システムに対して，コード生成言語の型システムを融合させる．
-型システムの安全性の保証に関しては，Kameyama+ 2009\cite{Kameyama2009} と Sudo+ 2014\cite{Sudo2014} の手法を利用する．
 
-\subsection{本研究の型システム}
+そこで，本研究では，コード生成の言語に shift0/reset0を組み合わせた言語を設計し，その言語によって書かれたプログラムの安全性は，型システムで安全なコードには型がつくように，安全でないコードには型がつかないように，型システムを構築する．
+須藤らの\cite{Sudo2014}の環境識別子 Environment Classifier による型による変数のスコープのアイデアを拡張することによって，shift0/reset0の型安全性を保証する．
+% 型システムの安全性の保証に関しては，Kameyama+ 2009\cite{Kameyama2009} と Sudo+ 2014\cite{Sudo2014} の手法を利用する．
+
+\section{本研究の型システム}
 
 \subsection{型付け例}
 \begin{align*}
-  e_2 & = \cResetz ~~\cLet~x_1=\csp{3}~\cIn \\
-      & \phantom{=}~~ \cResetz ~~\cLet~x_2=\csp{5}~\cIn \\
-      & \phantom{=}~~ \cShiftz~k_2~\to~ \cShiftz~k_1~\to~ \cLet~y=t~\cIn \\
-      & \phantom{=}~~ \cThrow~k_1~(\cThrow~k_2~(x_1~\cPlus~x_2~\cPlus~y))
+  e & = \cResetz ~~\cLet~x_1=\csp{3}~\cIn \\
+    & \phantom{=}~~ \cResetz ~~\cLet~x_2=\csp{5}~\cIn \\
+    & \phantom{=}~~ \cShiftz~k_2~\to~ \cShiftz~k_1~\to~ \red{\cLet~y=t~\cIn} \\
+    & \phantom{=}~~ \cThrow~k_1~(\cThrow~k_2~(x_1~\cPlus~x_2~\cPlus~y))
 \end{align*}
 
-If $t=\csp{7}$, then $e_1$ is typable.
+$e$の計算を進めると以下のようになる．
 
-If $t=x_2$ or $t=x_1$, then $e_1$ is not typable.
+\begin{align*}
+  e & \too \red{\cLet~y=t~\cIn} \\
+    & \phantom{\too}~~ \cResetz ~~\cLet~x_1=\csp{3}~\cIn \\
+    & \phantom{\too}~~ \cResetz ~~\cLet~x_2=\csp{5}~\cIn \\
+    & \phantom{\too}~~ (x_1~\cPlus~x_2~\cPlus~y)
+\end{align*}
 
+$t=\csp{7}$ のとき $e_2$ は型が付く
 
-\[
-  \infer{
-    \vdash
-    \cResetz ~~\cLet~x_1=\csp{3}~\cIn \\
-    \cResetz ~~\cLet~x_2=\csp{5}~\cIn \\
-    \cShiftz~k_2~\to~ \cShiftz~k_1~\to~ \cLet~y=t~\cIn \\
-    \cThrow~k_1~(\cThrow~k_2~(x_1~\cPlus~x_2~\cPlus~y)) ~:~ \codeT{int}{\gamma}}
-  {
-    \infer{
-      \vdash
-      \cLet~x_1=\csp{3}~\cIn \\
-      \cResetz ~~\cLet~x_2=\csp{5}~\cIn \\
-      \cShiftz~k_2~\to~ \cShiftz~k_1~\to~ \cLet~y=t~\cIn \\
-      \cThrow~k_1~(\cThrow~k_2~(x_1~\cPlus~x_2~\cPlus~y)) ~:~ \codeT{int}{\gamma}}
-    {
-      \vdash \csp{3} ~:~ \codeT{int}{\gamma}
-      &
-      \infer{
-        \gamma_1 \ord \gamma,~
-        x_1 ~:~ \codeT{int}{\gamma_1}
-        \vdash
-        \cResetz ~~\cLet~x_2=\csp{5}~\cIn \\
-        \cShiftz~k_2~\to~ \cShiftz~k_1~\to~ \cLet~y=t~\cIn \\
-        \cThrow~k_1~(\cThrow~k_2~(x_1~\cPlus~x_2~\cPlus~y)) ~:~ \codeT{int}{\gamma_1}}
-      {
-        \infer{
-          \gamma_1 \ord \gamma,~
-          x_1 ~:~ \codeT{int}{\gamma_1}
-          \vdash
-        }
-        {}
-      }
-    }
-  }
-\]
+$t=x_2$ か $t=x_1$ のとき $e_2$ は型が付かない
 
+$t$によって，安全なコードか安全でないコードかが変わるので，それを型で判断したい．
+このような型システムを構築することを考える．
 
+\subsection{環境識別子 EC によるスコープ表現\cite{Sudo2014}}
+コードレベルの変数スコープと，型によるスコープの表現を表したのが下の図である．
+
+\begin{center}
+  \includegraphics[clip,height=3.5cm]{./img/eccletin.png}
+\end{center}
+
+$\gamma$は変数のスコープを表し，そのスコープ内で使える自由変数の集合と思ってもらえば良い．
+$\gamma$には，包含関係があり，それを $\gamma_1 \ord \gamma_0$ というような順序で表す．
+直感的には$\gamma_0$より$\gamma_1$のほうが使える自由変数が多いという意味である．
+
+このように EC を型に付加することで，その型がどのスコープに存在するかどうかが分かる．
+
+\subsection{EC の洗練化}
+今までは，プログラムがネストしていけば，その分だけ，使える自由変数が増えていたのだが，shift0/reset0が導入されたことにより，計算の順序が変わることがあり，単純にネストした分だけ使える自由変数が増えていくという訳にはいかない．
+
+下の図は，
+\begin{align*}
+  & \cLet~ i = ...~\cIn \\
+  & \cResetz ~~\cLet~ j = ...~\cIn \\
+  & \Shiftz~ k~ \to~ \cLet~y=t~\cIn \\
+  & \Throw~ k ...
+\end{align*}
+のスコープに色を付け，計算結果とともに載せた図である．
+また，下のグラフは ECの順序を視覚的に表している図である．
+
+\begin{center}
+  \includegraphics[clip,height=4.5cm]{./img/resume_ecex.png}
+\end{center}
+計算を進めると，reset0 によって，切り取られた継続がshift0によって $k$へ捕獲され， throw によって，使用されることにより，計算の順序が変わり，計算後では$\gamma_1$ と $\gamma_2$ のスコープの包含関係が入れ替わっている事がわかる．
+
+\subsection{EC のジョイン}
+今までの，ECでは，計算の順序が変わることが無かったので，継続を任意の場所に貼り付けることを安全に行うことができなかった．しかし，ECのジョインというものを考えることで，shift0/reset0を用いたlet挿入のコード生成の型安全性の保証を行うことができる．
+
+\begin{center}
+  \includegraphics[clip,height=4cm]{./img/ecgraph.png}
+\end{center}
+
+上図は下のことを視覚的に表したグラフである．
+\begin{itemize}
+\item $\gamma_1$ のコードレベル変数は $\gamma_2$ では使えない
+\item $\gamma_2$ のコードレベル変数は $\gamma_1$ では使えない
+\item $\gamma_1, \gamma_2$ のコードレベル変数は $\gamma_3$ で使える
+\end{itemize}
+
+$\cup$という概念を追加することで，shift0/reset0を用いたlet挿入のコード生成の型安全性の保証を行うことができる．
 \section{まとめと今後}
-let挿入がshit0/reset0で記述可能なことを実例によって提示した．また，shift0/reset0を導入した言語を考えると従来より，簡潔で，検証しやすい体系ができるというアイデアに基づいて，コード生成言語の型システムを構築することを提案した．
-% その一歩として，型のないshift0/reset0 を入れた体系である$\lambda ^{S0}$のインタプリタを実装した．
-Sudoらのコード生成言語の型システム\cite{Sudo2014}を利用し，shift0/reset0を組み込んだ体系について検討中である．
-今後，型システムの設計を完成させ健全性の証明および型検査器等の実装を行う
+多段階let挿入がshit0/reset0で記述可能なことを実例によって提示した．また，shift0/reset0を導入した言語を考えると従来より，簡潔で，検証しやすい体系ができるというアイデアに基づいて，コード生成言語の型システムを構築することを提案した．
+コード生成言語の型システム\cite{Sudo2014}に shift0 reset0 を組み込んだ 型システムの設計を行い，その型システムによって型が付く場合と付かない場合の例をみた．
+
+今後，設計した型システムの健全性の証明 (subject reduction 等)を行い，および型検査器等の実装を行う．
 
 %% 参考文献
 \addcontentsline{toc}{section}{参考文献}
