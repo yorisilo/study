@@ -620,59 +620,8 @@
   \end{itemize}
 \end{frame}
 
-
-
-% \begin{frame}
-%   \frametitle{Typing rule}
-%   \begin{align*}
-%     t & ::= \textrm{BasicType} \mid t \to t \mid \codeT{t}{\gamma}
-%   \end{align*}
-
-%   Typing rule for code-level lambda:
-%   \[
-%     \infer[(\gamma_1~\text{is eigen var})]
-%     {\Gamma \vdash \cfun{x}{e} ~:~ \codeT{t_1\to t_2}{\gamma}}
-%     {\Gamma,~\gamma_1 \ord \gamma,~x:\codeT{t_1}{\gamma_1} \vdash e
-%     ~:~ \codeT{t_2}{\gamma_1}}
-%   \]
-
-%   Typing rule for code-level let (derived rule):
-%   \[
-%     \infer[(\gamma_1~\text{is eigen var})]
-%     {\Gamma \vdash \clet{x}{e_1}{e_2} ~:~ \codeT{t_2}{\gamma}}
-%     {\Gamma \vdash e_1 ~:~ \codeT{t_1}{\gamma}
-%     &\Gamma,~\gamma_1 \ord \gamma,~x:\codeT{t_1}{\gamma_1} \vdash
-%     e_2 ~:~ \codeT{t_2}{\gamma_1}
-%   }
-%   \]
-
-%   Typing rule for code-level reset0:
-%   \[
-%     \infer{\Gamma \vdash \cresetz{e} ~:~ \codeT{t}{\gamma}}
-%     {\Gamma \vdash e ~:~ \codeT{t}{\gamma}}
-%   \]
-
-%   Typing rule for code-level shift0:
-%   \[
-%     \infer{\Gamma \vdash \cshiftz{k}{e} ~:~ \codeT{t_1}{\gamma_1}}
-%     {\Gamma,~k:\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}
-%     \vdash e ~:~ \codeT{t_0}{\gamma_0}}
-%   \]
-
-%   Typing rule for code-level throw:
-%   \[
-%     \infer[(\gamma_3~\text{is eigen var})]
-%     {\Gamma \vdash \cthrow{k}{e} ~:~ \codeT{t_0}{\gamma_2}}
-%     {\Gamma,~k:\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}},~
-%     \gamma_3 \ord \gamma_1,~
-%     \gamma_3 \ord \gamma_2
-%     \vdash e ~:~ \codeT{t_1}{\gamma_3}
-%     & \Gamma \models \gamma_2 \ord \gamma_0
-%   }
-%   \]
-% \end{frame}
-
 \section{まとめと今後の課題}
+
 \begin{frame}
   \frametitle{まとめと今後の課題}
   まとめ
@@ -685,8 +634,79 @@
   今後の課題
   \begin{itemize}
     % \item answer type modification に対応した型システムを設計し，(subject reduction 等の)健全性の証明を行う
-    \item 設計した型システムの健全性の証明（Subject recudtion等）を行い，実装を完成させる
+  \item 設計した型システムの健全性の証明（Subject recudtion等）を行い，実装を完成させる
   \end{itemize}
+\end{frame}
+
+%% ===============================================
+%% 予備スライド
+%% ===============================================
+
+%% 予備スライドは appendix 環境の中に書きましょう．
+\begin{appendix}
+
+  %% 予備スライドの先頭に APPENDIX と書かれたページを挟む（お好みで消去しても良い）
+  \frame[plain]{\centerline{\Huge\bfseries\color{structure}APPENDIX}}
+
+\end{appendix}
+
+\section{コード生成+shift0/reset0の型システム}
+\begin{frame}[fragile]
+  \frametitle{型システムの一部}
+  Typing rule for code-level let (derived rule):
+  \[
+    \infer[(\gamma_1~\text{is eigen var})]
+    {\Gamma \vdash \clet{x}{e_1}{e_2} ~:~ \codeT{t_2}{\gamma}}
+    {\Gamma \vdash e_1 ~:~ \codeT{t_1}{\gamma}
+      &\Gamma,~\gamma_1 \ord \gamma,~x:\codeT{t_1}{\gamma_1} \vdash
+      e_2 ~:~ \codeT{t_2}{\gamma_1}
+    }
+  \]
+
+  Typing rule for code-level reset0:
+  \[
+    \infer{\Gamma \vdash \cresetz{e} ~:~ \codeT{t}{\gamma}}
+    {\Gamma \vdash e ~:~ \codeT{t}{\gamma}}
+  \]
+
+  Typing rule for code-level shift0:
+  \[
+    \infer{\Gamma \vdash \cshiftz{k}{e} ~:~ \codeT{t_1}{\gamma_1}}
+    {\Gamma,~k:\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}
+      \vdash e ~:~ \codeT{t_0}{\gamma_0}
+      & \Gamma \models \gamma_1 \ord \gamma_0
+    }
+  \]
+
+  Typing rule for code-level throw:
+  \[
+    \infer[(\gamma_3~\text{is eigen var})]
+    {\Gamma,~k:\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}
+      \vdash \cthrow{k}{e} ~:~ \codeT{t_0}{\gamma_2}}
+    {\Gamma,~
+      \gamma_3 \ord \gamma_1,~
+      \gamma_3 \ord \gamma_2
+      \vdash e ~:~ \codeT{t_1}{\gamma_3}
+      & \Gamma \models \gamma_2 \ord \gamma_0
+    }
+  \]
+
+\end{frame}
+
+\section{健全性の証明}
+
+\begin{frame}[fragile]
+  \frametitle{健全性の証明 (Subject Reduction)}
+
+  3. 型安全性(型システムの健全性; Subject Reduction等の性質)を厳密に証明する．
+
+  \begin{block}{Subject Redcution Property}
+    $\Gamma \vdash M: \sigma$ が導ければ(プログラム$M$が型検査を通れば)，
+    $M$を計算して得られる任意の$N$に対して，
+    $\Gamma \vdash N: \sigma$ が導ける($N$も型検査を通り，$M$と同じ型，
+    同じ自由変数を持つ．)
+  \end{block}
+
 \end{frame}
 
 \end{document}
