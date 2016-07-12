@@ -46,7 +46,7 @@
 \newcommand\too{\leadsto^*}
 \newcommand\pink[1]{\textcolor{pink}{#1}}
 \newcommand\red[1]{\textcolor{red}{#1}}
-\newcommand\green[1]{\textcolor{green}{#1}}
+\newcommand\green[1]{\textcolor{DarkGreen}{#1}}
 \newcommand\magenta[1]{\textcolor{magenta}{#1}}
 \newcommand\blue[1]{\textcolor{blue}{#1}}
 
@@ -563,31 +563,39 @@
 
 \begin{frame}
   \frametitle{shift0/reset0 による多段階let挿入}
-  コード生成器
   \begin{onlyenv}<1>
+    コード生成器
     \begin{align*}
-      & \cforin{i = 0}{n} \\
-      & ~~\cforin{j = 0}{m} \\
-      & ~~~~\magenta{\cLet~y=t~\cIn} \\
-      & ~~~~~~(a\cArrays{i}{j} = b\cArray{i} + y)
+      & \red{...}~ \cforin{i = 0}{n} \\
+      & ~~\red{...}~ \cforin{j = 0}{m} \\
+      & ~~~~\red{...}~ \magenta{\cLet~y=t~\cIn} \\
+      & ~~~~~~\red{...}~ (a\cArrays{i}{j} = b\cArray{i} + y)
     \end{align*}
   \end{onlyenv}
 
   \begin{onlyenv}<2>
+    コード生成器
     \begin{align*}
       & \red{\cResetz} ~~\cforin{i = 0}{n} \\
       & ~~\blue{\cResetz} ~~\cforin{j = 0}{m} \\
       & ~~~~\blue{\cShiftz}~\blue{k_2}~\to~ \red{\cShiftz}~\red{k_1}~\to~ \magenta{\cLet~y=t~\cIn} \\
       & ~~~~~~\red{k_1}~(\blue{k_2}~(a\cArrays{i}{j} = b\cArray{i} + y))
     \end{align*}
+    \begin{invisibleenv}<2>
+      \begin{align*}
+        \red{k_1} &= ~~\cforin{i = 0}{n} \\
+        \blue{k_2} &= ~~\cforin{j = 0}{m} \\
+      \end{align*}
+    \end{invisibleenv}
   \end{onlyenv}
 
   \begin{onlyenv}<3>
+    コード生成器
     \begin{align*}
       & \red{\cResetz} ~~\cforin{i = 0}{n} \\
       & ~~\blue{\cResetz} ~~\cforin{j = 0}{m} \\
       & ~~~~\blue{\cShiftz}~\blue{k_2}~\to~ \red{\cShiftz}~\red{k_1}~\to~ \magenta{\cLet~y=t~\cIn} \\
-      & ~~~~~~\red{k_1}~\blue{k_2}~(a\cArrays{i}{j} = b\cArray{i} + y))
+      & ~~~~~~\red{k_1}~(\blue{k_2}~(a\cArrays{i}{j} = b\cArray{i} + y))
     \end{align*}
     \begin{align*}
       \red{k_1} &= ~~\cforin{i = 0}{n} \\
@@ -596,6 +604,7 @@
   \end{onlyenv}
 
   \begin{onlyenv}<4>
+    コード生成器
     \begin{align*}
       & \magenta{\cLet~y=t~\cIn} \\
       & ~~\red{k_1}~(\blue{k_2}~(a\cArrays{i}{j} = b\cArray{i} + y))
@@ -607,11 +616,12 @@
   \end{onlyenv}
 
   \begin{onlyenv}<5>
+    生成されるコード
     \begin{align*}
-      & \magenta{\cLet~y=t~\cIn} \\
-      & ~~\cforin{i = 0}{n} \\
-      & ~~~~\cforin{j = 0}{m} \\
-      & ~~~~~~(a\cArrays{i}{j} = b\cArray{i} + y)
+          & \magenta{\Let ~y ~= ~t ~\In} \\
+          & ~~\forin{i = 0}{n} \\
+          & ~~~~\forin{j = 0}{m} \\
+          & ~~~~~~a[i][j] = b[i] + y \\
     \end{align*}
   \end{onlyenv}
 \end{frame}
@@ -624,16 +634,18 @@
   \begin{align*}
     e & = \red{\cResetz} ~~\cforin{i = 0}{n} \\
       & \phantom{=}~~~~\blue{\cResetz} ~~\cforin{j = 0}{m} \\
-      & \phantom{=}~~~~~~ \blue{\cShiftz}~\blue{k_2}~\to~ \red{\cShiftz}~\red{k_1}~\to~ \magenta{\cLet~y=t~\cIn} \\
+      & \phantom{=}~~~~~~ \blue{\cShiftz}~\blue{k_2}~\to~ \red{\cShiftz}~\red{k_1}~\to~ \magenta{\cLet~y=\green{t}~\cIn} \\
       & \phantom{=}~~~~~~~~ \red{k_1}~(\blue{k_2}~(a\cArrays{i}{j} = b\cArray{i} + y))
   \end{align*}
 
   \pause
-
+  生成されるコード
   \begin{columns}
     \begin{column}{0.5\textwidth}%% [横幅] 0.2\textwidth = ページ幅の 20 %
+      \center
+      \includegraphics[clip,height=1cm]{../img/batsu.png}
       \begin{align*}
-        e & \too \magenta{\Let ~y ~= ~7 ~\In} \\
+        e & \too \magenta{\Let ~y ~= ~\green{a[i][j]} ~\In} \\
           & \phantom{\too}~~~~ \forin{i = 0}{n} \\
           & \phantom{\too}~~~~~~\forin{j = 0}{m} \\
           & \phantom{\too}~~~~~~~~a[i][j] = b[i] + y \\
@@ -641,8 +653,10 @@
     \end{column}
 
     \begin{column}{0.5\textwidth}%% [横幅] 0.2\textwidth = ページ幅の 20 %
+      \center
+      \includegraphics[height=1cm]{../img/maru.png}
       \begin{align*}
-        e & \too \magenta{\Let ~y ~= ~a[i][j] ~\In} \\
+        e & \too \magenta{\Let ~y ~= ~\green{7} ~\In} \\
           & \phantom{\too}~~~~ \forin{i = 0}{n} \\
           & \phantom{\too}~~~~~~\forin{j = 0}{m} \\
           & \phantom{\too}~~~~~~~~a[i][j] = b[i] + y \\
@@ -661,7 +675,7 @@
 \begin{frame}
   \frametitle{環境識別子 EC によるスコープ表現 [Taha+2003] [Sudo+2014]}
   \begin{center}
-    \includegraphics[clip,height=4cm]{../img/ec.png}
+    \includegraphics[clip,height=5.7cm]{../img/ec.png}
   \end{center}
   \begin{flushright}
     $\gamma_i ... \text{Refined Environment Classifier}$
@@ -670,8 +684,15 @@
 
 \begin{frame}
   \frametitle{ECの洗練化 （本研究）}
-  \center
-  \includegraphics[clip,height=7.1cm]{../img/ecex.png}
+  \begin{onlyenv}<1>
+    \flushleft
+    \includegraphics[clip,height=6cm]{../img/ecex1.png}
+  \end{onlyenv}
+
+  \begin{onlyenv}<2>
+    \flushleft
+    \includegraphics[clip,height=6cm]{../img/ecex.png}
+  \end{onlyenv}
 \end{frame}
 
 \begin{frame}
@@ -687,7 +708,7 @@
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{コード生成+shift0/reset0の型システム (の一部)}
+  \frametitle{コード生成+shift0/reset0 の型システム (の一部)}
   Typing rule for code-level let (derived rule):
   \[
     \infer[(\gamma_1~\text{is eigen var})]
@@ -719,8 +740,8 @@
     {\Gamma,~k:\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}
       \vdash \cthrow{k}{e} ~:~ \codeT{t_0}{\gamma_2}}
     {\Gamma,~
-      \gamma_3 \ord \gamma_1,~
-      \gamma_3 \ord \gamma_2
+      \red{\gamma_3 \ord \gamma_1,~
+      \gamma_3 \ord \gamma_2}
       \vdash e ~:~ \codeT{t_1}{\gamma_3}
       & \Gamma \models \gamma_2 \ord \gamma_0
     }
@@ -766,15 +787,14 @@
 \begin{frame}[fragile]
   \frametitle{健全性の証明 (Subject Reduction)}
 
-  3. 型安全性(型システムの健全性; Subject Reduction等の性質)を厳密に証明する．
+  型安全性(型システムの健全性; Subject Reduction等の性質)を厳密に証明する．
 
   \begin{block}{Subject Redcution Property}
-    $\Gamma \vdash M: \sigma$ が導ければ(プログラム$M$が型検査を通れば)，
+    $\Gamma \vdash M: \tau$ が導ければ(プログラム$M$が型検査を通れば)，
     $M$を計算して得られる任意の$N$に対して，
-    $\Gamma \vdash N: \sigma$ が導ける($N$も型検査を通り，$M$と同じ型，
+    $\Gamma \vdash N: \tau$ が導ける($N$も型検査を通り，$M$と同じ型，
     同じ自由変数を持つ)
   \end{block}
-
 \end{frame}
 
 \end{document}
