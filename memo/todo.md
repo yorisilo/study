@@ -13,3 +13,5 @@
 
 1.  型システムの構築
     コード生成の体系(須藤) + 亀山先生の考えた薄井くんのs0/r0の体系の組み合わせ
+
+1. Environment Classifiers(walid taha etc...) を読んでる
