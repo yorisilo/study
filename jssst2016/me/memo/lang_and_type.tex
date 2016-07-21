@@ -1,0 +1,186 @@
+\documentclass[10pt,a4j]{jarticle}
+
+\usepackage{amsmath,amssymb}
+\usepackage{ascmac}
+\usepackage{mathtools}
+\usepackage{proof}
+\usepackage{stmaryrd}
+\usepackage[top=1cm, bottom=1cm, left=1cm, right=1cm, includefoot]{geometry}
+
+% \usepackage[margin=1.8cm]{geometry}
+
+\usepackage{setspace}
+% \setstretch{1} % ページ全体の行間を設定
+% \setlength{\textheight}{38\baselineskip}
+\setlength{\columnsep}{10mm}
+
+
+% \renewcommand{\baselinestretch}{2}
+
+% \overfullrule=0pt
+
+\newcommand\fun[2]{\lambda{#1}.{#2}}
+
+\newcommand\Resetz{\textbf{reset0}}
+\newcommand\Shiftz{\textbf{shift0}}
+\newcommand\Throw{\textbf{throw}}
+\newcommand\resetz[1]{\Resetz~{#1}}
+\newcommand\shiftz[2]{\Shiftz~{#1}.{#2}}
+\newcommand\throw[2]{\Throw~{#1}~{#2}}
+
+\newcommand\cfun[2]{\underline{\lambda}{#1}.{#2}}
+\newcommand\ccfun[2]{\underline{\underline{\lambda}}{#1}.{#2}}
+
+\newcommand\cResetz{\underline{\textbf{reset0}}}
+\newcommand\cShiftz{\underline{\textbf{shift0}}}
+\newcommand\cThrow{\underline{\textbf{throw}}}
+\newcommand\cresetz[1]{\cResetz~{#1}}
+\newcommand\cshiftz[2]{\cShiftz~{#1}\to{#2}}
+\newcommand\cthrow[2]{\cThrow~{#1}~{#2}}
+
+\newcommand\cPlus{\underline{\textbf{+}}}
+
+\newcommand\cLet{\underline{\textbf{clet}}}
+\newcommand\cIn{\underline{\textbf{in}}}
+\newcommand\clet[3]{\cLet~{#1}={#2}~\cIn~{#3}}
+\newcommand\csp[1]{\texttt{\%}{#1}}
+\newcommand\code[1]{\texttt{<}{#1}\texttt{>}}
+
+\newcommand\codeT[2]{\langle{#1}\rangle^{#2}}
+\newcommand\contT[2]{({#1} \Rightarrow {#2})}
+
+\newcommand\ord{\ge}
+
+\newcommand\lto{\leadsto}
+\newcommand\cat{~\underline{@}~}
+
+\title{コード生成 + Shift0/Reset0 の型システム}
+\date{\today}
+\author{大石純平}
+
+\begin{document}
+\maketitle
+
+answer type は考えていない．\\
+後で，answer type を加えたやつを考える．\\
+answer type modificationについては考えない
+
+\section{Syntax}
+\begin{align*}
+  v & ::= x \mid \fun{x}{e} \mid \code{e}
+\end{align*}
+
+\begin{align*}
+  e &::=  x \mid \fun{x}{e} \mid e~e \\
+    & \mid \cfun{x}{e}
+      \mid \cresetz{e}
+      \mid \cshiftz{k}{e}
+      \mid \cthrow{k}{e} \\
+    & \mid \clet{x}{e}{e}
+      \mid \code{e_1} \cat \code{e_2}
+      \mid \cdots
+\end{align*}
+
+
+\section{Semantics}
+\subsection{Evaluation Context}
+
+\begin{align*}
+  E & ::= [] \mid E~e \mid v~E \mid \Resetz~E \mid \ccfun{x}{E}
+\end{align*}
+
+\subsection{Operation Semantics}
+
+\begin{align*}
+  E[(\fun{x}{e})~v] &\lto E[e\{ x := v \}] \\
+  E[\Resetz~v] &\lto E[v]\\
+  E[(\cfun{x}{e}) v] &\lto E[\ccfun{y}{e\{ x := \code{y} \}}] \\
+  E[\ccfun{y}{\code{e}}] &\lto E[\code{\fun{y}{e}}] \\
+  E[\Resetz (E'[\Shiftz ~k \to E''[\cThrow ~k ~e]])] &\lto E[E''[e\{k := \cfun{x}{\Resetz ~(E'[x])} \}]] \\
+  E[\code{e_1} \cat \code{e_2}] &\lto E[\code{e_1~e_2}] \\
+  E[\clet{x}{e_1}{e_2}] &\lto E[\cfun{x}{e_2} \cat e_1]
+\end{align*}
+
+\section{Type System}
+
+\begin{align*}
+  t & ::= \textrm{BasicType} \mid t \to t \mid \codeT{t}{\gamma}
+\end{align*}
+
+Typing rule for code-level lambda:
+\[
+  \infer[(\gamma_1~\text{is eigen var})]
+  {\Gamma \vdash \cfun{x}{e} ~:~ \codeT{t_1\to t_2}{\gamma}}
+  {\Gamma,~\gamma_1 \ord \gamma,~x:\codeT{t_1}{\gamma_1} \vdash e
+    ~:~ \codeT{t_2}{\gamma_1}}
+\]
+
+Typing rule for code-level let (derived rule):
+\[
+  \infer[(\gamma_1~\text{is eigen var})]
+  {\Gamma \vdash \clet{x}{e_1}{e_2} ~:~ \codeT{t_2}{\gamma}}
+  {\Gamma \vdash e_1 ~:~ \codeT{t_1}{\gamma}
+    &\Gamma,~\gamma_1 \ord \gamma,~x:\codeT{t_1}{\gamma_1} \vdash
+    e_2 ~:~ \codeT{t_2}{\gamma_1}
+  }
+\]
+
+Typing rule for code-level reset0:
+\[
+  \infer{\Gamma \vdash \cresetz{e} ~:~ \codeT{t}{\gamma}}
+  {\Gamma \vdash e ~:~ \codeT{t}{\gamma}}
+\]
+
+Typing rule for code-level shift0:
+\[
+  \infer{\Gamma \vdash \cshiftz{k}{e} ~:~ \codeT{t_1}{\gamma_1}}
+  {\Gamma,~k:\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}
+    \vdash e ~:~ \codeT{t_0}{\gamma_0}
+    & \Gamma \models \gamma_1 \ord \gamma_0
+  }
+\]
+
+Typing rule for code-level throw:
+\[
+  \infer[(\gamma_3~\text{is eigen var})]
+  {\Gamma,~k:\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}
+    \vdash \cthrow{k}{e} ~:~ \codeT{t_0}{\gamma_2}}
+  {\Gamma,~
+    \gamma_3 \ord \gamma_1,~
+    \gamma_3 \ord \gamma_2
+    \vdash e ~:~ \codeT{t_1}{\gamma_3}
+    & \Gamma \models \gamma_2 \ord \gamma_0
+  }
+\]
+
+
+\section{Example}
+
+\begin{align*}
+  e_1 & = \cResetz ~~\cLet~x_1=\csp{3}~\cIn \\
+      & \phantom{=}~~ \cResetz ~~\cLet~x_2=\csp{5}~\cIn \\
+      & \phantom{=}~~ \cShiftz~k~\to~\cLet~y=t~\cIn \\
+      & \phantom{=}~~ \cThrow~k~(x_1~\cPlus~x_2~\cPlus~y)
+\end{align*}
+
+If $t=\csp{7}$ or $t=x_1$, then $e_1$ is typable.
+
+If $t=x_2$, then $e_1$ is not typable.
+
+\begin{align*}
+  e_2 & = \cResetz ~~\cLet~x_1=\csp{3}~\cIn \\
+      & \phantom{=}~~ \cResetz ~~\cLet~x_2=\csp{5}~\cIn \\
+      & \phantom{=}~~ \cShiftz~k_2~\to~ \cShiftz~k_1~\to~ \cLet~y=t~\cIn \\
+      & \phantom{=}~~ \cThrow~k_1~(\cThrow~k_2~(x_1~\cPlus~x_2~\cPlus~y))
+\end{align*}
+
+If $t=\csp{7}$, then $e_1$ is typable.
+
+If $t=x_2$ or $t=x_1$, then $e_1$ is not typable.
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: japanese-latex
+%%% TeX-master: t
+%%% End:
