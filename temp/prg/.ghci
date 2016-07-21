@@ -1,0 +1,2 @@
+:set -XTemplateHaskell -XQuasiQuotes
+:m Language.Haskell.TH
