@@ -67,38 +67,41 @@ answer type modificationについては考えない
 
 \section{Syntax}
 \begin{align*}
-  v & ::= x \mid \fun{x}{e} \mid \code{e}
-\end{align*}
-
-\begin{align*}
-  e &::=  x \mid \fun{x}{e} \mid e~e \\
+  v & ::= c \mid \fun{x}{e} \mid \code{e} \\
+  e & ::=  x \mid c \mid \fun{x}{e} \mid e~e \\
     & \mid \cfun{x}{e}
       \mid \cresetz{e}
       \mid \cshiftz{k}{e}
       \mid \cthrow{k}{e} \\
     & \mid \clet{x}{e}{e}
-      \mid \code{e_1} \cat \code{e_2}
-      \mid \cdots
+      \mid \cdots \\
+  c & ::= N \mid B \mid \% \mid \cat \mid + \mid \cPlus
 \end{align*}
 
+N is Integer numeric, B is Bool (true or false)
 
 \section{Semantics}
+left-to-right, call-by-value
 \subsection{Evaluation Context}
 
 \begin{align*}
-  E & ::= [] \mid E~e \mid v~E \mid \cResetz~E \mid \ccfun{x}{E}
+  E & ::= [~] \mid E~ e \mid v~ E \mid \cResetz~ E \mid \ccfun{x}{E}
 \end{align*}
 
 \subsection{Operation Semantics}
 
 \begin{align*}
   E[(\fun{x}{e})~v] &\lto E[e\{ x := v \}] \\
-  E[\cResetz~\code{e}] &\lto E[\code{e}]\\
-  E[(\cfun{x}{e}) v] &\lto E[\ccfun{y}{e\{ x := \code{y} \}}] \\
+  E[\cResetz~\code{e}] &\lto E[\code{e}] \\
+  E[\cfun{x}{e}] &\lto E[\ccfun{y}{e\{ x := \code{y} \}}] ~~y \text{ is fresh variable} \\
   E[\ccfun{y}{\code{e}}] &\lto E[\code{\fun{y}{e}}] \\
-  E[\cResetz (E'[\cShiftz ~k \to E''[\cThrow ~k ~e]])] &\lto E[E''[e\{k := \cfun{x}{\cResetz ~(E'[x])} \}]] \\
-  E[\code{e_1} \cat \code{e_2}] &\lto E[\code{e_1~e_2}] \\
-  E[\clet{x}{e_1}{e_2}] &\lto E[\cfun{x}{e_2} \cat e_1]
+  % E[\cResetz (E'[\cShiftz ~k \to E''[\cThrow~ k~ e]])] &\lto E[E''[k e\{k := \cfun{x}{\cResetz~ (E'[x])} \}]] \\
+  E[\cResetz (E'[\cShiftz~ k \to E''[\cThrow~ k~ e]])] &\lto E[E''[(k~ e)\{k := \cfun{x}{\cResetz~ (E'[x])} \}]] \\
+                    &x \text{ is fresh variable} \\
+  E[\code{e_1} \cat \code{e_2}] &\lto E[\code{e_1~ e_2}] \\
+  E[\clet{x}{e_1}{e_2}] &\lto E[\cfun{x}{e_2} \cat e_1] \\
+  E[\% n] &\lto E[\code{n}] \\
+  E[\code{e_1}~ \cPlus~ \code{e_2}] &\lto E[\code{e_1 + e_2}]
 \end{align*}
 
 \section{Type System}
