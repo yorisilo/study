@@ -25,7 +25,7 @@
 \newcommand\Shiftz{\textbf{shift0}}
 \newcommand\Throw{\textbf{throw}}
 \newcommand\resetz[1]{\Resetz~{#1}}
-\newcommand\shiftz[2]{\Shiftz~{#1}.{#2}}
+\newcommand\shiftz[2]{\Shiftz~{#1}\to{#2}}
 \newcommand\throw[2]{\Throw~{#1}~{#2}}
 
 \newcommand\cfun[2]{\underline{\lambda}{#1}.{#2}}
@@ -70,33 +70,45 @@ answer type modificationについては考えない
   v & ::= c \mid \fun{x}{e} \mid \code{e} \\
   e & ::=  x \mid c \mid \fun{x}{e} \mid e~e \\
     & \mid \cfun{x}{e}
-      \mid \cresetz{e}
-      \mid \cshiftz{k}{e}
-      \mid \cthrow{k}{e} \\
+      \mid \resetz{e}
+      \mid \shiftz{k}{e}
+      \mid \throw{k}{e} \\
     & \mid \clet{x}{e}{e}
       \mid \cdots \\
-  c & ::= N \mid B \mid \% \mid \cat \mid + \mid \cPlus
+  c & ::= N \mid B \mid \csp \mid \cat \mid + \mid \cPlus
 \end{align*}
 
 N is Integer numeric, B is Bool (true or false)
 
 \section{Semantics}
 left-to-right, call-by-value
+
 \subsection{Evaluation Context}
 
 \begin{align*}
-  E & ::= [~] \mid E~ e \mid v~ E \mid \cResetz~ E \mid \ccfun{x}{E}
+  E & ::= [~] \mid E~ e \mid v~ E \mid \Resetz~ E \mid \ccfun{x}{E}
 \end{align*}
 
 \subsection{Operation Semantics}
+underline 付きのものは，コードコンビネータであり，なにか値を受け取ってコードを出すもの
 
+underline がないもの： present stage で動く
+
+underline があるもの： present stage で動かない
+
+$\Shiftz$ $\Resetz$ $\Throw$ は コードの型を持つ $e$ のみを引数に取ることにする？
+
+コードレベルで shift0/reset0 throw は出てこないようにする？
+
+$\Throw~ k~ e$ ってあるけど，これ，$\Throw~ e$ にしたほうがいいな．
 \begin{align*}
   E[(\fun{x}{e})~v] &\lto E[e\{ x := v \}] \\
-  E[\cResetz~\code{e}] &\lto E[\code{e}] \\
+  % E[\cResetz~\code{e}] &\lto E[\code{\resetz e}] \\
+  E[\Resetz~\code{e}] &\lto E[\code{e}] \\
   E[\cfun{x}{e}] &\lto E[\ccfun{y}{e\{ x := \code{y} \}}] ~~y \text{ is fresh variable} \\
   E[\ccfun{y}{\code{e}}] &\lto E[\code{\fun{y}{e}}] \\
   % E[\cResetz (E'[\cShiftz ~k \to E''[\cThrow~ k~ e]])] &\lto E[E''[k e\{k := \cfun{x}{\cResetz~ (E'[x])} \}]] \\
-  E[\cResetz (E'[\cShiftz~ k \to E''[\cThrow~ k~ e]])] &\lto E[E''[(k~ e)\{k := \cfun{x}{\cResetz~ (E'[x])} \}]] \\
+  E[\Resetz (E'[\Shiftz~ k \to E''[\Throw~ k~ e]])] &\lto E[E''[(k~ e)\{k := \cfun{x}{\Resetz~ (E'[x])} \}]] \\
                     &x \text{ is fresh variable} \\
   E[\code{e_1} \cat \code{e_2}] &\lto E[\code{e_1~ e_2}] \\
   E[\clet{x}{e_1}{e_2}] &\lto E[\cfun{x}{e_2} \cat e_1] \\
@@ -127,6 +139,9 @@ Typing rule for code-level let (derived rule):
     e_2 ~:~ \codeT{t_2}{\gamma_1}
   }
 \]
+
+reset0, shift0, throw のアンダーラインは取る？
+$\rightarrow$ present stage で shift reset throw も動くので．
 
 Typing rule for code-level reset0:
 \[
@@ -160,10 +175,10 @@ Typing rule for code-level throw:
 \section{Example}
 
 \begin{align*}
-  e_1 & = \cResetz ~~\cLet~x_1=\csp{3}~\cIn \\
-      & \phantom{=}~~ \cResetz ~~\cLet~x_2=\csp{5}~\cIn \\
-      & \phantom{=}~~ \cShiftz~k~\to~\cLet~y=t~\cIn \\
-      & \phantom{=}~~ \cThrow~k~(x_1~\cPlus~x_2~\cPlus~y)
+  e_1 & = \Resetz ~~\cLet~x_1=\csp{3}~\cIn \\
+      & \phantom{=}~~ \Resetz ~~\cLet~x_2=\csp{5}~\cIn \\
+      & \phantom{=}~~ \Shiftz~k~\to~\cLet~y=t~\cIn \\
+      & \phantom{=}~~ \Throw~k~(x_1~\cPlus~x_2~\cPlus~y)
 \end{align*}
 
 If $t=\csp{7}$ or $t=x_1$, then $e_1$ is typable.
@@ -171,10 +186,10 @@ If $t=\csp{7}$ or $t=x_1$, then $e_1$ is typable.
 If $t=x_2$, then $e_1$ is not typable.
 
 \begin{align*}
-  e_2 & = \cResetz ~~\cLet~x_1=\csp{3}~\cIn \\
-      & \phantom{=}~~ \cResetz ~~\cLet~x_2=\csp{5}~\cIn \\
-      & \phantom{=}~~ \cShiftz~k_2~\to~ \cShiftz~k_1~\to~ \cLet~y=t~\cIn \\
-      & \phantom{=}~~ \cThrow~k_1~(\cThrow~k_2~(x_1~\cPlus~x_2~\cPlus~y))
+  e_2 & = \Resetz ~~\cLet~x_1=\csp{3}~\cIn \\
+      & \phantom{=}~~ \Resetz ~~\cLet~x_2=\csp{5}~\cIn \\
+      & \phantom{=}~~ \Shiftz~k_2~\to~ \Shiftz~k_1~\to~ \cLet~y=t~\cIn \\
+      & \phantom{=}~~ \Throw~k_1~(\Throw~k_2~(x_1~\cPlus~x_2~\cPlus~y))
 \end{align*}
 
 If $t=\csp{7}$, then $e_1$ is typable.
