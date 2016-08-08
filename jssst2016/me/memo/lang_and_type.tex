@@ -6,6 +6,7 @@
 \usepackage{proof}
 \usepackage{stmaryrd}
 \usepackage[top=1cm, bottom=1cm, left=1cm, right=1cm, includefoot]{geometry}
+\usepackage{theorem}
 
 % \usepackage[margin=1.8cm]{geometry}
 
@@ -51,8 +52,25 @@
 
 \newcommand\ord{\ge}
 
+\newcommand\Let{\textbf{let}}
+\newcommand\In{\textbf{in}}
+\newcommand\letin[3]{\Let~{#1}={#2}~\In~{#3}}
+
+\newcommand\ift[3]{\textbf{if}~{#1}~\textbf{then}~{#2}~\textbf{else}~{#3}}
+\newcommand\cif[3]{\underline{\textbf{cif}}~\code{{#1}}~\code{{#2}}~\code{{#3}}}
+\newcommand\cIf{\underline{\textbf{cif}}}
+
+\newcommand\fix{\textbf{fix}}
+\newcommand\cfix{\underline{\textbf{fix}}}
+
 \newcommand\lto{\leadsto}
 \newcommand\cat{~\underline{@}~}
+
+\theoremstyle{break}
+
+\newtheorem{theo}{定理}[section]
+\newtheorem{defi}{定義}[section]
+\newtheorem{lemm}{補題}[section]
 
 \title{コード生成 + Shift0/Reset0 の型システム}
 \date{\today}
@@ -70,13 +88,17 @@ answer type modificationについては考えない
   v & ::= c \mid \fun{x}{e} \mid \code{e} \\
   e & ::=  x \mid c \mid \fun{x}{e} \mid e~e \\
     & \mid \cfun{x}{e}
+      \mid \ccfun{x}{e}
       \mid \resetz{e}
       \mid \shiftz{k}{e}
       \mid \throw{k}{e} \\
     & \mid \clet{x}{e}{e}
+      \mid \ift{e_1}{e_2}{e_3}
       \mid \cdots \\
-  c & ::= N \mid B \mid \csp \mid \cat \mid + \mid \cPlus
+  c & ::= N \mid B \mid \csp \mid \cat \mid + \mid \cPlus \mid \cIf \mid \fix \mid \cfix
 \end{align*}
+
+% fix http://d.hatena.ne.jp/tanakh/20040813
 
 N is Integer numeric, B is Bool (true or false)
 
@@ -86,7 +108,7 @@ left-to-right, call-by-value
 \subsection{Evaluation Context}
 
 \begin{align*}
-  E & ::= [~] \mid E~ e \mid v~ E \mid \Resetz~ E \mid \ccfun{x}{E}
+  E & ::= [~] \mid E~ e \mid v~ E \mid \Resetz~ E \mid \ccfun{x}{E} \mid \ift{E}{e_1}{e_2}
 \end{align*}
 
 \subsection{Operation Semantics}
@@ -100,21 +122,60 @@ $\Shiftz$ $\Resetz$ $\Throw$ は コードの型を持つ $e$ のみを引数に
 
 コードレベルで shift0/reset0 throw は出てこないようにする？
 
-$\Throw~ k~ e$ ってあるけど，これ，$\Throw~ e$ にしたほうがいいな．
+$\Throw~ k~ e$ ってあるけど，これ，$\Throw~ e$ にしたほうがいい？ $\Rightarrow$ 良くない．
+
 \begin{align*}
   E[(\fun{x}{e})~v] &\lto E[e\{ x := v \}] \\
+  E[\letin{x}{v}{e}] &\lto E[e\{ x := v \}]\\
   % E[\cResetz~\code{e}] &\lto E[\code{\resetz e}] \\
-  E[\Resetz~\code{e}] &\lto E[\code{e}] \\
-  E[\cfun{x}{e}] &\lto E[\ccfun{y}{e\{ x := \code{y} \}}] ~~y \text{ is fresh variable} \\
+  E[\Resetz~ v] &\lto E[v] \\
+  E[\cfun{x}{e}] &\lto E[\ccfun{y}{e\{ x := \code{y} \}}] \\
+                    &y \text{ is fresh variable} \\
   E[\ccfun{y}{\code{e}}] &\lto E[\code{\fun{y}{e}}] \\
   % E[\cResetz (E'[\cShiftz ~k \to E''[\cThrow~ k~ e]])] &\lto E[E''[k e\{k := \cfun{x}{\cResetz~ (E'[x])} \}]] \\
-  E[\Resetz (E'[\Shiftz~ k \to E''[\Throw~ k~ e]])] &\lto E[E''[(k~ e)\{k := \cfun{x}{\Resetz~ (E'[x])} \}]] \\
+  % E[\Resetz (E'[\Shiftz~ k \to E''[\Throw~ k~ e]])] &\lto E[E''[(k~ e)\{k := \cfun{x}{\Resetz~ (E'[x])} \}]] \\
+  % &x \text{ is fresh variable} \\
+  E[\Resetz (E'[\Shiftz~ k \to e]])] &\lto E[e \{k := \cfun{x}{\Resetz~ (E'[x])} \}] \\
                     &x \text{ is fresh variable} \\
+  E[\Throw~ k~ v] &\lto E[k~ v] \\
   E[\code{e_1} \cat \code{e_2}] &\lto E[\code{e_1~ e_2}] \\
-  E[\clet{x}{e_1}{e_2}] &\lto E[\cfun{x}{e_2} \cat e_1] \\
+  % E[\clet{x}{e_1}{e_2}] &\lto E[\cfun{x}{e_2} \cat e_1] \\
+  E[\clet{x}{e_1}{e_2}] &\lto E[\code{\letin{x}{e_1}{e_2}}] \\
   E[\% n] &\lto E[\code{n}] \\
-  E[\code{e_1}~ \cPlus~ \code{e_2}] &\lto E[\code{e_1 + e_2}]
+  E[\code{e_1}~ \cPlus~ \code{e_2}] &\lto E[\code{e_1 + e_2}] \\
+  E[\cif{e_1}{e_2}{e_3}] &\lto E[\code{\ift{e_1}{e_2}{e_3}}] \\
+  E[\ift{true}{e_1}{e_2}] &\lto e_1 \\
+  E[\ift{else}{e_1}{e_2}] &\lto e_2 \\
+  E[\fix~ e_1] &\lto E[e_1~ (\fix~ e_1)] \\
 \end{align*}
+% Y M = M (Y M)
+% Y = λf.(λx.f(x x)) (λx.f(x x))
+% Y M => M (Y M) => M (M (Y M)) => ...
+\paragraph{簡約例}
+
+\begin{align*}
+  e_1 & = \Resetz ~~\cLet~x_1=\csp{3}~\cIn \\
+      & \phantom{=}~~ \Resetz ~~\cLet~x_2=\csp{5}~\cIn \\
+      & \phantom{=}~~ \Shiftz~k~\to~\cLet~y=t~\cIn \\
+      & \phantom{=}~~ \Throw~ k~ (x_1~\cPlus~x_2~\cPlus~y) \\
+\end{align*}
+
+\begin{align*}
+  [ e_1 ] &\lto [ \Resetz (\cLet~x_1=\csp{3}~\cIn \\
+          &\Resetz~ \cLet~x_2=\csp{5}~\cIn \\
+          &[ \Shiftz~ k~ \to~ \cLet~ y=t~ \cIn \\
+          &[ \Throw~ k~(x_1~\cPlus~x_2~\cPlus~y) ] ] ) ] \\
+          &\lto [ \cLet~ y=t~ \cIn \\
+          &[ \cfun{x}{\Resetz~ (\cLet~x_1=\csp{3}~ \cIn~ \Resetz~ (\cLet~ x_2=\csp{5}~ \cIn [x]))} (x_1~\cPlus~x_2~\cPlus~y) ]] \\
+          &\lto [ \cfun{y}{(\cfun{x}{\Resetz~ (\cLet~x_1=\csp{3}~ \cIn~ \Resetz~ (\cLet~ x_2=\csp{5}~ \cIn [x]))} (x_1~\cPlus~x_2~\cPlus~y))} \cat t ] \\
+          &\lto [[\cfun{y}{(\cfun{x}{\Resetz~ (\cLet~x_1=\csp{3}~ \cIn~ \Resetz~ (\cLet~ x_2=\csp{5}~ \cIn [x]))} (x_1~\cPlus~x_2~\cPlus~y))}] \cat t] \\
+          &\lto [[\ccfun{y_1}{(\cfun{x}{\Resetz~ (\cLet~x_1=\csp{3}~ \cIn~ \Resetz~ (\cLet~ x_2=\csp{5}~ \cIn [x]))} (x_1~\cPlus~x_2~\cPlus~ \code{y_1}))}] \cat t] \\
+          &\lto
+\end{align*}
+
+let ref の e1 e2 の制限 scope extrusion問題への対処
+shift reset で同じようなことをかけるので，これについて考える
+
 
 \section{Type System}
 
@@ -145,13 +206,13 @@ $\rightarrow$ present stage で shift reset throw も動くので．
 
 Typing rule for code-level reset0:
 \[
-  \infer{\Gamma \vdash \cresetz{e} ~:~ \codeT{t}{\gamma}}
+  \infer{\Gamma \vdash \resetz{e} ~:~ \codeT{t}{\gamma}}
   {\Gamma \vdash e ~:~ \codeT{t}{\gamma}}
 \]
 
 Typing rule for code-level shift0:
 \[
-  \infer{\Gamma \vdash \cshiftz{k}{e} ~:~ \codeT{t_1}{\gamma_1}}
+  \infer{\Gamma \vdash \shiftz{k}{e} ~:~ \codeT{t_1}{\gamma_1}}
   {\Gamma,~k:\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}
     \vdash e ~:~ \codeT{t_0}{\gamma_0}
     & \Gamma \models \gamma_1 \ord \gamma_0
@@ -162,7 +223,7 @@ Typing rule for code-level throw:
 \[
   \infer[(\gamma_3~\text{is eigen var})]
   {\Gamma,~k:\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}
-    \vdash \cthrow{k}{e} ~:~ \codeT{t_0}{\gamma_2}}
+    \vdash \throw{k}{e} ~:~ \codeT{t_0}{\gamma_2}}
   {\Gamma,~
     \gamma_3 \ord \gamma_1,~
     \gamma_3 \ord \gamma_2
@@ -195,6 +256,29 @@ If $t=x_2$, then $e_1$ is not typable.
 If $t=\csp{7}$, then $e_1$ is typable.
 
 If $t=x_2$ or $t=x_1$, then $e_1$ is not typable.
+
+\section{型安全性の証明}
+型システムの健全性を型保存定理，進行定理によって証明する
+
+\subsection{型保存}
+\begin{theo}[型保存]
+  $\vdash e:t$ かつ $e \lto e'$ であれば，$\vdash e':t$ である
+\end{theo}
+
+\subsection{進行}
+\begin{theo}[進行]
+  $\vdash e:t$ が導出可能であれば，$e$ は 値 $v$ である．または，$e \lto e'$ であるような 項 $e'$ が存在する
+\end{theo}
+
+\paragraph{証明}
+$\vdash e:t$ の導出に関する帰納法による．\\
+Const, Abs, Code 規則の場合 $e$ は値である．\\
+Var 規則の場合 $\vdash e:t$ は導出可能でない．\\
+Throw 規則の場合 $\vdash e:t$ は導出可能でない．\\
+Reset0 規則の場合 $e = \Resetz~ e_1$ とする．
+帰納法の仮定より評価文脈における $\Resetz E$ より簡約が進み，\\
+$e_1$ が値のとき，$e \lto v$ となるような $v$ が存在する．\\
+$e_1$ が値でないとき，
 
 \end{document}
 
