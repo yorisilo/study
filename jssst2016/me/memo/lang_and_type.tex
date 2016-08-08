@@ -1,5 +1,7 @@
 \documentclass[10pt,a4j]{jarticle}
 
+\usepackage[dvipdfmx]{graphicx,color}
+
 \usepackage{amsmath,amssymb}
 \usepackage{ascmac}
 \usepackage{mathtools}
@@ -19,6 +21,16 @@
 % \renewcommand{\baselinestretch}{2}
 
 % \overfullrule=0pt
+
+\definecolor{DarkGreen}{rgb}{0,0.5,0}
+\definecolor{Magenta}{rgb}{1.0, 0.0, 1.0}
+
+\newcommand\too{\leadsto^*}
+\newcommand\pink[1]{\textcolor{pink}{#1}}
+\newcommand\red[1]{\textcolor{red}{#1}}
+\newcommand\green[1]{\textcolor{green}{#1}}
+\newcommand\magenta[1]{\textcolor{magenta}{#1}}
+\newcommand\blue[1]{\textcolor{blue}{#1}}
 
 \newcommand\fun[2]{\lambda{#1}.{#2}}
 
@@ -45,6 +57,7 @@
 \newcommand\cIn{\underline{\textbf{in}}}
 \newcommand\clet[3]{\cLet~{#1}={#2}~\cIn~{#3}}
 \newcommand\csp[1]{\texttt{\%}{#1}}
+\newcommand\cint{\underline{\textbf{cint}}}
 \newcommand\code[1]{\texttt{<}{#1}\texttt{>}}
 
 \newcommand\codeT[2]{\langle{#1}\rangle^{#2}}
@@ -64,7 +77,11 @@
 \newcommand\cfix{\underline{\textbf{fix}}}
 
 \newcommand\lto{\leadsto}
-\newcommand\cat{~\underline{@}~}
+\newcommand\cat{\underline{@}}
+
+% コメントマクロ
+\newcommand\kam[1]{\red{{#1}}}
+\newcommand\ooi[1]{\blue{{#1}}}
 
 \theoremstyle{break}
 
@@ -85,22 +102,23 @@ answer type modificationについては考えない
 
 \section{Syntax}
 \begin{align*}
-  v & ::= c \mid \fun{x}{e} \mid \code{e} \\
-  e & ::=  x \mid c \mid \fun{x}{e} \mid e~e \\
+  v & ::= c_0 \mid \fun{x}{e} \mid \code{e} \\
+  e & ::=  x \mid c_0 \mid c_1~ e \mid c_2~ e_1~ e_2 \mid c_3~ e_1~ e_2~ e_3 \mid \fun{x}{e} \mid e_1~ e_2 \\
     & \mid \cfun{x}{e}
       \mid \ccfun{x}{e}
       \mid \resetz{e}
       \mid \shiftz{k}{e}
       \mid \throw{k}{e} \\
-    & \mid \clet{x}{e}{e}
-      \mid \ift{e_1}{e_2}{e_3}
-      \mid \cdots \\
-  c & ::= N \mid B \mid \csp \mid \cat \mid + \mid \cPlus \mid \cIf \mid \fix \mid \cfix
+    & \mid \clet{x}{e_1}{e_2}
+      \mid \ift{e_1}{e_2}{e_3} \\
+  c_0 & ::= N \mid B \\
+  & \text{N is Integer numeric (1,2,3,$\cdots$), B is Bool (true or false)}\\
+  c_1 & ::= \cint \mid \fix \mid \cfix \\
+  c_2 & ::= \cat \mid + \mid \cPlus \\
+  c_3 & ::= \cIf
 \end{align*}
 
 % fix http://d.hatena.ne.jp/tanakh/20040813
-
-N is Integer numeric, B is Bool (true or false)
 
 \section{Semantics}
 left-to-right, call-by-value
@@ -108,7 +126,9 @@ left-to-right, call-by-value
 \subsection{Evaluation Context}
 
 \begin{align*}
-  E & ::= [~] \mid E~ e \mid v~ E \mid \Resetz~ E \mid \ccfun{x}{E} \mid \ift{E}{e_1}{e_2}
+  E & ::= [~] \mid E~ e \mid v~ E \\
+    & \mid c_1~ E \mid c_2~ E~ e \mid c_2~ v~ E \\
+    & \mid \ift{E}{e_1}{e_2} \mid \Resetz~ E \mid \ccfun{x}{E}
 \end{align*}
 
 \subsection{Operation Semantics}
@@ -125,30 +145,36 @@ $\Shiftz$ $\Resetz$ $\Throw$ は コードの型を持つ $e$ のみを引数に
 $\Throw~ k~ e$ ってあるけど，これ，$\Throw~ e$ にしたほうがいい？ $\Rightarrow$ 良くない．
 
 \begin{align*}
-  & \infer{e \lto e'}
+  &\infer{e \lto e'}
     {E[e] \lto E[e']} \\
-  E[(\fun{x}{e})~v] &\lto E[e\{ x := v \}] \\
-  E[\letin{x}{v}{e}] &\lto E[e\{ x := v \}]\\
-  % E[\cResetz~\code{e}] &\lto E[\code{\resetz e}] \\
-  E[\Resetz~ v] &\lto E[v] \\
-  E[\cfun{x}{e}] &\lto E[\ccfun{y}{e\{ x := \code{y} \}}] \\
-                    &y \text{ is fresh variable} \\
-  E[\ccfun{y}{\code{e}}] &\lto E[\code{\fun{y}{e}}] \\
+\end{align*}
+
+\begin{align*}
+  (\fun{x}{e})~v &\lto e\{ x := v \} \\
+  \letin{x}{v}{e} &\lto e\{ x := v \}\\
+  \ift{true}{e_1}{e_2} &\lto e_1 \\
+  \ift{else}{e_1}{e_2} &\lto e_2 \\
+  \cfun{x}{e} &\lto \ccfun{y}{e\{ x := \code{y} \}} \\
+  &y \text{ is fresh variable} \\
+  \ccfun{y}{\code{e}} &\lto \code{\fun{y}{e}} \\
   % E[\cResetz (E'[\cShiftz ~k \to E''[\cThrow~ k~ e]])] &\lto E[E''[k e\{k := \cfun{x}{\cResetz~ (E'[x])} \}]] \\
   % E[\Resetz (E'[\Shiftz~ k \to E''[\Throw~ k~ e]])] &\lto E[E''[(k~ e)\{k := \cfun{x}{\Resetz~ (E'[x])} \}]] \\
   % &x \text{ is fresh variable} \\
-  E[\Resetz (E'[\Shiftz~ k \to e]])] &\lto E[e \{k := \cfun{x}{\Resetz~ (E'[x])} \}] \\
-                    &x \text{ is fresh variable} \\
-  E[\Throw~ k~ v] &\lto E[k~ v] \\
-  E[\code{e_1} \cat \code{e_2}] &\lto E[\code{e_1~ e_2}] \\
-  % E[\clet{x}{e_1}{e_2}] &\lto E[\cfun{x}{e_2} \cat e_1] \\
-  E[\clet{x}{e_1}{e_2}] &\lto E[\code{\letin{x}{e_1}{e_2}}] \\
-  E[\% n] &\lto E[\code{n}] \\
-  E[\code{e_1}~ \cPlus~ \code{e_2}] &\lto E[\code{e_1 + e_2}] \\
-  E[\cif{e_1}{e_2}{e_3}] &\lto E[\code{\ift{e_1}{e_2}{e_3}}] \\
-  E[\ift{true}{e_1}{e_2}] &\lto e_1 \\
-  E[\ift{else}{e_1}{e_2}] &\lto e_2 \\
-  E[\fix~ e_1] &\lto E[e_1~ (\fix~ e_1)] \\
+  \Resetz~ v &\lto v \\
+  \Resetz (E[\Shiftz~ k \to e]) &\lto e \{k := \cfun{x}{\Resetz (E[x])} \} \\
+  &x \text{ is fresh variable} \\
+  \Throw~ k~ v &\lto k~ v \\
+\end{align*}
+\ooi{$\Throw$ の簡約は，代入に lambda-substitution のような感じで定義することで無くす？}
+
+\begin{align*}
+  \fix~ e &\lto e~ (\fix~ e) \\
+  \cfix~ e &\lto \code{\fix~ e} \\
+  \cint~ n &\lto \code{n} \\
+  \code{e_1}~ \cat~ \code{e_2} &\lto \code{e_1~ e_2} \\
+  \code{e_1}~ \cPlus~ \code{e_2} &\lto \code{e_1 + e_2} \\
+  \cif{e_1}{e_2}{e_3} &\lto \code{\ift{e_1}{e_2}{e_3}} \\
+  \clet{x}{e_1}{e_2} &\lto \code{\letin{x}{e_1}{e_2}} \\
 \end{align*}
 % Y M = M (Y M)
 % Y = λf.(λx.f(x x)) (λx.f(x x))
@@ -169,9 +195,9 @@ $\Throw~ k~ e$ ってあるけど，これ，$\Throw~ e$ にしたほうがい�
           &[ \Throw~ k~(x_1~\cPlus~x_2~\cPlus~y) ] ] ) ] \\
           &\lto [ \cLet~ y=t~ \cIn \\
           &[ \cfun{x}{\Resetz~ (\cLet~x_1=\csp{3}~ \cIn~ \Resetz~ (\cLet~ x_2=\csp{5}~ \cIn [x]))} (x_1~\cPlus~x_2~\cPlus~y) ]] \\
-          &\lto [ \cfun{y}{(\cfun{x}{\Resetz~ (\cLet~x_1=\csp{3}~ \cIn~ \Resetz~ (\cLet~ x_2=\csp{5}~ \cIn [x]))} (x_1~\cPlus~x_2~\cPlus~y))} \cat t ] \\
-          &\lto [[\cfun{y}{(\cfun{x}{\Resetz~ (\cLet~x_1=\csp{3}~ \cIn~ \Resetz~ (\cLet~ x_2=\csp{5}~ \cIn [x]))} (x_1~\cPlus~x_2~\cPlus~y))}] \cat t] \\
-          &\lto [[\ccfun{y_1}{(\cfun{x}{\Resetz~ (\cLet~x_1=\csp{3}~ \cIn~ \Resetz~ (\cLet~ x_2=\csp{5}~ \cIn [x]))} (x_1~\cPlus~x_2~\cPlus~ \code{y_1}))}] \cat t] \\
+          &\lto [ \cfun{y}{(\cfun{x}{\Resetz~ (\cLet~x_1=\csp{3}~ \cIn~ \Resetz~ (\cLet~ x_2=\csp{5}~ \cIn [x]))} (x_1~\cPlus~x_2~\cPlus~y))}~ \cat~ t ] \\
+          &\lto [[\cfun{y}{(\cfun{x}{\Resetz~ (\cLet~x_1=\csp{3}~ \cIn~ \Resetz~ (\cLet~ x_2=\csp{5}~ \cIn [x]))} (x_1~\cPlus~x_2~\cPlus~y))}]~ \cat~ t] \\
+          &\lto [[\ccfun{y_1}{(\cfun{x}{\Resetz~ (\cLet~x_1=\csp{3}~ \cIn~ \Resetz~ (\cLet~ x_2=\csp{5}~ \cIn [x]))} (x_1~\cPlus~x_2~\cPlus~ \code{y_1}))}]~ \cat~ t] \\
           &\lto
 \end{align*}
 
@@ -182,41 +208,75 @@ shift reset で同じようなことをかけるので，これについて考�
 \section{Type System}
 
 \begin{align*}
-  t & ::= \textrm{BasicType} \mid t \to t \mid \codeT{t}{\gamma}
+  \textrm{BasicType} & ::= \textrm{Int} \mid \textrm{Bool}
 \end{align*}
+
+\begin{align*}
+  t & ::= \textrm{BasicType} \mid t \to t \mid \codeT{t}{\gamma} \\
+  \sigma & ::= \epsilon \mid t, \sigma
+\end{align*}
+
+\begin{align*}
+  \Gamma ::= \emptyset
+  \mid \Gamma, (\gamma \ord \gamma)
+  \mid \Gamma, (x : t)^{L} ; \sigma
+  \mid \Gamma, (u^1 : t)^{\gamma} ; \sigma
+\end{align*}
+
+Typing judgements take the form:
+
+\begin{align*}
+  \Gamma \vdash^{L} e : t ; \sigma \\
+  \Gamma \models \gamma_1 \ord \gamma_2
+\end{align*}
+
+Environment Classifier の rule:
+\[
+  \infer
+  {\Gamma, \gamma_1 \ord \gamma_2 \models \gamma_1 \ord \gamma_2}
+  {}
+\]
+
+\[
+  \infer
+  {\Gamma \models \gamma_1 \ord \gamma_3}
+  {\Gamma \models \gamma_1 \ord \gamma_2 & \Gamma \models \gamma_2 \ord \gamma_3}
+\]
+
+
 
 Typing rule for code-level lambda:
 \[
   \infer[(\gamma_1~\text{is eigen var})]
-  {\Gamma \vdash \cfun{x}{e} ~:~ \codeT{t_1\to t_2}{\gamma}}
-  {\Gamma,~\gamma_1 \ord \gamma,~x:\codeT{t_1}{\gamma_1} \vdash e
-    ~:~ \codeT{t_2}{\gamma_1}}
+  {\Gamma \vdash \cfun{x}{e} : \codeT{t_1\to t_2}{\gamma} ; \sigma}
+  {\Gamma,~\gamma_1 \ord \gamma,~x:\codeT{t_1}{\gamma_1} ; \sigma \vdash e
+    : \codeT{t_2}{\gamma_1}; \sigma}
 \]
 
 Typing rule for code-level let (derived rule):
 \[
   \infer[(\gamma_1~\text{is eigen var})]
-  {\Gamma \vdash \clet{x}{e_1}{e_2} ~:~ \codeT{t_2}{\gamma}}
-  {\Gamma \vdash e_1 ~:~ \codeT{t_1}{\gamma}
-    &\Gamma,~\gamma_1 \ord \gamma,~x:\codeT{t_1}{\gamma_1} \vdash
-    e_2 ~:~ \codeT{t_2}{\gamma_1}
+  {\Gamma \vdash \clet{x}{e_1}{e_2} : \codeT{t_2}{\gamma} ; \sigma}
+  {\Gamma \vdash e_1 : \codeT{t_1}{\gamma} ; \sigma
+    &\Gamma,~\gamma_1 \ord \gamma,~x:\codeT{t_1}{\gamma_1} ; \sigma \vdash
+    e_2 : \codeT{t_2}{\gamma_1} ; \sigma
   }
 \]
 
-reset0, shift0, throw のアンダーラインは取る？
-$\rightarrow$ present stage で shift reset throw も動くので．
+\ooi{reset0, shift0, throw は，present-stage で動き，引数はコード型のみ}
+
 
 Typing rule for code-level reset0:
 \[
-  \infer{\Gamma \vdash \resetz{e} ~:~ \codeT{t}{\gamma}}
-  {\Gamma \vdash e ~:~ \codeT{t}{\gamma}}
+  \infer{\Gamma \vdash \resetz{e} : \codeT{t}{\gamma} ; \sigma}
+  {\Gamma \vdash e : \codeT{t}{\gamma} ; \codeT{t}{\gamma}, \sigma}
 \]
 
 Typing rule for code-level shift0:
 \[
-  \infer{\Gamma \vdash \shiftz{k}{e} ~:~ \codeT{t_1}{\gamma_1}}
-  {\Gamma,~k:\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}
-    \vdash e ~:~ \codeT{t_0}{\gamma_0}
+  \infer{\Gamma \vdash \shiftz{k}{e} : \codeT{t_1}{\gamma_1} ; \sigma}
+  {\Gamma,~k:\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0} ; \sigma}
+    \vdash e : \codeT{t_0}{\gamma_0} ; \sigma
     & \Gamma \models \gamma_1 \ord \gamma_0
   }
 \]
@@ -224,12 +284,12 @@ Typing rule for code-level shift0:
 Typing rule for code-level throw:
 \[
   \infer[(\gamma_3~\text{is eigen var})]
-  {\Gamma,~k:\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}
-    \vdash \throw{k}{e} ~:~ \codeT{t_0}{\gamma_2}}
+  {\Gamma,~k:\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}} ; \sigma
+    \vdash \throw{k}{e} : \codeT{t_0}{\gamma_2} ; \sigma}
   {\Gamma,~
     \gamma_3 \ord \gamma_1,~
     \gamma_3 \ord \gamma_2
-    \vdash e ~:~ \codeT{t_1}{\gamma_3}
+    \vdash e : \codeT{t_1}{\gamma_3} ; \sigma
     & \Gamma \models \gamma_2 \ord \gamma_0
   }
 \]
@@ -237,15 +297,82 @@ Typing rule for code-level throw:
 Typing rule for Subs-0:
 \[
   \infer
-  {\Gamma,~k:\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}
-    \vdash \throw{k}{e} ~:~ \codeT{t_0}{\gamma_2}}
-  {\Gamma,~
-    \gamma_3 \ord \gamma_1,~
-    \gamma_3 \ord \gamma_2
-    \vdash e ~:~ \codeT{t_1}{\gamma_3}
-    & \Gamma \models \gamma_2 \ord \gamma_0
+  {\Gamma \vdash e : \codeT{t}{\gamma_1} ; \sigma}
+  {\Gamma \vdash e : \codeT{t}{\gamma_2} ; \sigma
+    & \Gamma \models \gamma_1 \ord \gamma_2
   }
 \]
+
+Typing rule for Subs-1:
+\[
+  \infer
+  {\Gamma \vdash e : \codeT{t}{\gamma_1} ; \sigma}
+  {\Gamma \vdash e : \codeT{t}{\gamma_2} ; \sigma
+    & \Gamma \models \gamma_1 \ord \gamma_2
+  }
+\]
+
+Typing rule for Var:
+\[
+  \infer
+  {\Gamma, (x : t)^{L} ; \sigma \vdash^{L} x : t ; \sigma}
+  {}
+\]
+
+Typing rule for App:
+\[
+  \infer
+  {\Gamma \vdash^{L} e_1~ e_2 : t_1 ; \sigma}
+  {\Gamma \vdash^{L} e_1 : t_2 \to t_1 ; \sigma
+    & \Gamma \vdash^{L} e_2 : t_2  ; \sigma
+  }
+\]
+
+Typing rule for Abs:
+\[
+  \infer
+  {\Gamma \vdash^{L} \fun{x}{e} : t_1 \to t_2 \sigma}
+  {\Gamma,~(x : t_1)^{L} ; \sigma \vdash^{L} e : t_2 ; \sigma}
+\]
+
+Typing rule for If:
+\[
+  \infer
+  {\Gamma \vdash^{L} \ift{e_1}{e_2}{e_3} : t ; \sigma}
+  {\Gamma \vdash^{L} e_1 : \textrm{Bool} ; \sigma
+    & \Gamma \vdash^{L} e_3 : t ; \sigma}
+\]
+
+Typing rule for CAbs: $\gamma_1 \not \in FCV(\Gamma, \codeT{t_1 \to t_2}{\gamma})$
+\[
+  \infer
+  {\Gamma \vdash \cfun{x}{e} : \codeT{t_1 \to t_2}{\gamma} ; \sigma}
+  {\Gamma, \gamma_1 \ord \gamma, x : \codeT{t_1}{\gamma_1} ; \sigma \vdash e : \codeT{t_2}{\gamma_1} ; \sigma}
+\]
+
+Typing rule for IAbs: $\gamma_1 \not \in FCV(\Gamma, \codeT{t_1 \to t_2}{\gamma})$
+\[
+  \infer
+  {\Gamma \vdash \ccfun{u^1}{e} : \codeT{t_1 \to t_2}{\gamma} ; \sigma}
+  {\Gamma, \gamma_1 \ord \gamma, x : (u : t_1)^{\gamma_1} ; \sigma \vdash e : \codeT{t_2}{\gamma_1} ; \sigma}
+\]
+
+Typing rule for Code:
+\[
+  \infer
+  {\Gamma \vdash \code{e^1} : \codeT{t^1}{\gamma} ; \sigma}
+  {\Gamma \vdash^{\gamma} e^1 : t^1 ; \sigma}
+\]
+
+Typing rule for Const:
+\[
+  \infer
+  {\Gamma \vdash^{L} c : t^c}
+  {}
+\]
+
+
+\ooi{コードレベルの変数$u^1$，コードレベルの項 $e^1$，コードレベルの型 $t^1$，あと，$t^c$  についてなぜ必要なのかよく分かっていない．．．}
 
 \section{Example}
 
@@ -274,10 +401,61 @@ If $t=x_2$ or $t=x_1$, then $e_1$ is not typable.
 \section{型安全性の証明}
 型システムの健全性を型保存定理，進行定理によって証明する
 
-\subsection{型保存}
+\subsection{型保存 (subject reduction)}
 \begin{theo}[型保存]
   $\vdash e:t$ かつ $e \lto e'$ であれば，$\vdash e':t$ である
 \end{theo}
+
+\begin{lemm}[代入]
+  $\Gamma_1, \Gamma_2, x : t_1 \vdash e : t_2 $
+  かつ
+  $\Gamma_1 \vdash v : t_1 $
+  ならば，
+  $\Gamma_1, \Gamma_2 \vdash e\{x := v\} : t_2$
+\end{lemm}
+
+% \begin{lemm}
+%   $e_1 = \cfun{x}{e_3}$ \\
+%   $e_2 = \ccfun{y}{e_3\{x:=\code{y}\}}~~\text{y is fresh}$
+
+%   \[
+%     \infer
+%     {\Gamma \vdash \cfun{x}{e_3} : \codeT{t_1 \to t_2}{\gamma} ; \sigma}
+%     {\Gamma, \gamma_1 \ord \gamma, x : \codeT{t_1}{\gamma_1} ; \sigma \vdash e : \codeT{t_2}{\gamma_1} ; \sigma}
+%   \]
+
+%   であれば，
+
+%   \[
+%     \infer
+%     {\Gamma \vdash \ccfun{y}{e_3\{x:=\code{y}\}} : \codeT{t_1 \to t_2}{\gamma} ; \sigma}
+%     {\Gamma, \gamma_1 \ord \gamma, (y : t_1)^{\gamma_1} ; \sigma \vdash e_3\{x:=\code{y}\} : \codeT{t_2}{\gamma_1} ; \sigma}
+%   \]
+
+% \end{lemm}
+
+\begin{lemm}[$\underline{\lambda}$]
+  $\Gamma, \gamma_1 \ord \gamma, x : \codeT{t_1}{\gamma_1} ; \sigma \vdash e : \codeT{t_2}{\gamma_1} ; \sigma$
+  ならば，
+  $\Gamma, \gamma_1 \ord \gamma, (y : t_1)^{\gamma_1} ; \sigma \vdash e_3\{x:=\code{y}\} : \codeT{t_2}{\gamma_1} ; \sigma$
+\end{lemm}
+
+\begin{lemm}[$\underline{\underline{\lambda}}$]
+  $\gamma_1 \ord \gamma, \Gamma, (y : t_1)^{\gamma_1} ; \sigma \vdash^{\gamma_1} e : t_2 ; \sigma$
+  ならば，
+  $\Gamma, (y : t_1)^{\gamma} \vdash^{\gamma} e : t_2$
+\end{lemm}
+
+\begin{lemm}[$\Resetz - \Shiftz$]
+  $\Gamma \models \gamma_1 \ord \gamma_0  \Gamma, k : \contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}} ; \sigma \vdash e : \codeT{t_0}{\gamma_0} ; \codeT{t_0}{\gamma_0}$
+  ならば，
+  $k : \contT{\codeT{t_1}{\gamma_1}}{\codeT{t_2}{\gamma_0}} \vdash v : \codeT{t_1}{\gamma_3}$
+\end{lemm}
+
+\ooi{answer type のところ，よく考える}
+
+\paragraph{証明}
+
 
 \subsection{進行}
 \begin{theo}[進行]
