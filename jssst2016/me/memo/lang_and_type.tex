@@ -118,13 +118,15 @@ underline がないもの： present stage で動く
 
 underline があるもの： present stage で動かない
 
-$\Shiftz$ $\Resetz$ $\Throw$ は コードの型を持つ $e$ のみを引数に取ることにする？
+$\Shiftz$ $\Resetz$ $\Throw$ は コードの型を持つ $e$ のみを引数に取ることにする？ $\Rightarrow$ する
 
-コードレベルで shift0/reset0 throw は出てこないようにする？
+コードレベルで shift0/reset0 throw は出てこないようにする？ $\Rightarrow$ する
 
 $\Throw~ k~ e$ ってあるけど，これ，$\Throw~ e$ にしたほうがいい？ $\Rightarrow$ 良くない．
 
 \begin{align*}
+  & \infer{e \lto e'}
+    {E[e] \lto E[e']} \\
   E[(\fun{x}{e})~v] &\lto E[e\{ x := v \}] \\
   E[\letin{x}{v}{e}] &\lto E[e\{ x := v \}]\\
   % E[\cResetz~\code{e}] &\lto E[\code{\resetz e}] \\
@@ -232,6 +234,18 @@ Typing rule for code-level throw:
   }
 \]
 
+Typing rule for Subs-0:
+\[
+  \infer
+  {\Gamma,~k:\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}
+    \vdash \throw{k}{e} ~:~ \codeT{t_0}{\gamma_2}}
+  {\Gamma,~
+    \gamma_3 \ord \gamma_1,~
+    \gamma_3 \ord \gamma_2
+    \vdash e ~:~ \codeT{t_1}{\gamma_3}
+    & \Gamma \models \gamma_2 \ord \gamma_0
+  }
+\]
 
 \section{Example}
 
