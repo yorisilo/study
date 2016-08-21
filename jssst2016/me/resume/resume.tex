@@ -273,35 +273,35 @@ shift0/reset0 を持つコード生成言語の型システムの設計を須藤
 
 \section{対象言語: 構文と意味論}
 
-本研究における対象言語は、ラムダ計算にコード生成機能とコントロールオペ
-レータshift0/reset0を追加したものに型システムを導入したものである。
+本研究における対象言語は，ラムダ計算にコード生成機能とコントロールオペ
+レータshift0/reset0を追加したものに型システムを導入したものである．
 
-本稿では、最小限の言語のみについて考えるため、コード生成機能の
-「ステージ(段階)」は、コード生成段階(レベル0、現在ステージ)と
-生成されたコードの実行段階(レベル1、将来ステージ)の2ステージのみを考える。
+本稿では，最小限の言語のみについて考えるため，コード生成機能の
+「ステージ(段階)」は，コード生成段階(レベル0，現在ステージ)と
+生成されたコードの実行段階(レベル1，将来ステージ)の2ステージのみを考える．
 
-言語のプレゼンテーションにあたり、先行研究にならい
-コードコンビネータ(Code Combinator)方式を使う。MetaML/MetaOCamlなどにおける擬似引用
+言語のプレゼンテーションにあたり，先行研究にならい
+コードコンビネータ(Code Combinator)方式を使う．MetaML/MetaOCamlなどにおける擬似引用
 (Quasi-quotation)方式が「ブラケット(コード生成,quotation)」と「エスケープ(コード
-合成,anti-quotation)」を用いるのに対して、
-コードコンビネータ方式では、
-「ブラケット(コード生成,quotation)」のみを用い、そのかわりに、
-各種の演算子を2セットずつ用意する。
-たとえば、加算は$e_1+e_2$という通常版のほか、
-$e_1 \cPlus e_2$ というコードコンビネータ版も用意する。後者は
-$\code{3} \cPlus \code{5}$を計算すると$\code{3+5}$が得られる。
-このように、コードコンビネータは、演算子名に下線をつけてあらわす。
+合成,anti-quotation)」を用いるのに対して，
+コードコンビネータ方式では，
+「ブラケット(コード生成,quotation)」のみを用い，そのかわりに，
+各種の演算子を2セットずつ用意する．
+たとえば，加算は$e_1+e_2$という通常版のほか，
+$e_1 \cPlus e_2$ というコードコンビネータ版も用意する．後者は
+$\code{3} \cPlus \code{5}$を計算すると$\code{3+5}$が得られる．
+このように，コードコンビネータは，演算子名に下線をつけてあらわす．
 
 \subsection{構文の定義}
 
-対象言語の構文を定義する。
+対象言語の構文を定義する．
 
-変数は、レベル0変数($x$), レベル1変数($u$),
-(レベル0の)継続変数($k$)の3種類がある。
-レベル0項($e^0$)、レベル1項($e^1$)およびレベル0の値($v$)を下の通り定義する。
+変数は，レベル0変数($x$), レベル1変数($u$),
+(レベル0の)継続変数($k$)の3種類がある．
+レベル0項($e^0$)，レベル1項($e^1$)およびレベル0の値($v$)を下の通り定義する．
 
 \begin{align*}
-  c & ::= i \mid b \mid \cint 
+  c & ::= i \mid b \mid \cint
          \mid \cat \mid + \mid \cPlus \mid \cIf \\
   v & ::= x \mid c \mid \fun{x}{e^0} \mid \code{e^1} \\
   e^0 & ::=  v  \mid e^0~ e^0 \mid \ift{e^0}{e^0}{e^0} \\
@@ -310,40 +310,40 @@ $\code{3} \cPlus \code{5}$を計算すると$\code{3+5}$が得られる。
     & \mid \resetz{e^0}
       \mid \shiftz{k}{e^0}
       \mid \throw{k}{v} \\
-  e^1 & ::=  u \mid c \mid \fun{u}{e^1} \mid e^1~ e^1 
+  e^1 & ::=  u \mid c \mid \fun{u}{e^1} \mid e^1~ e^1
       \mid \ift{e^1}{e^1}{e^1} \\
 \end{align*}
-ここで$i$は整数の定数、$b$は真理値定数である。
+ここで$i$は整数の定数，$b$は真理値定数である．
 
-定数のうち、下線がついているものはコードコンビネータである。
-変数は、ラムダ抽象(下線なし、下線つき、二重下線つき)および shift0 により束縛され、
-$\alpha$同値な項は同一視する。
-$\letin{x}{e_1}{e_2}$および$\clet{x}{e_1}{e_2}$は、
-それぞれ、$(\fun{x}{e_2})e_1$
-$(\cfun{x}{e_2})\cat e_1$の省略形である。
+定数のうち，下線がついているものはコードコンビネータである．
+変数は，ラムダ抽象(下線なし，下線つき，二重下線つき)および shift0 により束縛され，
+$\alpha$同値な項は同一視する．
+$\letin{x}{e_1}{e_2}$および$\clet{x}{e_1}{e_2}$は，
+それぞれ，$(\fun{x}{e_2})e_1$
+$(\cfun{x}{e_2})\cat e_1$の省略形である．
 
 \subsection{操作的意味論}
 
-対象言語は、値呼びで left-to-rightの操作的意味論を持つ。
-ここでは評価文脈に基づく定義を与える。
+対象言語は，値呼びで left-to-rightの操作的意味論を持つ．
+ここでは評価文脈に基づく定義を与える．
 
-評価文脈を以下のように定義する。
+評価文脈を以下のように定義する．
 \begin{align*}
   E & ::= [~] \mid E~ e^0 \mid v~ E \\
     & \mid \ift{E}{e^0}{e^0} \mid \Resetz~ E \mid \ccfun{u}{E}
 \end{align*}
-コード生成言語で特徴的なことは、
-コードレベルのラムダ抽象の内部で評価が進行する点である。実際、
-上記の定義には、$\ccfun{u}{E}$が含まれている。
-たとえば、$\ccfun{u}{u \cPlus [~]}$ は評価文脈である。
+コード生成言語で特徴的なことは，
+コードレベルのラムダ抽象の内部で評価が進行する点である．実際，
+上記の定義には，$\ccfun{u}{E}$が含まれている．
+たとえば，$\ccfun{u}{u \cPlus [~]}$ は評価文脈である．
 
-この評価文脈$E$と次に述べる計算規則$r \to l$ により、
-評価関係$e \lto e'$ を次のように定義する。
+この評価文脈$E$と次に述べる計算規則$r \to l$ により，
+評価関係$e \lto e'$ を次のように定義する．
 \[
   \infer{E[r] \lto E[l]}{r \to l}
 \]
 
-計算規則は以下の通り定義する。
+計算規則は以下の通り定義する．
 \begin{align*}
   (\fun{x}{e})~v &\to e\{ x := v \} \\
   \ift{true}{e_1}{e_2} &\to e_1 \\
@@ -353,38 +353,38 @@ $(\cfun{x}{e_2})\cat e_1$の省略形である。
   \Resetz~ v &\to v \\
   \Resetz (E[\Shiftz~ k \to e]) &\to e \ksubst{k}{E}
 \end{align*}
-ただし、4行目の$u$はフレッシュなコードレベル変数とし、
-最後の行の$E$は穴の周りに{\Resetz}を含まない評価文脈とする。
-また、この行の右辺のトップレベルに{\Resetz}がない点が、
-shift/reset の振舞いとの違いである。すなわち、shift0 を1回計算すると、
-reset0 が1つはずれるため、shift0 をN個入れ子にすることにより、
-N個分外側のreset0 までアクセスすることができ、多段階let挿入を実現でき
-るようになる。
+ただし，4行目の$u$はフレッシュなコードレベル変数とし，
+最後の行の$E$は穴の周りに{\Resetz}を含まない評価文脈とする．
+また，この行の右辺のトップレベルに{\Resetz}がない点が，
+shift/reset の振舞いとの違いである．すなわち，shift0 を1回計算すると，
+reset0 が1つはずれるため，shift0 をN個入れ子にすることにより，
+N個分外側のreset0 までアクセスすることができ，多段階let挿入を実現でき
+るようになる．
 
-上記における継続変数に対する代入$e\ksubst{k}{E}$は次の通り定義する。
+上記における継続変数に対する代入$e\ksubst{k}{E}$は次の通り定義する．
 \begin{align*}
   (\throw{k}{v})\ksubst{k}{E} &\equiv \Resetz (E[v]) \\
-  (\throw{k'}{v})\ksubst{k}{E} &\equiv \throw{k'}{(v\ksubst{k}{E})} 
+  (\throw{k'}{v})\ksubst{k}{E} &\equiv \throw{k'}{(v\ksubst{k}{E})}
 \\
 & \text{ただし}~k \not= k'
 \end{align*}
-上記以外の$e$に対する定義は透過的である。
+上記以外の$e$に対する定義は透過的である．
 
 上記の定義の1行目で\Resetz を挿入しているのは{\Shiftz}の意味論に対応し
-ており、これを挿入しない場合は別のコントロールオペレータ(Felleisenの
-control/promptに類似した control0/prompt0)の振舞いとなる。
+ており，これを挿入しない場合は別のコントロールオペレータ(Felleisenの
+control/promptに類似した control0/prompt0)の振舞いとなる．
 
 コードコンビネータ定数の振舞い(ラムダ計算における$\delta$規則に相当)は
-以下のように定義する。
+以下のように定義する．
 
 \begin{align*}
   \cint~ n &\to \code{n} \\
   \code{e_1}~ \cat~ \code{e_2} &\to \code{e_1~ e_2} \\
   \code{e_1}~ \cPlus~ \code{e_2} &\to \code{e_1 + e_2} \\
-  \cif{e_1}{e_2}{e_3} &\to \code{\ift{e_1}{e_2}{e_3}} 
+  \cif{e_1}{e_2}{e_3} &\to \code{\ift{e_1}{e_2}{e_3}}
 \end{align*}
 
-計算の例を以下に示す。
+計算の例を以下に示す．
 
 \begin{align*}
   e_1 & = \Resetz ~~\cLet~x_1=\csp{3}~\cIn \\
@@ -412,24 +412,24 @@ shift reset で同じようなことをかけるので，これについて考�
 
 \section{型システム}
 
-本研究での型システムについて述べる。
+本研究での型システムについて述べる．
 
-まず、基本型$b$、環境識別子(Environment Classifier)$\gamma$を以下の通
-り定義する。
+まず，基本型$b$，環境識別子(Environment Classifier)$\gamma$を以下の通
+り定義する．
 \begin{align*}
   b & ::= \intT \mid \boolT \\
-  \gamma & ::= \gamma_x \mid \gamma \cup \gamma 
+  \gamma & ::= \gamma_x \mid \gamma \cup \gamma
 \end{align*}
-$\gamma$の定義における$\gamma_x$は環境識別子の変数を表す。
-すなわち、環境識別子は、変数であるかそれらを$\cup$で結合した形である。
-以下では、メタ変数と変数を区別せず$\gamma_x$を$\gamma$と表記する。
-また、$L ::= \empty \mid \gamma$ は現在ステージと将来ステージをまとめ
-て表す記号である。たとえば、$\Gamma \vdash^L
-e:t~;~\sigma$は、$L=\empty$のとき現在ステージの判断で、
-$L=\gamma$のとき将来ステージの判断となる。
+$\gamma$の定義における$\gamma_x$は環境識別子の変数を表す．
+すなわち，環境識別子は，変数であるかそれらを$\cup$で結合した形である．
+以下では，メタ変数と変数を区別せず$\gamma_x$を$\gamma$と表記する．
+また，$L ::= \empty \mid \gamma$ は現在ステージと将来ステージをまとめ
+て表す記号である．たとえば，$\Gamma \vdash^L
+e:t~;~\sigma$は，$L=\empty$のとき現在ステージの判断で，
+$L=\gamma$のとき将来ステージの判断となる．
 
-レベル0の型$t^0$、レベル1の型$t^1$、(レベル0の)型の有限列$\sigma$,
-(レベル0の)継続の型$\kappa$を次の通り定義する。
+レベル0の型$t^0$，レベル1の型$t^1$，(レベル0の)型の有限列$\sigma$,
+(レベル0の)継続の型$\kappa$を次の通り定義する．
 \begin{align*}
   t^0 & ::= b \mid \funT{t^0}{t^0}{\sigma} \mid \codeT{t^1}{\gamma} \\
   t^1 & ::= b \mid t^1 \to t^1 \\
@@ -437,36 +437,36 @@ $L=\gamma$のとき将来ステージの判断となる。
   \kappa^0 & ::= \contT{\codeT{t^1}{\gamma}}{\codeT{t^1}{\gamma}}{\sigma}
 \end{align*}
 
-レベル0の関数型$\funT{t^0}{t^0}{\sigma}$は、
-エフェクトをあらわす列$\sigma$を伴っている。これは、その関数型をもつ項
-を引数に適用したときに生じる計算エフェクトであり、具体的には、
-\Shiftz の answer type の列である。前述したようにshift0 は多段
-階の reset0 にアクセスできるため、$n$個先のreset0 の answer typeまで記
-憶するため、このように型の列$\sigma$で表現している。
+レベル0の関数型$\funT{t^0}{t^0}{\sigma}$は，
+エフェクトをあらわす列$\sigma$を伴っている．これは，その関数型をもつ項
+を引数に適用したときに生じる計算エフェクトであり，具体的には，
+\Shiftz の answer type の列である．前述したようにshift0 は多段
+階の reset0 にアクセスできるため，$n$個先のreset0 の answer typeまで記
+憶するため，このように型の列$\sigma$で表現している．
 
-本稿の範囲では、コントロールオペレータは現在ステージのみにあらわれ、生
-成されるコードの中にはあらわないため、レベル1の関数型は、エフェクトを
-表す列を持たない。
-また、本項では、shift0/reset0 はコードを操作する目的にのみ使うため、継
-続の型は、コードからコードへの関数の形をしている。
-ここでは、後の定義を簡略化するため、継続を、通常の関数とは区別しており、
-そのため、継続の型も通常の関数の型とは区別して二重の横線で表現している。
+本稿の範囲では，コントロールオペレータは現在ステージのみにあらわれ，生
+成されるコードの中にはあらわないため，レベル1の関数型は，エフェクトを
+表す列を持たない．
+また，本項では，shift0/reset0 はコードを操作する目的にのみ使うため，継
+続の型は，コードからコードへの関数の形をしている．
+ここでは，後の定義を簡略化するため，継続を，通常の関数とは区別しており，
+そのため，継続の型も通常の関数の型とは区別して二重の横線で表現している．
 
-型判断は、以下の2つの形である。
+型判断は，以下の2つの形である．
 \begin{align*}
   \Gamma \vdash^{L} e : t ;~\sigma \\
   \Gamma \models \gamma \ord \gamma
 \end{align*}
-ここで、型文脈$\Gamma$は次のように定義される。
+ここで，型文脈$\Gamma$は次のように定義される．
 \begin{align*}
   \Gamma ::= \emptyset
   \mid \Gamma, (\gamma \ord \gamma)
   \mid \Gamma, (x : t)
-  \mid \Gamma, (u : t)^{\gamma} 
+  \mid \Gamma, (u : t)^{\gamma}
 \end{align*}
 
-型判断の導出規則を与える。まず、$\Gamma \models \gamma \ord \gamma$の
-形に対する規則である。
+型判断の導出規則を与える．まず，$\Gamma \models \gamma \ord \gamma$の
+形に対する規則である．
 
 \[
   \infer
@@ -491,8 +491,8 @@ $L=\gamma$のとき将来ステージの判断となる。
 \]
 
 
-次に、$\Gamma \vdash^{L} e : t ;~\sigma$ の形に対する導出規則を与える。
-まずは、レベル0における単純な規則である。
+次に，$\Gamma \vdash^{L} e : t ;~\sigma$ の形に対する導出規則を与える．
+まずは，レベル0における単純な規則である．
 
 \[
   \infer
@@ -536,7 +536,7 @@ $L=\gamma$のとき将来ステージの判断となる。
     & \Gamma \vdash^{L} e_3 : t ; \sigma}
 \]
 
-次にコードレベル変数に関するラムダ抽象の規則である。
+次にコードレベル変数に関するラムダ抽象の規則である．
 
 \[
   \infer[(\gamma_1~\text{is eigen var})]
@@ -551,7 +551,7 @@ $L=\gamma$のとき将来ステージの判断となる。
   {\Gamma, \gamma_1 \ord \gamma, x : (u : t_1)^{\gamma_1} \vdash e : \codeT{t_2}{\gamma_1} ; \sigma}
 \]
 
-コントロールオペレータに対する型導出規則である。
+コントロールオペレータに対する型導出規則である．
 
 \[
   \infer{\Gamma \vdash \resetz{e} : \codeT{t}{\gamma} ~;~ \sigma}
@@ -576,7 +576,7 @@ $L=\gamma$のとき将来ステージの判断となる。
   }
 \]
 
-コード生成に関する補助的な規則として、Subsumptionに相当する規則等がある。
+コード生成に関する補助的な規則として，Subsumptionに相当する規則等がある．
 \[
   \infer
   {\Gamma \vdash e : \codeT{t}{\gamma_2} ; \sigma}
@@ -655,7 +655,7 @@ If $t=x_2$ or $t=x_1$, then $e_1$ is not typable.
 \end{lemm}
 
 \begin{lemm}[$\Resetz - \Shiftz$]
-  $\Gamma \models \gamma_1 \ord \gamma_0  \Gamma, k : 
+  $\Gamma \models \gamma_1 \ord \gamma_0  \Gamma, k :
 \contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}{\sigma} \vdash e : \codeT{t_0}{\gamma_0} ; \codeT{t_0}{\gamma_0}$
   ならば，
   $k : \contT{\codeT{t_1}{\gamma_1}}{\codeT{t_2}{\gamma_0}}{\sigma} \vdash v : \codeT{t_1}{\gamma_3}$
@@ -676,21 +676,6 @@ Reset0 規則の場合 $e = \Resetz~ e_1$ とする．
 $e_1$ が値のとき，$e \lto v$ となるような $v$ が存在する．\\
 $e_1$ が値でないとき，
 
-\end{document}
-
-%%% Local Variables:
-%%% mode: japanese-latex
-%%% TeX-master: t
-%%% End:
-
-\subsection{プログラム例}
-
-\section{型システム}
-\ooi{answer タイプがお尻に付いた型システムを書く}
-
-\section{型安全性の証明}
-\ooi{ここは途中までになりそう}
-
 \section{まとめと今後の課題}
 \ooi{途中までになったところを今後やりたいこととする？そうすると，研究結果としてはまとまっていないので，タイトルを ``多段階 let 挿入を行うコード生成言語の型システムの設計の試み''に変更するかも}
 
@@ -699,7 +684,6 @@ $e_1$ が値でないとき，
 
 \bibliographystyle {jssst}
 \bibliography {../../../bib/bibfile}
-% Sudo2014のbibfile の書き方を note 使ってるのを変更する必要あり -> 変更しなくておｋぽい
 \end{document}
 
 
