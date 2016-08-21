@@ -443,13 +443,13 @@ If $t=x_2$ or $t=x_1$, then $e_1$ is not typable.
 \begin{lemm}[$\underline{\underline{\lambda}}$]
   $\gamma_1 \ord \gamma, \Gamma, (y : t_1)^{\gamma_1} ; \sigma \vdash^{\gamma_1} e : t_2 ; \sigma$
   ならば，
-  $\Gamma, (y : t_1)^{\gamma} \vdash^{\gamma} e : t_2$
+  $\Gamma, (y : t_1)^{\gamma} \vdash^{\gamma} e : t_2 ; \sigma$
 \end{lemm}
 
 \begin{lemm}[$\Resetz - \Shiftz$]
   $\Gamma \models \gamma_1 \ord \gamma_0  \Gamma, k : \contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}} ; \sigma \vdash e : \codeT{t_0}{\gamma_0} ; \codeT{t_0}{\gamma_0}$
   ならば，
-  $k : \contT{\codeT{t_1}{\gamma_1}}{\codeT{t_2}{\gamma_0}} \vdash v : \codeT{t_1}{\gamma_3}$
+  $\vdash v : \codeT{t_1}{\gamma_3}$
 \end{lemm}
 
 \ooi{answer type のところ，よく考える}
