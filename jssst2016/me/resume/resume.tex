@@ -130,27 +130,44 @@ forループを飛び越えたコード移動を許す仕組みであり，ル�
 \maketitle \thispagestyle {empty}
 
 \section{はじめに}
-コード生成法は，プログラムの生産性・保守性と実行性能の高さを両立させられるプログラミング手法として有力なものである．
-% 本研究室では，コード生成法をサポートするプログラム言語の信頼性・安全性を高める研究を行ってきている．
-本研究は，コード生成法で必要とされる「多段階let挿入」等を簡潔に表現できるコントロールオペレータである shift0/reset0を持つコード生成言語とその型システムを構築し，生成されたコードの型安全性を保証する．
+コード生成法は，プログラムの生産性・保守性と実行性能の高さを両立させら
+れるプログラミング手法として有力なものである．
+本研究は，コード生成法で必要とされる「多段階let挿入」等を簡潔に表現で
+きるコントロールオペレータである shift0/reset0を持つコード生成言語とそ
+の型システムを構築し，生成されたコードの型安全性を静的に保証する言語体
+系および型システムを設計する。
+これにより、コード生成器のコンパイル段階、すなわち、実際にコードが生成
+されてコンパイルされるより遥かに前の段階でのエラーの検出が可能となると
+いう利点がある。
 
-% すなわち，プログラム生成を行うことによって生成されるプログラムが安全に
-% 実行されることを，プログラムの生成段階より早い段階，
-% すなわちプログラム生成を行うプログラムのコンパイル段階で検査することの
-% できる言語体系およびシステムを構築することを目標としている．
+コード生成におけるlet挿入は，生成されたコードを移動して効率良いコード
+に変形するための機能であり、ループ不変式をforループの外側に移動したり、
+コードの計算結果を共有するなどのコード変換(コード最適化)において必要な機能である。
+多段階let挿入は、入れ子になったforループ等を飛び越えて、コードを移動す
+る機能である。
 
-多段階let挿入は，入れ子になったforループを飛び越えたコード移動を許す仕組みであり，ループ不変式の移動などのために必要である．
+% ここでいう安全性は，構文的に正しいプログラムであること，
+% 文字列同士の加算や乗算を決して行わない等の通常の型安全性を満たすことのほか，
+% 自由変数やプログラム特化後において利用できない変数に依存したプログラム
+% を生成しないという，変数や変数スコープに関する性質を含む概念である．
 
-ここでいう安全性は，構文的に正しいプログラムであること，
-文字列同士の加算や乗算を決して行わない等の通常の型安全性を満たすことのほか，
-自由変数やプログラム特化後において利用できない変数に依存したプログラム
-を生成しないという，変数や変数スコープに関する性質を含む概念である．
+% この研究での大きな課題は，従来のコード生成のためのプログラミング言語の多くが，純粋なラムダ計算に基づく関数型プログラミング言語を基礎としており，効率の良いコードを生成する多くの技法をカバーしていないことである．これを克服する体系，すなわち，効率良いプログラムを記述するための表現力を高めつつ，安全性が保証された体系が求められている．
 
-この研究での大きな課題は，従来のコード生成のためのプログラミング言語の多くが，純粋なラムダ計算に基づく関数型プログラミング言語を基礎としており，効率の良いコードを生成する多くの技法をカバーしていないことである．これを克服する体系，すなわち，効率良いプログラムを記述するための表現力を高めつつ，安全性が保証された体系が求められている．
+本研究は，
+多段階let挿入を可能とするコード生成体系の構築のため、
+比較的最近になって理論的性質が解明されたshift0/reset0 という
+コントロールオペレータに着目する。
+このコントロールオペレータに対する型規則を適切に設計することにより、
+型安全性を厳密に保証し、上記の問題を解決した。
 
-本研究の目的は，安全性が厳密に保証される計算体系の理論を構築し，さらにそれを実現する処理系を実装することを目的とする．このため，比較的最近になって理論的性質が解明されつつあるshift0/reset0 というコントロールオペレータに着目し，これをコード生成の体系に追加して得られた体系を構築して，上記の課題を解決することを狙いとする．
-
-コード生成言語の型安全性に関して，破壊的代入を持つ体系に対する須藤らの研究\cite{Sudo2014}等があるが，本研究は，彼らの環境識別子に対する小さな拡張により，shift0/reset0 に対する型システムが構築できることを示す．
+本研究に関連した従来研究としては、
+束縛子を越えない範囲でのコントロールオペレータを許した研究や、
+局所的な代入可能変数を持つ体系に対する須藤らの研究\cite{Sudo2014}、
+後者を、グローバルな代入可能変数を持つ体系に拡張した研究
+\cite{Aplas2016}などがある。
+しかし、いずれの研究でも 多段階のforループを飛び越えたlet挿入は許していない。
+本研究は，須藤らの研究をベースに、
+shift0/reset0 を持つコード生成体系を設計した点に新規性がある。
 
 \section{準備}
 \subsection{マルチステージプログラミング}
@@ -470,6 +487,10 @@ $L=\gamma$のとき将来ステージの判断となる。
 
 \[
   \infer
+  {\Gamma \models \gamma_1 \ord \gamma_1}
+  {}
+\quad
+  \infer
   {\Gamma, \gamma_1 \ord \gamma_2 \models \gamma_1 \ord \gamma_2}
   {}
 \]
@@ -489,6 +510,14 @@ $L=\gamma$のとき将来ステージの判断となる。
   {\Gamma \models \gamma_1 \cup \gamma_2 \ord \gamma_2}
   {}
 \]
+
+\[
+  \infer
+  {\Gamma \models \gamma_3 \ord \gamma_1 \cup \gamma_2}
+  {\Gamma \models \gamma_3 \ord \gamma_1
+  &\Gamma \models \gamma_3 \ord \gamma_2}
+\]
+
 
 
 次に、$\Gamma \vdash^{L} e : t ;~\sigma$ の形に対する導出規則を与える。
@@ -627,54 +656,70 @@ If $t=x_2$ or $t=x_1$, then $e_1$ is not typable.
 
 \section{型安全性の証明}
 
-型システムの健全性を型保存定理，進行定理によって証明する
+本研究の型システムに対する型保存(Subject Reduction)定理とその証明のポイントを示す。
 
-\subsection{型保存 (subject reduction)}
-\begin{theo}[型保存]
-  $\vdash e:t$ かつ $e \lto e'$ であれば，$\vdash e':t$ である
+\begin{theo}[型保存定理]
+$\vdash e:t~;~\sigma$ かつ $e \lto e'$ であれば，$\vdash e':t~;~\sigma$ である。
 \end{theo}
+
+通常の型保存定理では、
+仮定が$\Gamma \vdash e:t~;~\sigma$となり、項$e$が自由変数を持つことを
+許すのであるが、証明に関する技術的理由により、本稿では、閉じた項のみに対する型保存
+定理を示す。
+
+\begin{lemm}[不要な仮定の除去]
+  $\Gamma_1,\gamma_2 \ord \gamma_1 \vdash e : t_1 ~;~\sigma$
+  かつ、$\gamma_2$が $\Gamma_1, e, t_1, \sigma$に出現しないなら、
+  $\Gamma_1 \vdash e : t_1 ~;~\sigma$ である。
+\end{lemm}
+
+\begin{lemm}[値に関する性質]
+  $\Gamma_1 \vdash v : t_1 ~;~\sigma$
+  ならば，
+  $\Gamma_1 \vdash v : t_1 ~;~\sigma'$
+  である。
+\end{lemm}
 
 \begin{lemm}[代入]
-  $\Gamma_1, \Gamma_2, x : t_1 \vdash e : t_2 $
+  $\Gamma_1, \Gamma_2, x : t_1 \vdash e : t_2 ~;~\sigma$
   かつ
-  $\Gamma_1 \vdash v : t_1 $
+  $\Gamma_1 \vdash v : t_1 ~;~\sigma$
   ならば，
-  $\Gamma_1, \Gamma_2 \vdash e\{x := v\} : t_2$
+  $\Gamma_1, \Gamma_2 \vdash e\{x := v\} : t_2~;~\sigma$
 \end{lemm}
 
-\begin{lemm}[$\underline{\lambda}$]
-  $\Gamma, \gamma_1 \ord \gamma, x : \codeT{t_1}{\gamma_1} \vdash e : \codeT{t_2}{\gamma_1} ; \sigma$
-  ならば，
-  $\Gamma, \gamma_1 \ord \gamma, (y : t_1)^{\gamma_1} \vdash e_3\{x:=\code{y}\} : \codeT{t_2}{\gamma_1} ; \sigma$
+\kam{次の補題は、もうちょっとチェックしないといけない}
+
+\begin{lemm}[識別子に関する多相性]
+  穴の周りにreset0を含まない評価文脈$E$、変数$x$、
+  そして$\Gamma = (u_1:t_1)^{\gamma_1}, \cdots, (u_n:t_n)^{\gamma_n}$
+      かつ$i=1,\cdots,n$に対して$\gamma_0 \ord \gamma_i$であるとする。
+  このとき、
+  $\Gamma, x:\codeT{t_0}{\gamma'} \vdash E[x] : \codeT{t_1}{\gamma_0} ~;~\sigma$
+  であれば、$\Gamma \models \gamma \ord \gamma_0$となる任意の$\gamma$に対して、
+  $\Gamma, x:\codeT{t_0}{\gamma'\cup \gamma} \vdash 
+   E[x] : \codeT{t_1}{\gamma_0} ~;~\sigma$
+  である。 
 \end{lemm}
 
-\begin{lemm}[$\underline{\underline{\lambda}}$]
-  $\gamma_1 \ord \gamma, \Gamma, (y : t_1)^{\gamma_1} \vdash^{\gamma_1} e : t_2 ; \sigma$
-  ならば，
-  $\Gamma, (y : t_1)^{\gamma} \vdash^{\gamma} e : t_2$
-\end{lemm}
+%\subsection{進行}
+%\begin{theo}[進行]
+%  $\vdash e:t$ が導出可能であれば，$e$ は 値 $v$ である．または，$e \lto e'$ であるような 項 $e'$ が存在する
+%\end{theo}
+%
+%\paragraph{証明}
+%$\vdash e:t$ の導出に関する帰納法による．\\
+%Const, Abs, Code 規則の場合 $e$ は値である．\\
+%Var 規則の場合 $\vdash e:t$ は導出可能でない．\\
+%Throw 規則の場合 $\vdash e:t$ は導出可能でない．\\
+%Reset0 規則の場合 $e = \Resetz~ e_1$ とする．
+%帰納法の仮定より評価文脈における $\Resetz E$ より簡約が進み，\\
+%$e_1$ が値のとき，$e \lto v$ となるような $v$ が存在する．\\
+%$e_1$ が値でないとき，
 
-\begin{lemm}[$\Resetz - \Shiftz$]
-  $\Gamma \models \gamma_1 \ord \gamma_0  \Gamma, k : 
-\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}{\sigma} \vdash e : \codeT{t_0}{\gamma_0} ; \codeT{t_0}{\gamma_0}$
-  ならば，
-  $k : \contT{\codeT{t_1}{\gamma_1}}{\codeT{t_2}{\gamma_0}}{\sigma} \vdash v : \codeT{t_1}{\gamma_3}$
-\end{lemm}
+\section{関連研究と結論}
 
-\subsection{進行}
-\begin{theo}[進行]
-  $\vdash e:t$ が導出可能であれば，$e$ は 値 $v$ である．または，$e \lto e'$ であるような 項 $e'$ が存在する
-\end{theo}
-
-\paragraph{証明}
-$\vdash e:t$ の導出に関する帰納法による．\\
-Const, Abs, Code 規則の場合 $e$ は値である．\\
-Var 規則の場合 $\vdash e:t$ は導出可能でない．\\
-Throw 規則の場合 $\vdash e:t$ は導出可能でない．\\
-Reset0 規則の場合 $e = \Resetz~ e_1$ とする．
-帰納法の仮定より評価文脈における $\Resetz E$ より簡約が進み，\\
-$e_1$ が値のとき，$e \lto v$ となるような $v$ が存在する．\\
-$e_1$ が値でないとき，
+{\bf 謝辞} 本研究は、JSPS 科研費 15K12007 の支援を受けている。
 
 \end{document}
 
@@ -698,7 +743,7 @@ $e_1$ が値でないとき，
 ほげほげ
 
 \bibliographystyle {jssst}
-\bibliography {../../../bib/bibfile}
+\bibliography {../../bib/bibfile}
 % Sudo2014のbibfile の書き方を note 使ってるのを変更する必要あり -> 変更しなくておｋぽい
 \end{document}
 
