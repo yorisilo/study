@@ -25,6 +25,3 @@ backup:
 clean:
 	/bin/rm -f *.dvi *.aux *.out *.pdf
 
-.PHONY:	allclean
-allclean:
-	/bin/rm -f *.dvi *.aux *.out *.pdf
