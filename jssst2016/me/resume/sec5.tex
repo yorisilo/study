@@ -9,17 +9,10 @@
 「ステージ(段階)」は、コード生成段階(レベル0、現在ステージ)と
 生成されたコードの実行段階(レベル1、将来ステージ)の2ステージのみを考える。
 
-言語のプレゼンテーションにあたり、先行研究にならい
-コードコンビネータ(Code Combinator)方式を使う。MetaML/MetaOCamlなどにおける擬似引用
-(Quasi-quotation)方式が「ブラケット(コード生成,quotation)」と「エスケープ(コード
-合成,anti-quotation)」を用いるのに対して、
-コードコンビネータ方式では、
-「ブラケット(コード生成,quotation)」のみを用い、そのかわりに、
-各種の演算子を2セットずつ用意する。
-たとえば、加算は$e_1+e_2$という通常版のほか、
-$e_1 \cPlus e_2$ というコードコンビネータ版も用意する。後者は
-$\code{3} \cPlus \code{5}$を計算すると$\code{3+5}$が得られる。
-このように、コードコンビネータは、演算子名に下線をつけてあらわす。
+前述したように、本研究の言語では、
+コードコンビネータ(Code Combinator)方式を使い、
+コードコンビネータは、
+$\cPlus$ や $\cIf$のように下線を引いて表す。
 
 \subsection{構文の定義}
 
@@ -50,6 +43,9 @@ $\alpha$同値な項は同一視する。
 $\letin{x}{e_1}{e_2}$および$\clet{x}{e_1}{e_2}$は、
 それぞれ、$(\fun{x}{e_2})e_1$
 $(\cfun{x}{e_2})\cat e_1$の省略形である。
+前述の例でのべた$\cFor$は、
+コード構築定数とコードレベル適用$\cap$を用いて導入することとし、
+(この導入にあたっての型システムの拡張は容易なので)ここでは省略する。
 
 \subsection{操作的意味論}
 
@@ -78,7 +74,7 @@ $(\cfun{x}{e_2})\cat e_1$の省略形である。
   \ift{true}{e_1}{e_2} &\to e_1 \\
   \ift{else}{e_1}{e_2} &\to e_2 \\
   \cfun{x}{e} &\to \ccfun{u}{(e\{ x := \code{u} \})} \\
-  \ccfun{y}{\code{e}} &\to \code{\fun{y}{e}} \\
+  \ccfun{u}{\code{e}} &\to \code{\fun{u}{e}} \\
   \Resetz~ v &\to v \\
   \Resetz (E[\Shiftz~ k \to e]) &\to e \ksubst{k}{E}
 \end{align*}
@@ -97,8 +93,7 @@ N個分外側のreset0 までアクセスすることができ、多段階let挿
 \\
 & \text{ただし}~k \not= k'
 \end{align*}
-上記以外の$e$に対する定義は透過的である。
-
+上記以外の$e$に対する代入の定義は透過的であるとする。
 上記の定義の1行目で\Resetz を挿入しているのは{\Shiftz}の意味論に対応し
 ており、これを挿入しない場合は別のコントロールオペレータ(Felleisenの
 control/promptに類似した control0/prompt0)の振舞いとなる。
@@ -112,39 +107,33 @@ control/promptに類似した control0/prompt0)の振舞いとなる。
   \code{e_1}~ \cPlus~ \code{e_2} &\to \code{e_1 + e_2} \\
   \cif{e_1}{e_2}{e_3} &\to \code{\ift{e_1}{e_2}{e_3}} 
 \end{align*}
-
-計算の例を以下に示す。
-
-\begin{align*}
-  e_1 & = \Resetz ~~\cLet~x_1=\csp{3}~\cIn \\
-      & \phantom{=}~~ \Resetz ~~\cLet~x_2=\csp{5}~\cIn \\
-      & \phantom{=}~~ \Shiftz~k~\to~\cLet~y=t~\cIn \\
-      & \phantom{=}~~ \Throw~ k~ (x_1~\cPlus~x_2~\cPlus~y) \\
-\end{align*}
-
-\begin{align*}
-  [ e_1 ] &\lto [ \Resetz (\cLet~x_1=\csp{3}~\cIn \\
-          &\Resetz~ \cLet~x_2=\csp{5}~\cIn \\
-          &[ \Shiftz~ k~ \to~ \cLet~ y=t~ \cIn \\
-          &[ \Throw~ k~(x_1~\cPlus~x_2~\cPlus~y) ] ] ) ] \\
-          &\lto [ \cLet~ y=t~ \cIn \\
-          &[ \cfun{x}{\Resetz~ (\cLet~x_1=\csp{3}~ \cIn~ \Resetz~ (\cLet~ x_2=\csp{5}~ \cIn [x]))} (x_1~\cPlus~x_2~\cPlus~y) ]] \\
-          &\lto [ \cfun{y}{(\cfun{x}{\Resetz~ (\cLet~x_1=\csp{3}~ \cIn~ \Resetz~ (\cLet~ x_2=\csp{5}~ \cIn [x]))} (x_1~\cPlus~x_2~\cPlus~y))}~ \cat~ t ] \\
-          &\lto [[\cfun{y}{(\cfun{x}{\Resetz~ (\cLet~x_1=\csp{3}~ \cIn~ \Resetz~ (\cLet~ x_2=\csp{5}~ \cIn [x]))} (x_1~\cPlus~x_2~\cPlus~y))}]~ \cat~ t] \\
-          &\lto [[\ccfun{y_1}{(\cfun{x}{\Resetz~ (\cLet~x_1=\csp{3}~ \cIn~ \Resetz~ (\cLet~ x_2=\csp{5}~ \cIn [x]))} (x_1~\cPlus~x_2~\cPlus~ \code{y_1}))}]~ \cat~ t] \\
-          &\lto
-\end{align*}
-
-let ref の e1 e2 の制限 scope extrusion問題への対処
-shift reset で同じようなことをかけるので，これについて考える
+%計算の例を以下に示す。
+%\begin{align*}
+%  e_1 & = \Resetz ~~\cLet~x_1=\csp{3}~\cIn \\
+%      & \phantom{=}~~ \Resetz ~~\cLet~x_2=\csp{5}~\cIn \\
+%      & \phantom{=}~~ \Shiftz~k~\to~\cLet~y=t~\cIn \\
+%      & \phantom{=}~~ \Throw~ k~ (x_1~\cPlus~x_2~\cPlus~y) \\
+%\end{align*}
+%
+%\begin{align*}
+%  [ e_1 ] &\lto [ \Resetz (\cLet~x_1=\csp{3}~\cIn \\
+%          &\Resetz~ \cLet~x_2=\csp{5}~\cIn \\
+%          &[ \Shiftz~ k~ \to~ \cLet~ y=t~ \cIn \\
+%          &[ \Throw~ k~(x_1~\cPlus~x_2~\cPlus~y) ] ] ) ] \\
+%          &\lto [ \cLet~ y=t~ \cIn \\
+%          &[ \cfun{x}{\Resetz~ (\cLet~x_1=\csp{3}~ \cIn~ \Resetz~ (\cLet~ x_2=\csp{5}~ \cIn [x]))} (x_1~\cPlus~x_2~\cPlus~y) ]] \\
+%          &\lto [ \cfun{y}{(\cfun{x}{\Resetz~ (\cLet~x_1=\csp{3}~ \cIn~ \Resetz~ (\cLet~ x_2=\csp{5}~ \cIn [x]))} (x_1~\cPlus~x_2~\cPlus~y))}~ \cat~ t ] \\
+%          &\lto [[\cfun{y}{(\cfun{x}{\Resetz~ (\cLet~x_1=\csp{3}~ \cIn~ \Resetz~ (\cLet~ x_2=\csp{5}~ \cIn [x]))} (x_1~\cPlus~x_2~\cPlus~y))}]~ \cat~ t] \\
+%          &\lto [[\ccfun{y_1}{(\cfun{x}{\Resetz~ (\cLet~x_1=\csp{3}~ \cIn~ \Resetz~ (\cLet~ x_2=\csp{5}~ \cIn [x]))} (x_1~\cPlus~x_2~\cPlus~ \code{y_1}))}]~ \cat~ t] \\
+%          &\lto
+%\end{align*}
 
 
 \section{型システム}
 
 本研究での型システムについて述べる。
 
-まず、基本型$b$、環境識別子(Environment Classifier)$\gamma$を以下の通
-り定義する。
+基本型$b$、環境識別子(Environment Classifier)$\gamma$を以下の通り定義する。
 \begin{align*}
   b & ::= \intT \mid \boolT \\
   \gamma & ::= \gamma_x \mid \gamma \cup \gamma 
@@ -152,7 +141,9 @@ shift reset で同じようなことをかけるので，これについて考�
 $\gamma$の定義における$\gamma_x$は環境識別子の変数を表す。
 すなわち、環境識別子は、変数であるかそれらを$\cup$で結合した形である。
 以下では、メタ変数と変数を区別せず$\gamma_x$を$\gamma$と表記する。
-また、$L ::= \empty \mid \gamma$ は現在ステージと将来ステージをまとめ
+ここで環境識別子として$\cup$を導入した理由は後述する。
+
+$L ::= \empty \mid \gamma$ は現在ステージと将来ステージをまとめ
 て表す記号である。たとえば、$\Gamma \vdash^L
 e:t~;~\sigma$は、$L=\empty$のとき現在ステージの判断で、
 $L=\gamma$のとき将来ステージの判断となる。
@@ -172,6 +163,10 @@ $L=\gamma$のとき将来ステージの判断となる。
 \Shiftz の answer type の列である。前述したようにshift0 は多段
 階の reset0 にアクセスできるため、$n$個先のreset0 の answer typeまで記
 憶するため、このように型の列$\sigma$で表現している。
+ただし、本研究の範囲では、answer type modification に対応する必要はな
+いので、エフェクトはシンプルに型の列($n$個先の reset0 のanswer type を
+$n=1,\cdots,k$に対して並べた列)で表現している。
+この型システムの詳細は、Materzokら\cite{Materzok2011}の研究を参照されたい。
 
 本稿の範囲では、コントロールオペレータは現在ステージのみにあらわれ、生
 成されるコードの中にはあらわないため、レベル1の関数型は、エフェクトを
@@ -342,7 +337,9 @@ $L=\gamma$のとき将来ステージの判断となる。
 \]
 
 
-\section{型付け例}
+\subsection{型付け例}
+
+上記の型システムのもとで、いくつかの項の型付けについて述べる。
 
 \begin{align*}
   e_1 & = \Resetz ~~\cLet~x_1=\csp{3}~\cIn \\
@@ -351,9 +348,9 @@ $L=\gamma$のとき将来ステージの判断となる。
       & \phantom{=}~~ \Throw~k~(x_1~\cPlus~x_2~\cPlus~y)
 \end{align*}
 
-If $t=\csp{7}$ or $t=x_1$, then $e_1$ is typable.
-
-If $t=x_2$, then $e_1$ is not typable.
+この式$e_1$に対して、もし、$t=\csp{7}$ あるいは $t=x_1$であれば、
+$e_1$ は型付け可能である。
+一方、$t=x_2$ であれば、$e_1$ は型付けできない。
 
 \begin{align*}
   e_2 & = \Resetz ~~\cLet~x_1=\csp{3}~\cIn \\
@@ -362,57 +359,88 @@ If $t=x_2$, then $e_1$ is not typable.
       & \phantom{=}~~ \Throw~k_1~(\Throw~k_2~(x_1~\cPlus~x_2~\cPlus~y))
 \end{align*}
 
-If $t=\csp{7}$, then $e_1$ is typable.
+この式$e_2$に対して、もし$t=\csp{7}$であれば$e_1$は型付け可能である。
+一方、$t=x_2$ あるいは $t=x_1$であれば、$e_1$は型付けできない。
 
-If $t=x_2$ or $t=x_1$, then $e_1$ is not typable.
+このように、(少なくとも)上記の例については安全な式と危険な式を正しく峻
+別できていることがわかった。
 
-\section{型安全性の証明}
+\subsection{型安全性について}
 
-本研究の型システムに対する型保存(Subject Reduction)定理とその証明のポイントを示す。
+本研究の型システムに対する型保存(Subject Reduction)定理について述べる。
+型保存定理は、(証明できれば)
+進行(Progress)定理とあわせて型システムの健全性を導く定理である。
 
-\begin{theo}[型保存定理]
-$\vdash e:t~;~\sigma$ かつ $e \lto e'$ であれば，$\vdash e':t~;~\sigma$ である。
-\end{theo}
+\begin{quote}
+(型保存性)
+$\vdash e:t~;~\sigma$ かつ $e \lto e'$ であれば，$\vdash e':t~;~\sigma$
+である。
+\end{quote}
 
-通常の型保存定理では、
-仮定が$\Gamma \vdash e:t~;~\sigma$となり、項$e$が自由変数を持つことを
-許すのであるが、証明に関する技術的理由により、本稿では、閉じた項のみに対する型保存
-定理を示す。
+この定理は reset0-shift0の計算規則が多相性を持たない場合には容易に証明
+できるが、多相性については精密な扱いが必要であり、
+現段階では、型保存定理の証明は進行中である。
 
-\begin{lemm}[不要な仮定の除去]
-  $\Gamma_1,\gamma_2 \ord \gamma_1 \vdash e : t_1 ~;~\sigma$
-  かつ、$\gamma_2$が $\Gamma_1, e, t_1, \sigma$に出現しないなら、
-  $\Gamma_1 \vdash e : t_1 ~;~\sigma$ である。
-\end{lemm}
-
-\begin{lemm}[値に関する性質]
-  $\Gamma_1 \vdash v : t_1 ~;~\sigma$
-  ならば，
-  $\Gamma_1 \vdash v : t_1 ~;~\sigma'$
-  である。
-\end{lemm}
-
-\begin{lemm}[代入]
-  $\Gamma_1, \Gamma_2, x : t_1 \vdash e : t_2 ~;~\sigma$
-  かつ
-  $\Gamma_1 \vdash v : t_1 ~;~\sigma$
-  ならば，
-  $\Gamma_1, \Gamma_2 \vdash e\{x := v\} : t_2~;~\sigma$
-\end{lemm}
-
-\kam{次の補題は、もうちょっとチェックしないといけない}
-
-\begin{lemm}[識別子に関する多相性]
-  穴の周りにreset0を含まない評価文脈$E$、変数$x$、
-  そして$\Gamma = (u_1:t_1)^{\gamma_1}, \cdots, (u_n:t_n)^{\gamma_n}$
-      かつ$i=1,\cdots,n$に対して$\gamma_0 \ord \gamma_i$であるとする。
-  このとき、
-  $\Gamma, x:\codeT{t_0}{\gamma'} \vdash E[x] : \codeT{t_1}{\gamma_0} ~;~\sigma$
-  であれば、$\Gamma \models \gamma \ord \gamma_0$となる任意の$\gamma$に対して、
-  $\Gamma, x:\codeT{t_0}{\gamma'\cup \gamma} \vdash 
-   E[x] : \codeT{t_1}{\gamma_0} ~;~\sigma$
-  である。 
-\end{lemm}
+%\begin{lemm}[不要な仮定の除去]
+%  $\Gamma_1,\gamma_2 \ord \gamma_1 \vdash e : t_1 ~;~\sigma$
+%  かつ、$\gamma_2$が $\Gamma_1, e, t_1, \sigma$に出現しないなら、
+%  $\Gamma_1 \vdash e : t_1 ~;~\sigma$ である。
+%\end{lemm}
+%
+%\begin{lemm}[値に関する性質]
+%  $\Gamma_1 \vdash v : t_1 ~;~\sigma$
+%  ならば，
+%  $\Gamma_1 \vdash v : t_1 ~;~\sigma'$
+%  である。
+%\end{lemm}
+%
+%\begin{lemm}[代入]
+%  $\Gamma_1, \Gamma_2, x : t_1 \vdash e : t_2 ~;~\sigma$
+%  かつ
+%  $\Gamma_1 \vdash v : t_1 ~;~\sigma$
+%  ならば，
+%  $\Gamma_1, \Gamma_2 \vdash e\{x := v\} : t_2~;~\sigma$
+%\end{lemm}
+%
+%これらをもとに型保存定理を証明する。
+%本研究の対象言語は、コントロールオペレータが操作する対象となる式の型を
+%コード型に限定するなど、注意深く設計しているので、ほとんどのケースの証
+%明はスムーズであるが、reset0-shift0 に関する計算規則(shift0 が評価文脈
+%を捕捉して継続変数$k$に渡す規則)とthrowに関する計算規則では、
+%サブタイプ多相性に相当する性質を使っているので、以下の技術的な補題が必
+%要である。
+%
+%\begin{lemm}[識別子に関する多相性]
+%  穴の周りにreset0を含まない評価文脈$E$、変数$x$、
+%  そして$\Gamma = (u_1:t_1)^{\gamma_1}, \cdots, (u_n:t_n)^{\gamma_n}$
+%      かつ$i=1,\cdots,n$に対して$\Gamma \models \gamma_0 \ord \gamma_i$であるとする。
+%  このとき、
+%  $\Gamma, x:\codeT{t_0}{\gamma'} \vdash E[x] : \codeT{t_1}{\gamma_0} ~;~\sigma$
+%  であれば、フレッシュな$\gamma$に対して、
+%  $\Gamma, x:\codeT{t_0}{\gamma'\cup \gamma} \vdash 
+%   E[x] : \codeT{t_1}{\gamma_0 \cup \gamma} ~;~\sigma$
+%  である。 
+%\end{lemm}
+%
+%この補題は、評価文脈$E$に対して、穴の型が$\codeT{t_0}{\gamma'}$で
+%評価文脈全体の型が$\codeT{t_1}{\gamma_0}$であれば、
+%それぞれの環境識別子に$\gamma_2$を加えて、
+%$\codeT{t_0}{\gamma'\cup \gamma}$型から、
+%$\codeT{t_1}{\gamma_0\cup \gamma}$型への評価文脈として使ってもよい、
+%ということを主張している。ここで $\gamma \ord \gamma_0$ なので、
+%$\gamma$と$\gamma_0 \cup \gamma$は$\ord$の意味で等しくなり、
+%$\codeT{t_1}{\gamma_0\cup\gamma}$型を持つ項は、
+%$\codeT{t_1}{\gamma}$型も持つことがわかる。
+%この定理により、shift0が捕捉した継続を(環境識別子について)多相的に使う
+%ことが可能となり、reset0-shift0 の計算規則が正当化される。
+%
+%上記の補題を証明すれば、型保存定理の証明の残りのケースは比較的容易であ
+%る。なお、この補題を使うケースにおいて、定理の言明にあらわれる項$e$が
+%閉じた項であること(環境識別子に関する
+%
+%
+%進行定理については
+%精密な定式化が必要(reset0がない式でshift0を実行した時など)が必要なので、
 
 %\subsection{進行}
 %\begin{theo}[進行]
