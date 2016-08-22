@@ -56,7 +56,7 @@ $\code{u}$(ここで$u$は新たに作成されたコードレベルの変数)�
 
 $\cLet$はlet式のコードを生成する。
 \begin{align*}
-& \cLet~ x = (\cint~3)~ \cIn~ x~ \cPlus~ (\cint~7) \\
+& \clet{x}{(\cint~3)}{x~ \cPlus~ (\cint~7)} \\
   & \too \code{\Let~ x = 3~ \In~ x + 7} 
 \end{align*}
 実は、$\cLet$は、コードコンビネータとしてのラムダ抽象と適用によりマ
@@ -87,13 +87,51 @@ $\caryset{a}{e_1}{e_2}$は対応するコードコンビネータであると仮
 & \qquad \caryset{\code{A}}{x}{(\cint~0)} \\
 & \too \code{\forin{i=3}{7}~\aryset{A}{i}{0}}
 \end{align*}
-入れ子になったfor式は以下のプログラムで生成できる。
+$\cFor$を入れ子にすると、入れ子のfor式が生成できる。
 \begin{align*}
 & \cforin{x=(\cint~3)}{(\cint~7)} \\
 & \cforin{y=(\cint~1)}{(\cint~9)} \\
 & \qquad \caryset{\code{A}}{(x,y)}{(\cint~0)} \\
-& \too \code{\forin{i=3}{7}~\forin{j=1}{9}~\aryset{A}{i,j}{0}}
+& \too \codebegin \forin{i=3}{7} \\
+& \phantom{\too \codebegin} \forin{j=1}{9} \\
+& \phantom{\too \codebegin} ~~\aryset{A}{i,j}{0} \codeend
 \end{align*}
+
+この二重ループの中で、複雑な計算をするループ不変式があったとする。たと
+えば、配列の初期値として$0$でなく、(何らかの複雑な)計算結果を代入する
+が、その計算にはループ変数$i,j$を使わない場合を考える。
+それを$e$とすると、
+\begin{align*}
+& \codebegin \forin{i=3}{7} \\
+& \phantom{\codebegin} \forin{j=1}{9} \\
+& \phantom{\codebegin} ~~\aryset{A}{i,j}{e} \codeend
+\end{align*}
+というコードの代わりに
+\begin{align*}
+& \codebegin \Let~z=e~\In \\
+& \phantom{\codebegin \Let} \forin{i=3}{7} \\
+& \phantom{\codebegin \Let} \forin{j=1}{9} \\
+& \phantom{\codebegin \Let} ~~\aryset{A}{i,j}{z} \codeend
+\end{align*}
+というコードを生成した方がよい。
+
+このように、生成するコードの上部(よりトップレベルに近い方)にlet式を挿
+入することができれば、早い段階で値を計算できたり、また、同一の部分式が
+ある場合は計算結果を再利用できたり、という利点がある。
+
+なお、この変形・最適化は、コードを生成してから行なうのでよければ技術的
+に難しいものではない。しかし、
+コード生成においては、生成されるコード量の爆発が問題になることが多く、
+無駄なコードはできるだけ早い段階で除去したい、すなわち、
+コードを生成してから最適化するのではなく生成段階でコードを変形・最適化したいという
+強い要求がある。
+
+そこで、コード生成器にlet挿入を組み込むことが考えられる。
+let挿入は部分計算(partial evaluation)で研究されてきたものであり、
+コントロールオペレータを適切に用いることで実現できることが知られている。
+本研究では、shift0/reset0 というコントロールオペレータを用いて上記のlet
+挿入を実現する。(従来用いられてきたshift/reset でなく shift0/reset0を
+用いる理由は後述する。)
 
 \begin{align*}
     e &= \red{\Resetz} ~~\cLet~x_1=\csp{3}~\cIn \\
