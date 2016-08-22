@@ -1,0 +1,171 @@
+% 以下の3行は変更しないこと．
+\documentclass[T]{compsoft}
+\taikai{2016}
+\pagestyle {empty}
+
+\usepackage[dvipdfmx]{graphicx,color}
+\usepackage{ascmac}
+
+\usepackage{theorem}
+\usepackage{amsmath,amssymb}
+\usepackage{ascmac}
+\usepackage{mathtools}
+\usepackage{proof}
+\usepackage{stmaryrd}
+\usepackage{listings,jlisting}
+
+% ユーザが定義したマクロなどはここに置く．ただし学会誌のスタイルの
+% 再定義は原則として避けること．
+
+\definecolor{DarkGreen}{rgb}{0,0.5,0}
+\definecolor{Magenta}{rgb}{1.0, 0.0, 1.0}
+
+\newcommand\too{\leadsto^*}
+\newcommand\pink[1]{\textcolor{pink}{#1}}
+\newcommand\red[1]{\textcolor{red}{#1}}
+\newcommand\green[1]{\textcolor{green}{#1}}
+\newcommand\magenta[1]{\textcolor{magenta}{#1}}
+\newcommand\blue[1]{\textcolor{blue}{#1}}
+
+\newcommand\fun[2]{\lambda{#1}.{#2}}
+
+\newcommand\Resetz{\textbf{reset0}}
+\newcommand\Shiftz{\textbf{shift0}}
+\newcommand\Throw{\textbf{throw}}
+\newcommand\resetz[1]{\Resetz~{#1}}
+\newcommand\shiftz[2]{\Shiftz~{#1}\to{#2}}
+\newcommand\throw[2]{\Throw~{#1}~{#2}}
+
+\newcommand\cfun[2]{\underline{\lambda}{#1}.{#2}}
+\newcommand\ccfun[2]{\underline{\underline{\lambda}}{#1}.{#2}}
+
+\newcommand\cResetz{\underline{\textbf{reset0}}}
+\newcommand\cShiftz{\underline{\textbf{shift0}}}
+\newcommand\cThrow{\underline{\textbf{throw}}}
+\newcommand\cresetz[1]{\cResetz~{#1}}
+\newcommand\cshiftz[2]{\cShiftz~{#1}\to{#2}}
+\newcommand\cthrow[2]{\cThrow~{#1}~{#2}}
+
+\newcommand\cPlus{\underline{\textbf{+}}}
+
+\newcommand\cLet{\underline{\textbf{let}}}
+\newcommand\cIn{\underline{\textbf{in}}}
+\newcommand\clet[3]{\cLet~{#1}={#2}~\cIn~{#3}}
+\newcommand\csp[1]{\texttt{\%}{#1}}
+\newcommand\cint{\underline{\textbf{int}}}
+\newcommand\code[1]{\texttt{<}{#1}\texttt{>}}
+
+\newcommand\intT{\mbox{\texttt{int}}}
+\newcommand\boolT{\mbox{\texttt{bool}}}
+
+\newcommand\codeT[2]{\langle{#1}\rangle^{#2}}
+\newcommand\funT[3]{{#1} \stackrel{#3}{\rightarrow} {#2}}
+\newcommand\contT[3]{{#1} \stackrel{#3}{\Rightarrow} {#2}}
+
+\newcommand\ord{\ge}
+
+\newcommand\Let{\textbf{let}}
+\newcommand\In{\textbf{in}}
+\newcommand\letin[3]{\Let~{#1}={#2}~\In~{#3}}
+
+\newcommand\ift[3]{\textbf{if}~{#1}~\textbf{then}~{#2}~\textbf{else}~{#3}}
+\newcommand\cif[3]{\underline{\textbf{if}}~\code{{#1}}~\code{{#2}}~\code{{#3}}}
+\newcommand\cIf{\underline{\textbf{if}}}
+
+\newcommand\fix{\textbf{fix}}
+\newcommand\cfix{\underline{\textbf{fix}}}
+
+\newcommand\lto{\leadsto}
+\newcommand\cat{~\underline{@}~}
+
+\newcommand\ksubst[2]{\{{#1}\Leftarrow{#2}\}}
+
+% コメントマクロ
+\newcommand\kam[1]{\red{{#1}}}
+\newcommand\ooi[1]{\blue{{#1}}}
+
+\theoremstyle{break}
+
+\newtheorem{theo}{定理}[section]
+\newtheorem{defi}{定義}[section]
+\newtheorem{lemm}{補題}[section]
+
+\begin{document}
+
+% 論文のタイトル
+\title{多段階 let 挿入を行うコード生成言語の型システムの設計}
+
+% 著者
+% 和文論文の場合，姓と名の間には半角スペースを入れ，
+% 複数の著者の間は全角スペースで区切る
+%
+\author{大石 純平　亀山 幸義
+%
+% ここにタイトル英訳 (英文の場合は和訳) を書く．
+%
+\ejtitle{Type-Safe Code Generation with Multi-level Let-insertion}
+%
+% ここに著者英文表記 (英文の場合は和文表記) および
+% 所属 (和文および英文) を書く．
+% 複数著者の所属はまとめてよい．
+%
+\shozoku{Junpei Ohishi, Yukiyoshi Kameyama}{筑波大学システム情報工学研究科コンピュータ・サイエンス専攻}%
+{Department of Computer Science, University of Tsukuba}}
+
+% 和文アブストラクト
+\Jabstract{%
+コード生成法は，プログラムの実行性能の高さと保守性・再利用性を両立でき
+るプログラミング手法として有力なものである．本研究は，コード生成法で必
+要とされる「多段階let挿入」等を簡潔に表現できるコントロールオペレータ
+である shift0/reset0を持つコード生成言語とその型システムを構築し，
+生成されたコードの型安全性を保証する．多段階let挿入は，入れ子になった
+forループを飛び越えたコード移動を許す仕組みであり，ループ不変式の移動
+などのために必要である．コード生成言語の型安全性に関して，破壊的代入
+を持つ体系に対するSudoらの研究等があるが，本研究は，彼らの環境識別子
+に対する小さな拡張により，shift0/reset0 に対する型システムが構築で
+きることを示した．
+}
+
+\maketitle \thispagestyle {empty}
+
+\input{sec1}
+\input{sec2}
+\input{sec3}
+\input{sec4}
+\input{sec5}
+
+\section{まとめと今後の課題}
+
+{\bf 謝辞} 本研究は、JSPS 科研費 15K12007 の支援を受けている。
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: japanese-latex
+%%% TeX-master: t
+%%% End:
+
+\subsection{プログラム例}
+
+\section{型システム}
+\ooi{answer タイプがお尻に付いた型システムを書く}
+
+\section{型安全性の証明}
+\ooi{ここは途中までになりそう}
+
+\section{まとめと今後の課題}
+\ooi{途中までになったところを今後やりたいこととする？そうすると，研究結果としてはまとまっていないので，タイトルを ``多段階 let 挿入を行うコード生成言語の型システムの設計の試み''に変更するかも}
+
+{\bf 謝辞}
+ほげほげ
+
+\bibliographystyle {jssst}
+\bibliography {bibfile}
+% Sudo2014のbibfile の書き方を note 使ってるのを変更する必要あり -> 変更しなくておｋぽい
+\end{document}
+
+
+%%% Local Variables:
+%%% mode: japanese-latex
+%%% TeX-master: t
+%%% End:
