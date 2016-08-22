@@ -61,31 +61,28 @@ forやletなどコードレベルの束縛子があるたびに、新しいス�
 の問題点を明らかにし、その問題の解決の鍵となる join ($\cup$)の導入につ
 いて述べる。
 
-\begin{center}
-  \includegraphics[clip,height=5.5cm]{./img/ecex_let.png}
-\end{center}
-
-しかし，shift0/reset0 が導入されることにより，計算の順序が
-
-\begin{center}
-  \includegraphics[clip,height=4cm]{./img/ecex_for.png}
-\end{center}
-
+このため、前述の2重のforループ生成において、その中間にlet挿入をするプログラムに
+ついて考察する。その概形は下記の左図である。
 \begin{center}
   \includegraphics[clip,height=3cm]{./img/ecex_for_non_gamma.png}
 \end{center}
+ここで、コードレベル変数の束縛子は3つ(for式が2つとlet式が1つ)あるので、
+一番外側のスコープを含め4つのスコープ(青、緑、黄、赤)が存在する。
+これらに外側から順に$\gamma_0,\gamma_1,\gamma_2,\gamma_3$と名付ける。
+須藤らの体系通りであれば、これらの環境識別子には、
+\begin{center}
+  \includegraphics[clip,width=4cm]{./img/gamma_normal.png}
+\end{center}
+という順序がつくはずである。
+しかし，コントロールオペレータによる計算を進めると(上記の右側の図)
 
 \begin{center}
   \includegraphics[clip,width=7cm]{./img/gamma.png}
 \end{center}
 
-\begin{center}
-  \includegraphics[clip,width=4cm]{./img/gamma_normal.png}
-\end{center}
+しかし，shift0/reset0 が導入されることにより，計算の順序が
 
-\begin{center}
-  \includegraphics[clip,width=4cm]{./img/ecex_for_aryset.png}
-\end{center}
+
 
 %%% Local Variables:
 %%% mode: japanese-latex
