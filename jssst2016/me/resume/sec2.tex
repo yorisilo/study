@@ -14,35 +14,59 @@
 の研究が行わており、特に静的な型システムのサポートを持つ言語として、
 MetaOCaml, Template Haskell, Scala LMSなどがある。
 
+本研究は、
+MetaOCaml などの値呼び関数型言語に基づいたコード生成言語を対象としているが、
+言語のプレゼンテーションでは、先行研究にならい
+コードコンビネータ(Code Combinator)方式を使う。MetaML/MetaOCamlなどにおける擬似引用
+(Quasi-quotation)方式は、コード生成に関する言語要素として
+「ブラケット(コード生成,quotation)」と
+「エスケープ(コード合成,anti-quotation)」を用いるのに対して、
+コードコンビネータ方式では、
+各演算子に対して、「コード生成版の演算子(コードコンビネータ)」を用意してコード生成器を記述する。
+たとえば、加算$e_1+e_2$に対して、
+コードコンビネータ版は$e_1 \cPlus e_2$というように、
+演算子名に下線をつけてあらわす。
 
-\kam{ここにコード例をいっぱいかく}
+本章では、例に基づいてコード生成器とlet挿入について説明する。
+対象言語の構文・意味論などの形式的体系の説明は後に行う．
 
-\subsection{プログラム例}
-本研究におけるプログラムとどのように簡約が行われるかの説明を掲載する．
-言語，および意味論については後に説明を行う．
+\subsection{コードコンビネータ方式のプログラム例}
 
-\begin{align}
-  & (\cint 3)~ \cPlus~ (\cint 5) \\
-  & \too \code{3 + 5} \nonumber
-\end{align}
-$3$ と $5$ がそれぞれ，$\cint$ により，整数のコード $\code{3},\code{5}$ に簡約され，
-$\cPlus$ により，それらを足しあわせ，$\code{3 + 5}$ というコードが得られる．
+まず、(完成した)コードは、$\code{3}$や$\code{3+5}$のようにブラケットで囲んで表す。
+次のコードは、これらを生成するプログラムである。
+\begin{align*}
+(\cint~3)   & \too \code{3} \\
+(\cint~3)~ \cPlus~ (\cint~5) & \too \code{3 + 5}
+\end{align*}
+$\cint$ は整数を整数のコードに変換し、
+$\cPlus$は、整数のコード2つをもらって、それらの加算をおこなうコードを
+生成するコードコンビネータである。
+なお、$\too$は0ステップ以上の簡約を表す。
 
-\begin{align}
-  & \cLet~ x = (\cint{3})~ \cIn~ x~ \cPlus~ (\cint 7)  \\
-  & \too \code{\Let~ x = 3~ \In~ x + 7} \nonumber
-\end{align}
+$\cLet$はlet式のコードを生成する。
+\begin{align*}
+\cLet~ x = (\cint~3)~ \cIn~ x~ \cPlus~ (\cint~7)
+  & \too \code{\Let~ x = 3~ \In~ x + 7} 
+\end{align*}
+$\Let$はラムダ抽象と適用によりマクロ定義される。すなわち、
+$\letin{x}{e_1}{e_2} = (\fun{x}{e_2})e_1$である。
+同様に、$\cLet$は、コードコンビネータとしてのラムダ抽象と適用によりマ
+クロ定義され、上記の式は、以下の式と同じである。
+\begin{align*}
+& (\cfun{x}{~x~ \cPlus~ (\cint~7)~}) \cat (\cint~3)  \\
+& \too \code{\Let~ x = 3~ \In~ x + 7} 
+\end{align*}
 
+本研究の対象言語は、MetaML や MetaOCaml と同様、静的束縛の言語であり、
+以下の例では、束縛変数の名前が正しく付け換えられる。
+\begin{align*}
+\cfun{y}{\Let~ x = y~ \In~ \cfun{y}{~x~ \cPlus~ y}{}}{} 
+& \too \code{\fun{y}{\fun{y'}{y~ +~ y'}}}
+\end{align*}
+この例では、2つのラムダ抽象が$y$という変数をもっているが、これらは異な
+る束縛変数であるので、計算の過程で衝突が置きるときは、名前換えが発生する。
 
-\begin{align}
-  & (\cfun{x}{x~ \cPlus~ (\cint 7))~}{(\cint 3)} \\
-  & \too \code{\Let~ x = 3~ \In~ x + 7} \nonumber
-\end{align}
-
-\begin{align}
-  & (\cfun{y}{\Let~ x = y~ \In~ \cfun{y}{x~ \cPlus~ y}{}}{}) \\
-  & \too \code{\fun{y}{\cfun{y'}{}{}}{y~ \cPlus~ y'}} \nonumber
-\end{align}
+\subsection{コード生成におけるlet挿入}
 
 以下で，我々の言語体系におけるshift0/reset0 による多段階let挿入の例を掲載する．
 
