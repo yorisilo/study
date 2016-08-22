@@ -141,12 +141,10 @@ CPS変換あるいはコントロールオペレータを用いることで実�
 それらに対するインフォーマルな\footnote{精密な意味論は後述する．}%
 計算規則は以下の通りである．
 
-\ooi{$\Throw~ k~ e$ でなく $\Throw~ k~ v$ では？，ここでは，便宜上そうしてるだけでしょうか}
-
 \begin{align*}
 & \Resetz ~v \to v \\
-& \Resetz ~(E[\Shiftz~~k~\to~\cdots(\Throw~k~e)\cdots]) \\
-& \to \cdots(\Resetz(E[e]))\cdots
+& \Resetz ~(E[\Shiftz~~k~\to~\cdots(\Throw~k~v)\cdots]) \\
+& \to \cdots(\Resetz(E[v]))\cdots
 \end{align*}
 ここで$v$は値，
 $E$は評価文脈である．2行目では，reset0とshift0に挟まれた文脈が切り取られ，
