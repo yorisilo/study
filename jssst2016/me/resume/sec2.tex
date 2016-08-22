@@ -44,6 +44,41 @@ $\cPlus$ により，それらを足しあわせ，$\code{3 + 5}$ というコ�
   & \too \code{\fun{y}{\cfun{y'}{}{}}{y~ \cPlus~ y'}} \nonumber
 \end{align}
 
+以下で，我々の言語体系におけるshift0/reset0 による多段階let挿入の例を掲載する．
+
+\begin{align*}
+    e &= \red{\Resetz} ~~\cLet~x_1=\csp{3}~\cIn \\
+      &\phantom{=}~~ \blue{\Resetz} ~~\cLet~x_2=\csp{5}~\cIn \\
+      &\phantom{=}~~ \blue{\Shiftz}~\blue{k_2}~\to~ \red{\Shiftz}~\red{k_1}~\to~ \magenta{\cLet~y=t~\cIn} \\
+      &\phantom{=}~~ \cThrow~\red{k_1}~(\cThrow~\blue{k_2}~(x_1~\cPlus~x_2~\cPlus~y))
+\end{align*}
+とする．
+
+$e$ を計算すると，
+$\blue{\Resetz}$によって，切り取られた継続 $\cLet~x_2=\csp{5}~\cIn$ が，
+$\blue{\Shiftz}$ によって，$\blue{k_2}$へと捕獲され，
+次に，
+$\red{\Resetz}$によって，切り取られた継続 $\cLet~x_2=\csp{3}~\cIn$ が，
+$\red{\Shiftz}$ によって，$\red{k_1}$へと捕獲される．
+
+わかりやすいところまで計算を進めると以下のようになり，
+\begin{align*}
+  e & \too \magenta{\cLet~y=t~\cIn} \\
+    & \phantom{\too}~~ \cThrow~\red{k_1}~(\cThrow~\blue{k_2}~(x_1~\cPlus~x_2~\cPlus~y))
+\end{align*}
+
+$\magenta{\cLet~y=t~\cIn}$ がトップに挿入されたことが分かる．
+$\cThrow$ は，切り取られた継続を引数に適用するための演算子である．
+つまり，
+\begin{align*}
+  e & \too \magenta{\cLet~y=t~\cIn} \\
+    & \cLet~x_1=\csp{3}~\cIn \\
+    & \cLet~x_2=\csp{5}~\cIn \\
+    & (x_1~\cPlus~x_2~\cPlus~y)
+\end{align*}
+
+となり，$\magenta{\cLet~y=t~\cIn}$ が 二重の $\cLet$を飛び越えて，挿入された事が分かる．
+これが多段階 let 挿入である．
 
 %%% Local Variables:
 %%% mode: latex
