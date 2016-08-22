@@ -14,6 +14,9 @@
 \usepackage{stmaryrd}
 \usepackage{listings,jlisting}
 
+\usepackage{tikz}
+\usetikzlibrary{positioning}
+
 % ユーザが定義したマクロなどはここに置く．ただし学会誌のスタイルの
 % 再定義は原則として避けること．
 
@@ -101,30 +104,30 @@
 % 複数の著者の間は全角スペースで区切る
 %
 \author{大石 純平　亀山 幸義
-%
-% ここにタイトル英訳 (英文の場合は和訳) を書く．
-%
-\ejtitle{Type-Safe Code Generation with Multi-level Let-insertion}
-%
-% ここに著者英文表記 (英文の場合は和文表記) および
-% 所属 (和文および英文) を書く．
-% 複数著者の所属はまとめてよい．
-%
-\shozoku{Junpei Ohishi, Yukiyoshi Kameyama}{筑波大学システム情報工学研究科コンピュータ・サイエンス専攻}%
-{Department of Computer Science, University of Tsukuba}}
+  %
+  % ここにタイトル英訳 (英文の場合は和訳) を書く．
+  %
+  \ejtitle{Type-Safe Code Generation with Multi-level Let-insertion}
+  %
+  % ここに著者英文表記 (英文の場合は和文表記) および
+  % 所属 (和文および英文) を書く．
+  % 複数著者の所属はまとめてよい．
+  %
+  \shozoku{Junpei Ohishi, Yukiyoshi Kameyama}{筑波大学システム情報工学研究科コンピュータ・サイエンス専攻}%
+  {Department of Computer Science, University of Tsukuba}}
 
 % 和文アブストラクト
 \Jabstract{%
-コード生成法は，プログラムの実行性能の高さと保守性・再利用性を両立でき
-るプログラミング手法として有力なものである．本研究は，コード生成法で必
-要とされる「多段階let挿入」等を簡潔に表現できるコントロールオペレータ
-である shift0/reset0を持つコード生成言語とその型システムを構築し，
-生成されたコードの型安全性を保証する．多段階let挿入は，入れ子になった
-forループを飛び越えたコード移動を許す仕組みであり，ループ不変式の移動
-などのために必要である．コード生成言語の型安全性に関して，破壊的代入
-を持つ体系に対するSudoらの研究等があるが，本研究は，彼らの環境識別子
-に対する小さな拡張により，shift0/reset0 に対する型システムが構築で
-きることを示した．
+  コード生成法は，プログラムの実行性能の高さと保守性・再利用性を両立でき
+  るプログラミング手法として有力なものである．本研究は，コード生成法で必
+  要とされる「多段階let挿入」等を簡潔に表現できるコントロールオペレータ
+  である shift0/reset0を持つコード生成言語とその型システムを構築し，
+  生成されたコードの型安全性を保証する．多段階let挿入は，入れ子になった
+  forループを飛び越えたコード移動を許す仕組みであり，ループ不変式の移動
+  などのために必要である．コード生成言語の型安全性に関して，破壊的代入
+  を持つ体系に対するSudoらの研究等があるが，本研究は，彼らの環境識別子
+  に対する小さな拡張により，shift0/reset0 に対する型システムが構築で
+  きることを示した． \ooi{示したとするかどうか？}
 }
 
 \maketitle \thispagestyle {empty}
@@ -184,42 +187,43 @@ reset0は継続の範囲を限定する命令であり，shift0はその継続�
 shift/reset\cite{Danvy1990}では，複数の計算エフェクトを含んだプログラムは書くことができない．しかし，階層化shift/resetやshift0/reset0はこの欠点を克服している．
 階層化shift/reset\cite{Danvy1990}は，最大レベルの階層を固定する必要があるが，shift0/reset0では，shift0，reset0 というオペレータだけで，階層を表現する事ができるという利点がある．
 また，shift0/reset0は shift/reset よりも単純なCPS変換で意味が与えられていて，純粋なラムダ式で表せるために形式的に扱いやすいという利点がある．
-我々の言語体系において，コードを扱うreset0は $\cResetz ~M$というように表し，これは，継続の範囲を$M$に限定するという意味である．
-コードを扱うshift0は $\cShiftz ~k ~\to ~M$というように表し，これは，直近のreset0によって限定された継続を $k$ に束縛し，$M$ を実行するという意味である．
+我々の言語体系において，reset0は $\Resetz ~M$というように表し，これは，継続の範囲を$M$に限定するという意味である．
+shift0は $\Shiftz ~k ~\to ~M$というように表し，これは，直近のreset0によって限定された継続を $k$ に束縛し，$M$ を実行するという意味である．
 つまり，shift0 と reset0 は対応関係にあり，reset0で切り取った継続を，shift0によって，$k$ へと束縛し，その継続を使うことができるようになる．
 
 shift/reset\cite{Danvy1990} は，直近のreset による限定継続のスコープからひとつ上のスコープまでしか，継続を捕獲することができないが，shift0/reset0においては，直近の reset0内のスコープだけでなく，遠くの，reset0 で限定された継続を捕獲することができる．そのことによって，本研究の肝である多段階let挿入が可能となる．
 
-以下で，我々の言語体系におけるshift0/reset0 による多段階let挿入の例を掲載する．
+以下で，我々の言語体系におけるshift0/reset0 による多段階let挿入の例を掲載する．言語の定義，意味論については後ほど紹介する．ここでは，多段階let挿入がどのように行われるか雰囲気を掴んでもらいたい．
+\ooi{ここを後のフォーマルな，言語・意味論の定義にならって修正する}
 
 \begin{align*}
-    e &= \red{\cResetz} ~~\cLet~x_1=\csp{3}~\cIn \\
-      &\phantom{=}~~ \blue{\cResetz} ~~\cLet~x_2=\csp{5}~\cIn \\
-      &\phantom{=}~~ \blue{\cShiftz}~\blue{k_2}~\to~ \red{\cShiftz}~\red{k_1}~\to~ \magenta{\cLet~y=t~\cIn} \\
-      &\phantom{=}~~ \cThrow~\red{k_1}~(\cThrow~\blue{k_2}~(x_1~\cPlus~x_2~\cPlus~y))
+  e &= \red{\Resetz} ~~\cLet~x_1=\cint{3}~\cIn \\
+    &\phantom{=}~~ \blue{\Resetz} ~~\cLet~x_2=\cint{5}~\cIn \\
+    &\phantom{=}~~ \blue{\Shiftz}~\blue{k_2}~\to~ \red{\Shiftz}~\red{k_1}~\to~ \magenta{\cLet~y=t~\cIn} \\
+    &\phantom{=}~~ \Throw~\red{k_1}~(\Throw~\blue{k_2}~(x_1~\cPlus~x_2~\cPlus~y))
 \end{align*}
 
 まず，
-$\blue{\cResetz}$によって，切り取られた継続 $\cLet~x_2=\csp{5}~\cIn$ が，
-$\blue{\cShiftz}$ によって，$\blue{k_2}$へと捕獲され，
+$\blue{\Resetz}$によって，切り取られた継続 $\cLet~x_2=\cint{5}~\cIn$ が，
+$\blue{\Shiftz}$ によって，$\blue{k_2}$へと捕獲され，
 次に，
-$\red{\cResetz}$によって，切り取られた継続 $\cLet~x_2=\csp{3}~\cIn$ が，
-$\red{\cShiftz}$ によって，$\red{k_1}$へと捕獲される．
+$\red{\Resetz}$によって，切り取られた継続 $\cLet~x_2=\cint{3}~\cIn$ が，
+$\red{\Shiftz}$ によって，$\red{k_1}$へと捕獲される．
 
 わかりやすいところまで計算を進めると以下のようになり，
 \begin{align*}
   e & \too \magenta{\cLet~y=t~\cIn} \\
-    & \phantom{\too}~~ \cThrow~\red{k_1}~(\cThrow~\blue{k_2}~(x_1~\cPlus~x_2~\cPlus~y))
+    & \phantom{\too}~~ \Throw~\red{k_1}~(\Throw~\blue{k_2}~(x_1~\cPlus~x_2~\cPlus~y))
 \end{align*}
 
 $\magenta{\cLet~y=t~\cIn}$ がトップに挿入されたことが分かる．
-$\cThrow$ は，切り取られた継続を引数に適用するための演算子である．
+$\Throw$ は，切り取られた継続を引数に適用するための演算子である．
 つまり，
 \begin{align*}
   e & \too \magenta{\cLet~y=t~\cIn} \\
-    & \cLet~x_1=\csp{3}~\cIn \\
-    & \cLet~x_2=\csp{5}~\cIn \\
-    & (x_1~\cPlus~x_2~\cPlus~y)
+    & \phantom{\too}~~ \cLet~x_1=\cint{3}~\cIn \\
+    & \phantom{\too}~~ \cLet~x_2=\cint{5}~\cIn \\
+    & \phantom{\too}~~ (x_1~\cPlus~x_2~\cPlus~y)
 \end{align*}
 
 となり，$\magenta{\cLet~y=t~\cIn}$ が 二重の $\cLet$を飛び越えて，挿入された事が分かる．
@@ -285,7 +289,13 @@ shift0/reset0 を持つコード生成言語の型システムの設計を須藤
 そのためにそれらを単純に融合させることは困難である．
 
 そこで，本研究では，コード生成の言語に shift0/reset0を組み合わせた言語を設計し，その言語によって書かれたプログラムの安全性は，型システムで安全なコードには型がつくように，安全でないコードには型がつかないように，型システムを構築する．
-環境識別子 Environment Classifier による型による変数のスコープのアイデア\cite{Sudo2014,Taha:2003:EC:604131.604134}を拡張することによって，shift0/reset0の型安全性を保証する．
+環境識別子 Environment Classifier による型による変数のスコープのアイデア\cite{Taha:2003:EC:604131.604134,Sudo2014}を拡張することによって，shift0/reset0の型安全性を保証する．
+今まではプログラムがネストしていけば，その分だけ使える自由変数が増えていったのだが， shift0/reset0 が導入されたことにより，計算の順序が変わり，単純にネストした分だけ使える自由変数が増えていくという訳にはいかない．
+そこで，環境識別子の結合を意味する $\cup$ を導入することにより上記の問題を解決することにした．
+
+% 計算を進めると，reset0 によって，切り取られた継続がshift0によって $k$へ捕獲され， throw によって，使用されることにより，計算の順序が変わり，使用できる自由変数のスコープの範囲が入れ替わり，
+
+
 % 型システムの安全性の保証に関しては，Kameyama+ 2009\cite{Kameyama2009} と Sudo+ 2014\cite{Sudo2014} の手法を利用する．
 
 \section{対象言語: 構文と意味論}
@@ -319,7 +329,7 @@ $\code{3} \cPlus \code{5}$を計算すると$\code{3+5}$が得られる．
 
 \begin{align*}
   c & ::= i \mid b \mid \cint
-         \mid \cat \mid + \mid \cPlus \mid \cIf \\
+      \mid \cat \mid + \mid \cPlus \mid \cIf \\
   v & ::= x \mid c \mid \fun{x}{e^0} \mid \code{e^1} \\
   e^0 & ::=  v  \mid e^0~ e^0 \mid \ift{e^0}{e^0}{e^0} \\
     & \mid \cfun{x}{e^0}
@@ -328,7 +338,7 @@ $\code{3} \cPlus \code{5}$を計算すると$\code{3+5}$が得られる．
       \mid \shiftz{k}{e^0}
       \mid \throw{k}{v} \\
   e^1 & ::=  u \mid c \mid \fun{u}{e^1} \mid e^1~ e^1
-      \mid \ift{e^1}{e^1}{e^1} \\
+        \mid \ift{e^1}{e^1}{e^1} \\
 \end{align*}
 ここで$i$は整数の定数，$b$は真理値定数である．
 
@@ -381,9 +391,8 @@ N個分外側のreset0 までアクセスすることができ，多段階let挿
 上記における継続変数に対する代入$e\ksubst{k}{E}$は次の通り定義する．
 \begin{align*}
   (\throw{k}{v})\ksubst{k}{E} &\equiv \Resetz (E[v]) \\
-  (\throw{k'}{v})\ksubst{k}{E} &\equiv \throw{k'}{(v\ksubst{k}{E})}
-\\
-& \text{ただし}~k \not= k'
+  (\throw{k'}{v})\ksubst{k}{E} &\equiv \throw{k'}{(v\ksubst{k}{E})} \\
+                              & \text{ただし}~k \not= k'
 \end{align*}
 上記以外の$e$に対する定義は透過的である．
 
@@ -404,22 +413,22 @@ control/promptに類似した control0/prompt0)の振舞いとなる．
 計算の例を以下に示す．
 
 \begin{align*}
-  e_1 & = \Resetz ~~\cLet~x_1=\csp{3}~\cIn \\
-      & \phantom{=}~~ \Resetz ~~\cLet~x_2=\csp{5}~\cIn \\
+  e_1 & = \Resetz ~~\cLet~x_1=\cint{3}~\cIn \\
+      & \phantom{=}~~ \Resetz ~~\cLet~x_2=\cint{5}~\cIn \\
       & \phantom{=}~~ \Shiftz~k~\to~\cLet~y=t~\cIn \\
       & \phantom{=}~~ \Throw~ k~ (x_1~\cPlus~x_2~\cPlus~y) \\
 \end{align*}
 
 \begin{align*}
-  [ e_1 ] &\lto [ \Resetz (\cLet~x_1=\csp{3}~\cIn \\
-          &\Resetz~ \cLet~x_2=\csp{5}~\cIn \\
+  [ e_1 ] &\lto [ \Resetz (\cLet~x_1=\cint{3}~\cIn \\
+          &\Resetz~ \cLet~x_2=\cint{5}~\cIn \\
           &[ \Shiftz~ k~ \to~ \cLet~ y=t~ \cIn \\
           &[ \Throw~ k~(x_1~\cPlus~x_2~\cPlus~y) ] ] ) ] \\
           &\lto [ \cLet~ y=t~ \cIn \\
-          &[ \cfun{x}{\Resetz~ (\cLet~x_1=\csp{3}~ \cIn~ \Resetz~ (\cLet~ x_2=\csp{5}~ \cIn [x]))} (x_1~\cPlus~x_2~\cPlus~y) ]] \\
-          &\lto [ \cfun{y}{(\cfun{x}{\Resetz~ (\cLet~x_1=\csp{3}~ \cIn~ \Resetz~ (\cLet~ x_2=\csp{5}~ \cIn [x]))} (x_1~\cPlus~x_2~\cPlus~y))}~ \cat~ t ] \\
-          &\lto [[\cfun{y}{(\cfun{x}{\Resetz~ (\cLet~x_1=\csp{3}~ \cIn~ \Resetz~ (\cLet~ x_2=\csp{5}~ \cIn [x]))} (x_1~\cPlus~x_2~\cPlus~y))}]~ \cat~ t] \\
-          &\lto [[\ccfun{y_1}{(\cfun{x}{\Resetz~ (\cLet~x_1=\csp{3}~ \cIn~ \Resetz~ (\cLet~ x_2=\csp{5}~ \cIn [x]))} (x_1~\cPlus~x_2~\cPlus~ \code{y_1}))}]~ \cat~ t] \\
+          &[ \cfun{x}{\Resetz~ (\cLet~x_1=\cint{3}~ \cIn~ \Resetz~ (\cLet~ x_2=\cint{5}~ \cIn [x]))} (x_1~\cPlus~x_2~\cPlus~y) ]] \\
+          &\lto [ \cfun{y}{(\cfun{x}{\Resetz~ (\cLet~x_1=\cint{3}~ \cIn~ \Resetz~ (\cLet~ x_2=\cint{5}~ \cIn [x]))} (x_1~\cPlus~x_2~\cPlus~y))}~ \cat~ t ] \\
+          &\lto [[\cfun{y}{(\cfun{x}{\Resetz~ (\cLet~x_1=\cint{3}~ \cIn~ \Resetz~ (\cLet~ x_2=\cint{5}~ \cIn [x]))} (x_1~\cPlus~x_2~\cPlus~y))}]~ \cat~ t] \\
+          &\lto [[\ccfun{y_1}{(\cfun{x}{\Resetz~ (\cLet~x_1=\cint{3}~ \cIn~ \Resetz~ (\cLet~ x_2=\cint{5}~ \cIn [x]))} (x_1~\cPlus~x_2~\cPlus~ \code{y_1}))}]~ \cat~ t] \\
           &\lto
 \end{align*}
 
@@ -505,7 +514,7 @@ $L=\gamma$のとき将来ステージの判断となる．
   \infer
   {\Gamma \models \gamma_1 \cup \gamma_2 \ord \gamma_1}
   {}
-\quad
+  \quad
   \infer
   {\Gamma \models \gamma_1 \cup \gamma_2 \ord \gamma_2}
   {}
@@ -527,7 +536,7 @@ $L=\gamma$のとき将来ステージの判断となる．
   \infer
   {\Gamma, x : t \vdash x : t ~;~ \sigma}
   {}
-\quad
+  \quad
   \infer
   {\Gamma, (u : t)^\gamma \vdash^\gamma u : t ~;~ \sigma}
   {}
@@ -551,7 +560,7 @@ $L=\gamma$のとき将来ステージの判断となる．
   \infer
   {\Gamma \vdash \fun{x}{e} : \funT{t_1}{t_2}{\sigma} ~;~\sigma'}
   {\Gamma,~x : t_1 \vdash e : t_2 ~;~ \sigma}
-\quad
+  \quad
   \infer
   {\Gamma \vdash^\gamma \fun{x}{e} : \funT{t_1}{t_2}{} ~;~\sigma'}
   {\Gamma,~(u : t_1)^\gamma \vdash^\gamma e : t_2 ~;~ \sigma}
@@ -633,24 +642,24 @@ $L=\gamma$のとき将来ステージの判断となる．
 \section{型付け例}
 
 \begin{align*}
-  e_1 & = \Resetz ~~\cLet~x_1=\csp{3}~\cIn \\
-      & \phantom{=}~~ \Resetz ~~\cLet~x_2=\csp{5}~\cIn \\
+  e_1 & = \Resetz ~~\cLet~x_1=\cint{3}~\cIn \\
+      & \phantom{=}~~ \Resetz ~~\cLet~x_2=\cint{5}~\cIn \\
       & \phantom{=}~~ \Shiftz~k~\to~\cLet~y=t~\cIn \\
       & \phantom{=}~~ \Throw~k~(x_1~\cPlus~x_2~\cPlus~y)
 \end{align*}
 
-If $t=\csp{7}$ or $t=x_1$, then $e_1$ is typable.
+If $t=\cint{7}$ or $t=x_1$, then $e_1$ is typable.
 
 If $t=x_2$, then $e_1$ is not typable.
 
 \begin{align*}
-  e_2 & = \Resetz ~~\cLet~x_1=\csp{3}~\cIn \\
-      & \phantom{=}~~ \Resetz ~~\cLet~x_2=\csp{5}~\cIn \\
+  e_2 & = \Resetz ~~\cLet~x_1=\cint{3}~\cIn \\
+      & \phantom{=}~~ \Resetz ~~\cLet~x_2=\cint{5}~\cIn \\
       & \phantom{=}~~ \Shiftz~k_2~\to~ \Shiftz~k_1~\to~ \cLet~y=t~\cIn \\
       & \phantom{=}~~ \Throw~k_1~(\Throw~k_2~(x_1~\cPlus~x_2~\cPlus~y))
 \end{align*}
 
-If $t=\csp{7}$, then $e_1$ is typable.
+If $t=\cint{7}$, then $e_1$ is typable.
 
 If $t=x_2$ or $t=x_1$, then $e_1$ is not typable.
 
