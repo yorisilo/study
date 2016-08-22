@@ -54,6 +54,8 @@
 \newcommand\csp[1]{\texttt{\%}{#1}}
 \newcommand\cint{\underline{\textbf{int}}}
 \newcommand\code[1]{\texttt{<}{#1}\texttt{>}}
+\newcommand\codebegin{\texttt{<}}
+\newcommand\codeend{\texttt{>}}
 
 \newcommand\intT{\mbox{\texttt{int}}}
 \newcommand\boolT{\mbox{\texttt{bool}}}
@@ -80,10 +82,13 @@
 
 \newcommand\ksubst[2]{\{{#1}\Leftarrow{#2}\}}
 
-\newcommand\forin[2]{\textbf{for}~{#1}~\textbf{to}~{#2}~\textbf{in}}
-\newcommand\cforin[2]{\underline{\textbf{for}}~{#1}~\underline{\textbf{to}}~{#2}~\underline{\textbf{in}}}
+\newcommand\cFor{\underline{\textbf{for}}}
+\newcommand\forin[2]{\textbf{for}~{#1}~\textbf{to}~{#2}~\textbf{do}}
+\newcommand\cforin[2]{\underline{\textbf{for}}~{#1}~\underline{\textbf{to}}~{#2}~\underline{\textbf{do}}}
 \newcommand\cArray[1]{\underline{[{#1}]}}
 \newcommand\cArrays[2]{\underline{[{#1}][{#2}]}}
+\newcommand\aryset[3]{{#1}[{#2}]\leftarrow {#3}}
+\newcommand\caryset[3]{\underline{\textbf{aryset}}~{#1}~{#2}~{#3}}
 
 % コメントマクロ
 \newcommand\kam[1]{\red{{#1}}}

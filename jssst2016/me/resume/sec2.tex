@@ -43,14 +43,23 @@ $\cPlus$は、整数のコード2つをもらって、それらの加算をお�
 生成するコードコンビネータである。
 なお、$\too$は0ステップ以上の簡約を表す。
 
+$\cfun{x}{e}$と$\cap$ はそれぞれラムダ抽象と関数適用のコードを生成する。
+\begin{align*}
+\cfun{x}{x \cPlus (\cint~3)}   & \too \code{\fun{x}{x+3}} \\
+(\cfun{x}{x \cPlus (\cint~3)}) \cat (\cint~5) & \too 
+\code{(\fun{u}{u+3})~5}
+\end{align*}
+ラムダ抽象のコードコンビネータにおいて、$x$は「(コードレベルの)変数」その
+ものを表すのではなく、「変数のコード」をあらわす。
+上記の例の計算過程で、$x$は
+$\code{u}$(ここで$u$は新たに作成されたコードレベルの変数)に簡約され、計算が進む。
+
 $\cLet$はlet式のコードを生成する。
 \begin{align*}
-\cLet~ x = (\cint~3)~ \cIn~ x~ \cPlus~ (\cint~7)
+& \cLet~ x = (\cint~3)~ \cIn~ x~ \cPlus~ (\cint~7) \\
   & \too \code{\Let~ x = 3~ \In~ x + 7} 
 \end{align*}
-$\Let$はラムダ抽象と適用によりマクロ定義される。すなわち、
-$\letin{x}{e_1}{e_2} = (\fun{x}{e_2})e_1$である。
-同様に、$\cLet$は、コードコンビネータとしてのラムダ抽象と適用によりマ
+実は、$\cLet$は、コードコンビネータとしてのラムダ抽象と適用によりマ
 クロ定義され、上記の式は、以下の式と同じである。
 \begin{align*}
 & (\cfun{x}{~x~ \cPlus~ (\cint~7)~}) \cat (\cint~3)  \\
@@ -64,10 +73,38 @@ $\letin{x}{e_1}{e_2} = (\fun{x}{e_2})e_1$である。
 & \too \code{\fun{y}{\fun{y'}{y~ +~ y'}}}
 \end{align*}
 この例では、2つのラムダ抽象が$y$という変数をもっているが、これらは異な
-る束縛変数であるので、計算の過程で衝突が置きるときは、名前換えが発生する。
+る束縛変数であるので、計算の過程で衝突が起きるときは名前換えが発生する。
 
 \subsection{コード生成におけるlet挿入}
 
+$\cFor$はfor式を生成するコードコンビネータである。
+ここで、(コードレベルの)配列$A$の第$n$要素に対する代入を
+$\aryset{A}{n}{e}$と表し、
+$\caryset{a}{e_1}{e_2}$は対応するコードコンビネータであると仮定する。
+また、$A$は適宜$n$次元のものを考えることにする。
+\begin{align*}
+& \cforin{x=(\cint~3)}{(\cint~7)} \\
+& \qquad \caryset{\code{A}}{x}{(\cint~0)} \\
+& \too \code{\forin{i=3}{7}~\aryset{A}{i}{0}}
+\end{align*}
+入れ子になったfor式は以下のプログラムで生成できる。
+\begin{align*}
+& \cforin{x=(\cint~3)}{(\cint~7)} \\
+& \cforin{y=(\cint~1)}{(\cint~9)} \\
+& \qquad \caryset{\code{A}}{(x,y)}{(\cint~0)} \\
+& \too \code{\forin{i=3}{7}~\forin{j=1}{9}~\aryset{A}{i,j}{0}}
+\end{align*}
+
+\begin{align*}
+    e &= \red{\Resetz} ~~\cLet~x_1=\csp{3}~\cIn \\
+      &\phantom{=}~~ \blue{\Resetz} ~~\cLet~x_2=\csp{5}~\cIn \\
+      &\phantom{=}~~ \blue{\Shiftz}~\blue{k_2}~\to~ \red{\Shiftz}~\red{k_1}~\to~ \magenta{\cLet~y=t~\cIn} \\
+      &\phantom{=}~~ \cThrow~\red{k_1}~(\cThrow~\blue{k_2}~(x_1~\cPlus~x_2~\cPlus~y))
+\end{align*}
+とする．
+
+$e$ を計算すると，
+$\blue{\Resetz}$によって，切り取られた継続 $\cLet~x_2=\csp{5}~\cIn$ が，
 以下で，我々の言語体系におけるshift0/reset0 による多段階let挿入の例を掲載する．
 
 \begin{align*}
