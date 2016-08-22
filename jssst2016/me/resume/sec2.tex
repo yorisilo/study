@@ -113,76 +113,124 @@ $\cFor$を入れ子にすると、入れ子のfor式が生成できる。
 & \phantom{\codebegin \Let} \forin{j=1}{9} \\
 & \phantom{\codebegin \Let} ~~\aryset{A}{i,j}{z} \codeend
 \end{align*}
-というコードを生成した方がよい。
+というコードの方が実行性能が高くなることが期待できる。
 
-このように、生成するコードの上部(よりトップレベルに近い方)にlet式を挿
+このように、生成するコードの上部(トップレベルに近い方)にlet式を挿
 入することができれば、早い段階で値を計算できたり、また、同一の部分式が
-ある場合は計算結果を再利用できたり、という利点がある。
-
-なお、この変形・最適化は、コードを生成してから行なうのでよければ技術的
+ある場合は計算結果を再利用できたり、という利点がある%
+\footnote{この変形・最適化は、コードを生成してから行なうのでよければ技術的
 に難しいものではない。しかし、
 コード生成においては、生成されるコード量の爆発が問題になることが多く、
 無駄なコードはできるだけ早い段階で除去したい、すなわち、
 コードを生成してから最適化するのではなく生成段階でコードを変形・最適化したいという
-強い要求がある。
+強い要求がある。}。
 
-そこで、コード生成器にlet挿入を組み込むことが考えられる。
-let挿入は部分計算(partial evaluation)で研究されてきたものであり、
-コントロールオペレータを適切に用いることで実現できることが知られている。
-本研究では、shift0/reset0 というコントロールオペレータを用いて上記のlet
-挿入を実現する。(従来用いられてきたshift/reset でなく shift0/reset0を
-用いる理由は後述する。)
+そこで、コード生成器にlet挿入の機能を組み込もう。
+let挿入は部分計算の分野等で研究されており、
+CPS変換あるいはコントロールオペレータを用いることで実現できることが知られている。
+本研究では、shift0/reset0 というコントロールオペレータを用いてlet挿入を実現する。
 
+上記のコード生成器にコントロールオペレータを組みこんだものが次のプログラムである。
 \begin{align*}
-    e &= \red{\Resetz} ~~\cLet~x_1=\csp{3}~\cIn \\
-      &\phantom{=}~~ \blue{\Resetz} ~~\cLet~x_2=\csp{5}~\cIn \\
-      &\phantom{=}~~ \blue{\Shiftz}~\blue{k_2}~\to~ \red{\Shiftz}~\red{k_1}~\to~ \magenta{\cLet~y=t~\cIn} \\
-      &\phantom{=}~~ \cThrow~\red{k_1}~(\cThrow~\blue{k_2}~(x_1~\cPlus~x_2~\cPlus~y))
+&\red{\Resetz} ~~(\cforin{x=(\cint~3)}{(\cint~7)} \\
+&\phantom{\Resetz} ~~(\cforin{y=(\cint~1)}{(\cint~9)} \\
+&\phantom{\Resetz} ~~\red{\Shiftz}~\red{k_1}~\to~ \magenta{\cLet~z=e~\cIn} \\
+&\phantom{\Resetz} ~~\red{\Throw}~\red{k_1}~(\caryset{\code{a}}{(x,y)}{z})))
 \end{align*}
-とする．
-
-$e$ を計算すると，
-$\blue{\Resetz}$によって，切り取られた継続 $\cLet~x_2=\csp{5}~\cIn$ が，
-以下で，我々の言語体系におけるshift0/reset0 による多段階let挿入の例を掲載する．
-
+赤字のreset0,shift0,throwがコントロールオペレータであり、
+それらに対するインフォーマルな\footnote{精密な意味論は後述する。}%
+計算規則は以下の通りである。
 \begin{align*}
-    e &= \red{\Resetz} ~~\cLet~x_1=\csp{3}~\cIn \\
-      &\phantom{=}~~ \blue{\Resetz} ~~\cLet~x_2=\csp{5}~\cIn \\
-      &\phantom{=}~~ \blue{\Shiftz}~\blue{k_2}~\to~ \red{\Shiftz}~\red{k_1}~\to~ \magenta{\cLet~y=t~\cIn} \\
-      &\phantom{=}~~ \cThrow~\red{k_1}~(\cThrow~\blue{k_2}~(x_1~\cPlus~x_2~\cPlus~y))
+& \Resetz ~v \to v \\
+& \Resetz ~(E[\Shiftz~~k~\to~\cdots(\Throw~k~e)\cdots]) \\
+& \to \cdots(\Resetz(E[e]))\cdots
 \end{align*}
-とする．
+ここで$v$は値、
+$E$は評価文脈である。2行目では、reset0とshift0に挟まれた文脈が切り取られ、
+変数$k$に束縛され、$\Throw~k~e$の形の式の場所で利用される。
+ここで切り取られる文脈には、トップにあった$\Resetz$も含まれているため、
+簡約後のトップから$\Resetz$が消えている。よく知られているshift/resetで
+は、この$\Resetz$が残る点が違っている。
 
-$e$ を計算すると，
-$\blue{\Resetz}$によって，切り取られた継続 $\cLet~x_2=\csp{5}~\cIn$ が，
-$\blue{\Shiftz}$ によって，$\blue{k_2}$へと捕獲され，
-次に，
-$\red{\Resetz}$によって，切り取られた継続 $\cLet~x_2=\csp{3}~\cIn$ が，
-$\red{\Shiftz}$ によって，$\red{k_1}$へと捕獲される．
+上記のコード生成器をこの計算規則により計算すると、
+2重のfor式に相当する文脈
+$\cforin{x=\cdots}{\cdots}~\cforin{y=\cdots}{\cdots}~[~]$が切り取られ
+$\Throw$の部分の$k_1$で使われる。結果として、$\cLet~z=e~\cIn$の部分が、
+この文脈の外側に移動する効果が得られ、let挿入が実現できる。
 
-わかりやすいところまで計算を進めると以下のようになり，
+上記の例では、一番外側までlet挿入を行ったが、式$e$が$x$に相当するルー
+プ変数を含むときは、一番外側まで持っていくことはできず、
+2つのfor式の中間地点まで移動することになる。
+このためには、reste0 の設置場所を変更すればよい。
+
+問題は、このようにlet挿入をしたい式が複数ある場合である。「let挿入をす
+る先」にreset0を1つ置くため、いくつかのlet挿入においては直近のreset0
+まで移動するのではなく、2つ以上先の(遠くの)reset0までletを移動したいことがある。
+これは、shift0/reset0 を入れ子にすることにより、以下のように実現できる。
 \begin{align*}
-  e & \too \magenta{\cLet~y=t~\cIn} \\
-    & \phantom{\too}~~ \cThrow~\red{k_1}~(\cThrow~\blue{k_2}~(x_1~\cPlus~x_2~\cPlus~y))
+&\red{\Resetz} ~~(\cforin{x=(\cint~3)}{(\cint~7)} \\
+&\blue{\Resetz} ~~(\cforin{y=(\cint~1)}{(\cint~9)} \\
+&~~\blue{\Shiftz}~\blue{k_2}~\to~ \red{\Shiftz}~\red{k_1}~\to~ \magenta{\cLet~z=e~\cIn} \\
+&~~~~~~
+  \red{\cThrow}~\red{k_1}~(\blue{\cThrow}~\blue{k_2}~(\caryset{\code{a}}{(x,y)}{z}))))
 \end{align*}
-
-$\magenta{\cLet~y=t~\cIn}$ がトップに挿入されたことが分かる．
-$\cThrow$ は，切り取られた継続を引数に適用するための演算子である．
-つまり，
-\begin{align*}
-  e & \too \magenta{\cLet~y=t~\cIn} \\
-    & \cLet~x_1=\csp{3}~\cIn \\
-    & \cLet~x_2=\csp{5}~\cIn \\
-    & (x_1~\cPlus~x_2~\cPlus~y)
-\end{align*}
-
-となり，$\magenta{\cLet~y=t~\cIn}$ が 二重の $\cLet$を飛び越えて，挿入された事が分かる．
+青字のコントロールオペレータをいれた場合、let挿入の「目的地」であるトッ
+プの位置(赤字のreset0で指定された位置)は、2つ先のreset0になってしまっ
+たが、これは、shift0とthrow をそれぞれ2回入れ子にすることにより実現できる。
 これが多段階 let 挿入である．
 
-また， 項 $t$ の種類によっては，型が付いていてほしくない場合と付いて欲しい場合とがある．
-例えば，$t$ が $\code{7}$ のときは，型がつき，
-$t$ が $x_1$ や $x_2$ のとき型が付かないようにしたい．
-つまり，この例においては，項 $t$ の種類によって，安全なコードか，安全でないコードかが変わるので，それを型で判断したい．このような型システムを構築することを考える．
+なお、このように直近のreset0を越えた地点までの移動(あるいは文脈の切り
+取り)は、shift/reset では実現できず、その拡張である階層的shift/resetや
+shift0/reset0が必要となる。本研究では、簡潔さのため、
+shift0/reset0を用いることとした。
+
+%$e$ を計算すると，
+%$\blue{\Resetz}$によって，切り取られた継続 $\cLet~x_2=\csp{5}~\cIn$ が，
+%以下で，我々の言語体系におけるshift0/reset0 による多段階let挿入の例を掲載する．
+%
+%\begin{align*}
+%    e &= \red{\Resetz} ~~\cLet~x_1=\csp{3}~\cIn \\
+%      &\phantom{=}~~ \blue{\Resetz} ~~\cLet~x_2=\csp{5}~\cIn \\
+%      &\phantom{=}~~ \blue{\Shiftz}~\blue{k_2}~\to~ \red{\Shiftz}~\red{k_1}~\to~ \magenta{\cLet~y=t~\cIn} \\
+%      &\phantom{=}~~ \cThrow~\red{k_1}~(\cThrow~\blue{k_2}~(x_1~\cPlus~x_2~\cPlus~y))
+%\end{align*}
+%とする．
+%
+%$e$ を計算すると，
+%$\blue{\Resetz}$によって，切り取られた継続 $\cLet~x_2=\csp{5}~\cIn$ が，
+%$\blue{\Shiftz}$ によって，$\blue{k_2}$へと捕獲され，
+%次に，
+%$\red{\Resetz}$によって，切り取られた継続 $\cLet~x_2=\csp{3}~\cIn$ が，
+%$\red{\Shiftz}$ によって，$\red{k_1}$へと捕獲される．
+%
+%わかりやすいところまで計算を進めると以下のようになり，
+%\begin{align*}
+%  e & \too \magenta{\cLet~y=t~\cIn} \\
+%    & \phantom{\too}~~ \cThrow~\red{k_1}~(\cThrow~\blue{k_2}~(x_1~\cPlus~x_2~\cPlus~y))
+%\end{align*}
+%
+%$\magenta{\cLet~y=t~\cIn}$ がトップに挿入されたことが分かる．
+%$\cThrow$ は，切り取られた継続を引数に適用するための演算子である．
+%つまり，
+%\begin{align*}
+%  e & \too \magenta{\cLet~y=t~\cIn} \\
+%    & \cLet~x_1=\csp{3}~\cIn \\
+%    & \cLet~x_2=\csp{5}~\cIn \\
+%    & (x_1~\cPlus~x_2~\cPlus~y)
+%\end{align*}
+%
+%となり，$\magenta{\cLet~y=t~\cIn}$ が 二重の $\cLet$を飛び越えて，挿入された事が分かる．
+%これが多段階 let 挿入である．
+
+さて、以上のようにshift0/reset0を使うことにより多段階let挿入が実現でき
+ることがわかったが、自由な使用を許せば、危ないコード生成器を書けてしま
+う。上記の例では、
+項$e$ がどのループ変数に依存するかによって、
+letをどこまで移動してよいかが変わてきた。
+例えば，トップレベルまで移動するコード生成器の場合、
+$e$ が $\code{7}$ のときは型がつき，
+$x$や$y$ のとき型が付かないようにしたい．
+このような精密な区別を実現する型システムを構築するのが本研究の目的である。
 
 %%% Local Variables:
 %%% mode: latex
