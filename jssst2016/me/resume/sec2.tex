@@ -45,7 +45,7 @@ $\cPlus$は，整数のコード2つをもらって，それらの加算をお�
 
 $\cfun{x}{e}$と$\cap$ はそれぞれラムダ抽象と関数適用のコードを生成する．
 \begin{align*}
-\cfun{x}{x \cPlus (\cint~3)}   & \too \code{\fun{x}{x+3}} \\
+\cfun{x}{x \cPlus (\cint~3)}   & \too \code{\fun{u}{u+3}} \\
 (\cfun{x}{x \cPlus (\cint~3)}) \cat (\cint~5) & \too
 \code{(\fun{u}{u+3})~5}
 \end{align*}
@@ -57,20 +57,20 @@ $\code{u}$(ここで$u$は新たに作成されたコードレベルの変数)�
 $\cLet$はlet式のコードを生成する．
 \begin{align*}
 & \clet{x}{(\cint~3)}{x~ \cPlus~ (\cint~7)} \\
-  & \too \code{\Let~ x = 3~ \In~ x + 7}
+  & \too \code{\Let~ u = 3~ \In~ u + 7}
 \end{align*}
 実は，$\cLet$は，コードコンビネータとしてのラムダ抽象と適用によりマ
 クロ定義され，上記の式は，以下の式と同じである．
 \begin{align*}
 & (\cfun{x}{~x~ \cPlus~ (\cint~7)~}) \cat (\cint~3)  \\
-& \too \code{\Let~ x = 3~ \In~ x + 7}
+& \too \code{\Let~ u = 3~ \In~ u + 7}
 \end{align*}
 
 本研究の対象言語は，MetaML や MetaOCaml と同様，静的束縛の言語であり，
 以下の例では，束縛変数の名前が正しく付け換えられる．
 \begin{align*}
 \cfun{y}{\Let~ x = y~ \In~ \cfun{y}{~x~ \cPlus~ y}{}}{}
-& \too \code{\fun{y}{\fun{y'}{y~ +~ y'}}}
+& \too \code{\fun{u}{\fun{u'}{u~ +~ u'}}}
 \end{align*}
 この例では，2つのラムダ抽象が$y$という変数をもっているが，これらは異な
 る束縛変数であるので，計算の過程で衝突が起きるときは名前換えが発生する．
@@ -78,23 +78,23 @@ $\cLet$はlet式のコードを生成する．
 \subsection{コード生成におけるlet挿入}
 
 $\cFor$はfor式を生成するコードコンビネータである．
-ここで，(コードレベルの)配列$A$の第$n$要素に対する代入を
-$\aryset{A}{n}{e}$と表し，
+ここで，(コードレベルの)配列$a$の第$n$要素に対する代入を
+$\aryset{a}{n}{e}$と表し，
 $\caryset{a}{e_1}{e_2}$は対応するコードコンビネータであると仮定する．
-また，$A$は適宜$n$次元のものを考えることにする．
+また，$a$は適宜$n$次元のものを考えることにする．
 \begin{align*}
 & \cforin{x=(\cint~3)}{(\cint~7)} \\
-& \qquad \caryset{\code{A}}{x}{(\cint~0)} \\
-& \too \code{\forin{i=3}{7}~\aryset{A}{i}{0}}
+& \qquad \caryset{\code{a}}{x}{(\cint~0)} \\
+& \too \code{\forin{i=3}{7}~\aryset{a}{i}{0}}
 \end{align*}
 $\cFor$を入れ子にすると，入れ子のfor式が生成できる．
 \begin{align*}
 & \cforin{x=(\cint~3)}{(\cint~7)} \\
 & \cforin{y=(\cint~1)}{(\cint~9)} \\
-& \qquad \caryset{\code{A}}{(x,y)}{(\cint~0)} \\
+& \qquad \caryset{\code{a}}{(x,y)}{(\cint~0)} \\
 & \too \codebegin \forin{i=3}{7} \\
 & \phantom{\too \codebegin} \forin{j=1}{9} \\
-& \phantom{\too \codebegin} ~~\aryset{A}{i,j}{0} \codeend
+& \phantom{\too \codebegin} ~~\aryset{a}{i,j}{0} \codeend
 \end{align*}
 
 この二重ループの中で，複雑な計算をするループ不変式があったとする．たと
@@ -104,14 +104,14 @@ $\cFor$を入れ子にすると，入れ子のfor式が生成できる．
 \begin{align*}
 & \codebegin \forin{i=3}{7} \\
 & \phantom{\codebegin} \forin{j=1}{9} \\
-& \phantom{\codebegin} ~~\aryset{A}{i,j}{e} \codeend
+& \phantom{\codebegin} ~~\aryset{a}{i,j}{e} \codeend
 \end{align*}
 というコードの代わりに
 \begin{align*}
 & \codebegin \Let~z=e~\In \\
 & \phantom{\codebegin \Let} \forin{i=3}{7} \\
 & \phantom{\codebegin \Let} \forin{j=1}{9} \\
-& \phantom{\codebegin \Let} ~~\aryset{A}{i,j}{z} \codeend
+& \phantom{\codebegin \Let} ~~\aryset{a}{i,j}{z} \codeend
 \end{align*}
 というコードの方が実行性能が高くなることが期待できる．
 
@@ -140,6 +140,9 @@ CPS変換あるいはコントロールオペレータを用いることで実�
 赤字のreset0,shift0,throwがコントロールオペレータであり，
 それらに対するインフォーマルな\footnote{精密な意味論は後述する．}%
 計算規則は以下の通りである．
+
+\ooi{$\Throw~ k~ e$ でなく $\Throw~ k~ v$ では？，ここでは，便宜上そうしてるだけでしょうか}
+
 \begin{align*}
 & \Resetz ~v \to v \\
 & \Resetz ~(E[\Shiftz~~k~\to~\cdots(\Throw~k~e)\cdots]) \\
@@ -161,7 +164,7 @@ $\Throw$の部分の$k_1$で使われる．結果として，$\cLet~z=e~\cIn$の
 上記の例では，一番外側までlet挿入を行ったが，式$e$が$x$に相当するルー
 プ変数を含むときは，一番外側まで持っていくことはできず，
 2つのfor式の中間地点まで移動することになる．
-このためには，reste0 の設置場所を変更すればよい．
+このためには，reset0 の設置場所を変更すればよい．
 
 問題は，このようにlet挿入をしたい式が複数ある場合である．「let挿入をす
 る先」にreset0を1つ置くため，いくつかのlet挿入においては直近のreset0
@@ -226,7 +229,7 @@ shift0/reset0を用いることとした．
 ることがわかったが，自由な使用を許せば，危ないコード生成器を書けてしま
 う．上記の例では，
 項$e$ がどのループ変数に依存するかによって，
-letをどこまで移動してよいかが変わてきた．
+letをどこまで移動してよいかが変わってきた．
 例えば，トップレベルまで移動するコード生成器の場合，
 $e$ が $\code{7}$ のときは型がつき，
 $x$や$y$ のとき型が付かないようにしたい．
