@@ -17,3 +17,35 @@ MetaOCaml, Template Haskell, Scala LMSなどがある。
 
 \kam{ここにコード例をいっぱいかく}
 
+\subsection{プログラム例}
+本研究におけるプログラムとどのように簡約が行われるかの説明を掲載する．
+言語，および意味論については後に説明を行う．
+
+\begin{align}
+  & (\cint 3)~ \cPlus~ (\cint 5) \\
+  & \too \code{3 + 5} \nonumber
+\end{align}
+$3$ と $5$ がそれぞれ，$\cint$ により，整数のコード $\code{3},\code{5}$ に簡約され，
+$\cPlus$ により，それらを足しあわせ，$\code{3 + 5}$ というコードが得られる．
+
+\begin{align}
+  & \cLet~ x = (\cint{3})~ \cIn~ x~ \cPlus~ (\cint 7)  \\
+  & \too \code{\Let~ x = 3~ \In~ x + 7} \nonumber
+\end{align}
+
+
+\begin{align}
+  & (\cfun{x}{x~ \cPlus~ (\cint 7))~}{(\cint 3)} \\
+  & \too \code{\Let~ x = 3~ \In~ x + 7} \nonumber
+\end{align}
+
+\begin{align}
+  & (\cfun{y}{\Let~ x = y~ \In~ \cfun{y}{x~ \cPlus~ y}{}}{}) \\
+  & \too \code{\fun{y}{\cfun{y'}{}{}}{y~ \cPlus~ y'}} \nonumber
+\end{align}
+
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "paper"
+%%% End:
