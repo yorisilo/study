@@ -1,0 +1,29 @@
+%% ===============================================
+%% 予備スライド
+%% ===============================================
+
+%% 予備スライドは appendix 環境の中に書きましょう．
+\begin{appendix}
+  %% 予備スライドの先頭に APPENDIX と書かれたページを挟む（お好みで消去しても良い）
+  \frame[plain]{\centerline{\Huge\bfseries\color{structure}APPENDIX}}
+\end{appendix}
+
+\section{健全性の証明}
+
+\begin{frame}[fragile]
+  \frametitle{健全性の証明 (Subject Reduction)}
+
+  型安全性(型システムの健全性; Subject Reduction等の性質)を厳密に証明する．
+
+  \begin{block}{Subject Redcution Property}
+    $\Gamma \vdash M: \tau$ が導ければ(プログラム$M$が型検査を通れば)，
+    $M$を計算して得られる任意の$N$に対して，
+    $\Gamma \vdash N: \tau$ が導ける($N$も型検査を通り，$M$と同じ型，
+    同じ自由変数を持つ)
+  \end{block}
+\end{frame}
+
+%%% Local Variables:
+%%% mode: japanese-latex
+%%% TeX-master: "slide"
+%%% End:
