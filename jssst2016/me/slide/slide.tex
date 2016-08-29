@@ -32,7 +32,7 @@
 
 \newcommand\cPlus{\underline{\textbf{+}}}
 
-\newcommand\cLet{\underline{\textbf{clet}}}
+\newcommand\cLet{\underline{\textbf{let}}}
 \newcommand\cIn{\underline{\textbf{in}}}
 \newcommand\clet[3]{\cLet~{#1}={#2}~\cIn~{#3}}
 \newcommand\csp[1]{\texttt{\%}{#1}}
@@ -51,11 +51,16 @@
 \newcommand\blue[1]{\textcolor{blue}{#1}}
 
 \newcommand\forin[2]{\textbf{for}~{#1}~\textbf{to}~{#2}~\textbf{in}}
-\newcommand\cforin[2]{\underline{\textbf{cfor}}~{#1}~\underline{\textbf{to}}~{#2}~\underline{\textbf{in}}}
+\newcommand\fordo[2]{\textbf{for}~{#1}~\textbf{to}~{#2}~\textbf{do}}
+\newcommand\cforin[2]{\underline{\textbf{for}}~{#1}~\underline{\textbf{to}}~{#2}~\underline{\textbf{in}}}
+\newcommand\cfordo[2]{\underline{\textbf{for}}~{#1}~\underline{\textbf{to}}~{#2}~\underline{\textbf{do}}}
 \newcommand\Let{\textbf{let}}
 \newcommand\In{\textbf{in}}
 \newcommand\cArray[1]{\underline{[{#1}]}}
 \newcommand\cArrays[2]{\underline{[{#1}][{#2}]}}
+\newcommand\aryset[3]{{#1}[{#2}]\leftarrow {#3}}
+
+\newcommand\ksubst[2]{\{{#1}\Leftarrow{#2}\}}
 
 % スライドのテーマ
 \usetheme{sumiilab}
@@ -71,16 +76,17 @@
 %% 発表会の名前とか（省略可）
 % \session{研究室ゼミ}
 %% スライドのタイトル
-\title{多段階let 挿入を行うコード生成言語の設計}
+\title{多段階let挿入を行うコード生成言語の\\
+  型システムの設計}
 %% 必要ならば，サブタイトルも
 % \subtitle{}
 %% 発表者のお名前
-\author{{\bf 大石純平} \\ 亀山幸義}
+\author{{\large 大石純平} \\ 亀山幸義}
 %% 発表者の所属（[] 内は短い名前）
 % \institute[東北大学　住井・松田研]{東北大学　工学部　電気情報物理工学科\\住井・松田研究室}% 学部生
-\institute[筑波大学 コンピュータサイエンス専攻]{筑波大学 大学院 }% 院生
+\institute[筑波大学 コンピュータサイエンス専攻]{筑波大学 大学院 コンピュータ・サイエンス専攻}% 院生
 %% 発表する日
-\date{2016/7/12}
+\date{2016/9/9}
 
 %% ===============================================
 %% 自動挿入される目次ページの設定（削除しても可）

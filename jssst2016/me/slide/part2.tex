@@ -1,3 +1,5 @@
+% どうやって解くかの説明
+
 \section{研究の目的}
 % s0/r0 にフォーカスした話をする．
 \begin{frame}
@@ -42,39 +44,16 @@
 \subsection{コード生成器と生成されるコード}
 \begin{frame}
   \frametitle{コード生成器と生成されるコード}
+
   \begin{onlyenv}<1>
     \begin{columns}
       \begin{column}{0.5\textwidth}%% [横幅] 0.2\textwidth = ページ幅の 20 %
         コード生成器
         \begin{align*}
-          & \cforin{i = 0}{n} \\
-          & ~~\cforin{j = 0}{m} \\
-          & ~~~~\magenta{\cLet~y=t~\cIn} \\
-          & ~~~~~~(a\cArrays{i}{j} = b\cArray{i} + y)
-        \end{align*}
-      \end{column}
-      $\Rightarrow$
-      \begin{column}{0.5\textwidth}%% [横幅] 0.2\textwidth = ページ幅の 20 %
-        生成されるコード
-        \begin{align*}
-          & \forin{i = 0}{n} \\
-          & ~~\forin{j = 0}{m} \\
-          & ~~~~\magenta{\Let ~y ~= ~t ~\In} \\
-          & ~~~~~~a[i][j] = b[i] + y \\
-        \end{align*}
-      \end{column}
-    \end{columns}
-  \end{onlyenv}
-
-  \begin{onlyenv}<2>
-    \begin{columns}
-      \begin{column}{0.5\textwidth}%% [横幅] 0.2\textwidth = ページ幅の 20 %
-        コード生成器
-        \begin{align*}
-          & \red{...}~ \cforin{i = 0}{n} \\
-          & ~~\red{...}~ \cforin{j = 0}{m} \\
+          & \red{...}~ \cfordo{i = 0}{n} \\
+          & ~~\red{...}~ \cfordo{j = 0}{m} \\
           & ~~~~\red{...}~ \magenta{\cLet~y=t~\cIn} \\
-          & ~~~~~~\red{...}~ (a\cArrays{i}{j} = b\cArray{i} + y)
+          & ~~~~~~\red{...}~ (\aryset{a}{i,j}{b[i] + y})
         \end{align*}
       \end{column}
       $\Rightarrow$
@@ -82,9 +61,9 @@
         生成されるコード
         \begin{align*}
           & \magenta{\Let ~y ~= ~t ~\In} \\
-          & ~~\forin{i = 0}{n} \\
-          & ~~~~\forin{j = 0}{m} \\
-          & ~~~~~~a[i][j] = b[i] + y \\
+          & ~~\fordo{i = 0}{n} \\
+          & ~~~~\fordo{j = 0}{m} \\
+          & ~~~~~~\aryset{a}{i,j}{b[i] + y}
         \end{align*}
       \end{column}
     \end{columns}
@@ -98,28 +77,41 @@
 
 \begin{frame}
   \frametitle{shift0/reset0 による多段階let挿入}
+  \begin{onlyenv}<1->
+    \begin{align*}
+      \Resetz (E[\Shiftz~ k \to e]) &\to e \ksubst{k}{E}
+    \end{align*}
+  \end{onlyenv}
+
   \begin{onlyenv}<1>
     コード生成器
     \begin{align*}
-      & \red{...}~ \cforin{i = 0}{n} \\
-      & ~~\red{...}~ \cforin{j = 0}{m} \\
+      & \red{...}~ \cfordo{i = 0}{n} \\
+      & ~~\red{...}~ \cfordo{j = 0}{m} \\
       & ~~~~\red{...}~ \magenta{\cLet~y=t~\cIn} \\
-      & ~~~~~~\red{...}~ (a\cArrays{i}{j} = b\cArray{i} + y)
+      & ~~~~~~\red{...}~ (\aryset{a}{i,j}{b[i] + y})
     \end{align*}
+
+    \begin{invisibleenv}<1>
+      \begin{align*}
+        \red{k_1} &= ~~\cfordo{i = 0}{n} \\
+        \blue{k_2} &= ~~\cfordo{j = 0}{m} \\
+      \end{align*}
+    \end{invisibleenv}
   \end{onlyenv}
 
   \begin{onlyenv}<2>
     コード生成器
     \begin{align*}
-      & \red{\cResetz} ~~\cforin{i = 0}{n} \\
-      & ~~\blue{\cResetz} ~~\cforin{j = 0}{m} \\
-      & ~~~~\blue{\cShiftz}~\blue{k_2}~\to~ \red{\cShiftz}~\red{k_1}~\to~ \magenta{\cLet~y=t~\cIn} \\
-      & ~~~~~~\red{k_1}~(\blue{k_2}~(a\cArrays{i}{j} = b\cArray{i} + y))
+      & \red{\Resetz} ~~\cfordo{i = 0}{n} \\
+      & ~~\blue{\Resetz} ~~\cfordo{j = 0}{m} \\
+      & ~~~~\blue{\Shiftz}~\blue{k_2}~\to~ \red{\Shiftz}~\red{k_1}~\to~ \magenta{\cLet~y=t~\cIn} \\
+      & ~~~~~~\red{k_1}~(\blue{k_2}~(\aryset{a}{i,j}{b[i] + y}))
     \end{align*}
     \begin{invisibleenv}<2>
       \begin{align*}
-        \red{k_1} &= ~~\cforin{i = 0}{n} \\
-        \blue{k_2} &= ~~\cforin{j = 0}{m} \\
+        \red{k_1} &= ~~\cfordo{i = 0}{n} \\
+        \blue{k_2} &= ~~\cfordo{j = 0}{m} \\
       \end{align*}
     \end{invisibleenv}
   \end{onlyenv}
@@ -127,14 +119,14 @@
   \begin{onlyenv}<3>
     コード生成器
     \begin{align*}
-      & \red{\cResetz} ~~\cforin{i = 0}{n} \\
-      & ~~\blue{\cResetz} ~~\cforin{j = 0}{m} \\
-      & ~~~~\blue{\cShiftz}~\blue{k_2}~\to~ \red{\cShiftz}~\red{k_1}~\to~ \magenta{\cLet~y=t~\cIn} \\
-      & ~~~~~~\red{k_1}~(\blue{k_2}~(a\cArrays{i}{j} = b\cArray{i} + y))
+      & \red{\Resetz} ~~\cfordo{i = 0}{n} \\
+      & ~~\blue{\Resetz} ~~\cfordo{j = 0}{m} \\
+      & ~~~~\blue{\Shiftz}~\blue{k_2}~\to~ \red{\Shiftz}~\red{k_1}~\to~ \magenta{\cLet~y=t~\cIn} \\
+      & ~~~~~~\red{k_1}~(\blue{k_2}~(\aryset{a}{i,j}{b[i] + y}))
     \end{align*}
     \begin{align*}
-      \red{k_1} &= ~~\cforin{i = 0}{n} \\
-      \blue{k_2} &= ~~\cforin{j = 0}{m} \\
+      \red{k_1} &= ~~\cfordo{i = 0}{n} \\
+      \blue{k_2} &= ~~\cfordo{j = 0}{m} \\
     \end{align*}
   \end{onlyenv}
 
@@ -142,24 +134,121 @@
     コード生成器
     \begin{align*}
       & \magenta{\cLet~y=t~\cIn} \\
-      & ~~\red{k_1}~(\blue{k_2}~(a\cArrays{i}{j} = b\cArray{i} + y))
+      & ~~\red{k_1}~(\blue{k_2}~(\aryset{a}{i,j}{b[i] + y}))
     \end{align*}
     \begin{align*}
-      \red{k_1} &= ~~\cforin{i = 0}{n} \\
-      \blue{k_2} &= ~~\cforin{j = 0}{m} \\
+      \red{k_1} &= ~~\cfordo{i = 0}{n} \\
+      \blue{k_2} &= ~~\cfordo{j = 0}{m} \\
     \end{align*}
   \end{onlyenv}
 
   \begin{onlyenv}<5>
     生成されるコード
     \begin{align*}
-          & \magenta{\Let ~y ~= ~t ~\In} \\
-          & ~~\forin{i = 0}{n} \\
-          & ~~~~\forin{j = 0}{m} \\
-          & ~~~~~~a[i][j] = b[i] + y \\
+      & \magenta{\Let ~y ~= ~t ~\In} \\
+      & ~~\fordo{i = 0}{n} \\
+      & ~~~~\fordo{j = 0}{m} \\
+      & ~~~~~~\aryset{a}{i,j}{b[i] + y} \\
     \end{align*}
   \end{onlyenv}
 \end{frame}
+
+\begin{frame}
+  \center
+  \huge{コード生成前の段階で，安全なコードかどうかを判断する}
+\end{frame}
+
+% \begin{frame}
+%   \center
+%   \huge{安全なコードにのみ型をつけるにはどうすればよいか}
+% \end{frame}
+
+\subsection{型システム}
+
+\begin{frame}
+  \frametitle{環境識別子 EC によるスコープ表現 [Taha+2003] [Sudo+2014]}
+  \begin{center}
+    \includegraphics[clip,height=5.7cm]{./img/ec_for.png}
+  \end{center}
+  \begin{flushright}
+    $\gamma_i ... \text{Refined Environment Classifier}$
+  \end{flushright}
+\end{frame}
+
+\begin{frame}
+  \frametitle{ECの洗練化 （本研究）}
+  \begin{onlyenv}<1>
+    \flushleft
+    \includegraphics[clip,height=4cm]{./img/ecex.png}
+  \end{onlyenv}
+\end{frame}
+
+\begin{frame}
+  \frametitle{ECの洗練化 （本研究）}
+  \begin{onlyenv}<1>
+    \begin{center}
+      \includegraphics[clip,height=6cm]{./img/ecex_katsu.png}
+    \end{center}
+  \end{onlyenv}
+
+  \begin{onlyenv}<2>
+    \begin{center}
+      \includegraphics[clip,height=6cm]{./img/ecex_join.png}
+    \end{center}
+  \end{onlyenv}
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{ECのジョイン}
+  \flushleft
+  \includegraphics[clip,height=3cm]{./img/ecgraph.png}
+  \begin{itemize}
+  \item<2-> $\gamma_1$ のコードレベル変数は $\gamma_2$ では使えない
+  \item<3-> $\gamma_2$ のコードレベル変数は $\gamma_1$ では使えない
+  \item<4-> $\gamma_1, \gamma_2$ のコードレベル変数は $\gamma_3$ で使える
+  \item<5->[$\Rightarrow$] Sudoらの体系に $\cup$ を追加
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{コード生成+shift0/reset0 の型システム (の一部)}
+  コードレベルのラムダ抽象:
+  \[
+    \infer[(\gamma_1~\text{is eigen var})]
+    {\Gamma \vdash \cfun{x}{e} : \codeT{t_1\to t_2}{\gamma} ~;~ \sigma}
+    {\Gamma,~\gamma_1 \ord \gamma,~x:\codeT{t_1}{\gamma_1} \vdash e
+      : \codeT{t_2}{\gamma_1}; \sigma}
+  \]
+
+  reset0:
+  \[
+    \infer{\Gamma \vdash \resetz{e} : \codeT{t}{\gamma} ~;~ \sigma}
+    {\Gamma \vdash e : \codeT{t}{\gamma} ~;~ \codeT{t}{\gamma}, \sigma}
+  \]
+
+  shift0:
+  \[
+    \infer{\Gamma \vdash \shiftz{k}{e} : \codeT{t_1}{\gamma_1} ~;~ \codeT{t_0}{\gamma_0},\sigma}
+    {\Gamma,~k:\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}{\sigma}
+      \vdash e : \codeT{t_0}{\gamma_0} ; \sigma
+      & \Gamma \models \gamma_1 \ord \gamma_0
+    }
+  \]
+
+  throw:
+  \[
+  \infer
+  {\Gamma,~k:\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}{\sigma}
+    \vdash \throw{k}{v} : \codeT{t_0}{\gamma_2} ; \sigma}
+  {\Gamma
+    \vdash v : \codeT{t_1}{\gamma_1 \cup \gamma_2} ; \sigma
+    & \Gamma \models \gamma_2 \ord \gamma_0
+  }
+\]
+
+\end{frame}
+
 
 %%% Local Variables:
 %%% mode: japanese-latex

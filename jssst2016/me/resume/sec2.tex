@@ -173,7 +173,7 @@ $\Throw$の部分の$k_1$で使われる．結果として，$\cLet~z=e~\cIn$の
 &\blue{\Resetz} ~~(\cforin{y=(\cint~1)}{(\cint~9)} \\
 &~~\blue{\Shiftz}~\blue{k_2}~\to~ \red{\Shiftz}~\red{k_1}~\to~ \magenta{\cLet~z=e~\cIn} \\
 &~~~~~~
-  \red{\cThrow}~\red{k_1}~(\blue{\cThrow}~\blue{k_2}~(\caryset{\code{a}}{(x,y)}{z}))))
+  \red{\Throw}~\red{k_1}~(\blue{\Throw}~\blue{k_2}~(\caryset{\code{a}}{(x,y)}{z}))))
 \end{align*}
 青字のコントロールオペレータをいれた場合，let挿入の「目的地」であるトッ
 プの位置(赤字のreset0で指定された位置)は，2つ先のreset0になってしまっ
@@ -193,7 +193,7 @@ shift0/reset0を用いることとした．
 %    e &= \red{\Resetz} ~~\cLet~x_1=\csp{3}~\cIn \\
 %      &\phantom{=}~~ \blue{\Resetz} ~~\cLet~x_2=\csp{5}~\cIn \\
 %      &\phantom{=}~~ \blue{\Shiftz}~\blue{k_2}~\to~ \red{\Shiftz}~\red{k_1}~\to~ \magenta{\cLet~y=t~\cIn} \\
-%      &\phantom{=}~~ \cThrow~\red{k_1}~(\cThrow~\blue{k_2}~(x_1~\cPlus~x_2~\cPlus~y))
+%      &\phantom{=}~~ \Throw~\red{k_1}~(\Throw~\blue{k_2}~(x_1~\cPlus~x_2~\cPlus~y))
 %\end{align*}
 %とする．
 %
@@ -207,11 +207,11 @@ shift0/reset0を用いることとした．
 %わかりやすいところまで計算を進めると以下のようになり，
 %\begin{align*}
 %  e & \too \magenta{\cLet~y=t~\cIn} \\
-%    & \phantom{\too}~~ \cThrow~\red{k_1}~(\cThrow~\blue{k_2}~(x_1~\cPlus~x_2~\cPlus~y))
+%    & \phantom{\too}~~ \Throw~\red{k_1}~(\Throw~\blue{k_2}~(x_1~\cPlus~x_2~\cPlus~y))
 %\end{align*}
 %
 %$\magenta{\cLet~y=t~\cIn}$ がトップに挿入されたことが分かる．
-%$\cThrow$ は，切り取られた継続を引数に適用するための演算子である．
+%$\Throw$ は，切り取られた継続を引数に適用するための演算子である．
 %つまり，
 %\begin{align*}
 %  e & \too \magenta{\cLet~y=t~\cIn} \\
