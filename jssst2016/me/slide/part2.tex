@@ -1,7 +1,6 @@
 % どうやって解くかの説明
 
 \section{研究の目的}
-% s0/r0 にフォーカスした話をする．
 \begin{frame}
   \frametitle{研究の目的}
 
@@ -24,6 +23,12 @@
 \end{frame}
 
 \section{研究の内容}
+
+\begin{frame}
+  \center
+  \huge{表現力を上げ（コードレベルでの多段階let挿入），安全性も保証するためにどうすればよいのか}
+\end{frame}
+
 \subsection{本研究の手法}
 \begin{frame}
   % 須藤さんの
@@ -41,7 +46,15 @@
   \end{columns}
 \end{frame}
 
+
+
 \subsection{コード生成器と生成されるコード}
+
+\begin{frame}
+  \center
+  \huge{まず表現力について}
+\end{frame}
+
 \begin{frame}
   \frametitle{コード生成器と生成されるコード}
 
@@ -53,7 +66,7 @@
           & \red{...}~ \cfordo{i = 0}{n} \\
           & ~~\red{...}~ \cfordo{j = 0}{m} \\
           & ~~~~\red{...}~ \magenta{\cLet~y=t~\cIn} \\
-          & ~~~~~~\red{...}~ (\aryset{a}{i,j}{b[i] + y})
+          & ~~~~~~\red{...}~ (\caryset{\code{a}}{(i,j)}{b[i] + y})
         \end{align*}
       \end{column}
       $\Rightarrow$
@@ -89,7 +102,7 @@
       & \red{...}~ \cfordo{i = 0}{n} \\
       & ~~\red{...}~ \cfordo{j = 0}{m} \\
       & ~~~~\red{...}~ \magenta{\cLet~y=t~\cIn} \\
-      & ~~~~~~\red{...}~ (\aryset{a}{i,j}{b[i] + y})
+      & ~~~~~~\red{...}~ (\caryset{\code{a}}{(i,j)}{b[i] + y})
     \end{align*}
 
     \begin{invisibleenv}<1>
@@ -106,7 +119,7 @@
       & \red{\Resetz} ~~\cfordo{i = 0}{n} \\
       & ~~\blue{\Resetz} ~~\cfordo{j = 0}{m} \\
       & ~~~~\blue{\Shiftz}~\blue{k_2}~\to~ \red{\Shiftz}~\red{k_1}~\to~ \magenta{\cLet~y=t~\cIn} \\
-      & ~~~~~~\red{k_1}~(\blue{k_2}~(\aryset{a}{i,j}{b[i] + y}))
+      & ~~~~~~\red{k_1}~(\blue{k_2}~(\caryset{\code{a}}{(i,j)}{b[i] + y}))
     \end{align*}
     \begin{invisibleenv}<2>
       \begin{align*}
@@ -122,7 +135,7 @@
       & \red{\Resetz} ~~\cfordo{i = 0}{n} \\
       & ~~\blue{\Resetz} ~~\cfordo{j = 0}{m} \\
       & ~~~~\blue{\Shiftz}~\blue{k_2}~\to~ \red{\Shiftz}~\red{k_1}~\to~ \magenta{\cLet~y=t~\cIn} \\
-      & ~~~~~~\red{k_1}~(\blue{k_2}~(\aryset{a}{i,j}{b[i] + y}))
+      & ~~~~~~\red{k_1}~(\blue{k_2}~(\caryset{\code{a}}{(i,j)}{b[i] + y}))
     \end{align*}
     \begin{align*}
       \red{k_1} &= ~~\cfordo{i = 0}{n} \\
@@ -134,7 +147,7 @@
     コード生成器
     \begin{align*}
       & \magenta{\cLet~y=t~\cIn} \\
-      & ~~\red{k_1}~(\blue{k_2}~(\aryset{a}{i,j}{b[i] + y}))
+      & ~~\red{k_1}~(\blue{k_2}~(\caryset{\code{a}}{(i,j)}{b[i] + y}))
     \end{align*}
     \begin{align*}
       \red{k_1} &= ~~\cfordo{i = 0}{n} \\
@@ -151,6 +164,11 @@
       & ~~~~~~\aryset{a}{i,j}{b[i] + y} \\
     \end{align*}
   \end{onlyenv}
+\end{frame}
+
+\begin{frame}
+  \center
+  \huge{次に安全性}
 \end{frame}
 
 \begin{frame}

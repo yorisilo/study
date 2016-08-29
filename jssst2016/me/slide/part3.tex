@@ -6,10 +6,10 @@
   \frametitle{型が付く例/付かない例}
   コード生成器
   \begin{align*}
-    e & = \red{\cResetz} ~~\cforin{i = 0}{n} \\
-      & \phantom{=}~~~~\blue{\cResetz} ~~\cforin{j = 0}{m} \\
-      & \phantom{=}~~~~~~ \blue{\cShiftz}~\blue{k_2}~\to~ \red{\cShiftz}~\red{k_1}~\to~ \magenta{\cLet~y=\green{t}~\cIn} \\
-      & \phantom{=}~~~~~~~~ \red{k_1}~(\blue{k_2}~(a\cArrays{i}{j} = b\cArray{i} + y))
+    e & = \red{\Resetz} ~~\cfordo{i = 0}{n} \\
+      & \phantom{=}~~~~\blue{\Resetz} ~~\cfordo{j = 0}{m} \\
+      & \phantom{=}~~~~~~ \blue{\Shiftz}~\blue{k_2}~\to~ \red{\Shiftz}~\red{k_1}~\to~ \magenta{\cLet~y=\green{t}~\cIn} \\
+      & \phantom{=}~~~~~~~~ \red{k_1}~(\blue{k_2}~(\caryset{\code{a}}{(i,j)}{b[i] + y}))
   \end{align*}
 
   \pause
@@ -20,9 +20,9 @@
       \includegraphics[clip,height=1cm]{./img/batsu.png}
       \begin{align*}
         e & \too \magenta{\Let ~y ~= ~\green{a[i][j]} ~\In} \\
-          & \phantom{\too}~~~~ \forin{i = 0}{n} \\
-          & \phantom{\too}~~~~~~\forin{j = 0}{m} \\
-          & \phantom{\too}~~~~~~~~a[i][j] = b[i] + y \\
+          & \phantom{\too}~~~~ \fordo{i = 0}{n} \\
+          & \phantom{\too}~~~~~~\fordo{j = 0}{m} \\
+          & \phantom{\too}~~~~~~~~\aryset{a}{i,j}{b[i] + y} \\
       \end{align*}
     \end{column}
 
@@ -31,9 +31,9 @@
       \includegraphics[height=1cm]{./img/maru.png}
       \begin{align*}
         e & \too \magenta{\Let ~y ~= ~\green{7} ~\In} \\
-          & \phantom{\too}~~~~ \forin{i = 0}{n} \\
-          & \phantom{\too}~~~~~~\forin{j = 0}{m} \\
-          & \phantom{\too}~~~~~~~~a[i][j] = b[i] + y \\
+          & \phantom{\too}~~~~ \fordo{i = 0}{n} \\
+          & \phantom{\too}~~~~~~\fordo{j = 0}{m} \\
+          & \phantom{\too}~~~~~~~~\aryset{a}{i,j}{b[i] + y} \\
       \end{align*}
     \end{column}
   \end{columns}
