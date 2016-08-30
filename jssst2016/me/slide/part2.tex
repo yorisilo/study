@@ -63,20 +63,20 @@
       \begin{column}{0.5\textwidth}%% [横幅] 0.2\textwidth = ページ幅の 20 %
         コード生成器
         \begin{align*}
-          & \red{...}~ \cfordo{i = 0}{n} \\
-          & ~~\red{...}~ \cfordo{j = 0}{m} \\
-          & ~~~~\red{...}~ \magenta{\cLet~y=t~\cIn} \\
-          & ~~~~~~\red{...}~ (\caryset{\code{a}}{(i,j)}{b[i] + y})
+          & \red{...}~ \cfordo{x = e1}{e2} \\
+          & ~~\red{...}~ \cfordo{y = e3}{e4} \\
+          & ~~~~\red{...}~ \magenta{\cLet~u=t~\cIn} \\
+          & ~~~~~~\red{...}~ \caryset{\code{a}}{(x,y)} u
         \end{align*}
       \end{column}
-      $\Rightarrow$
+      $\too$
       \begin{column}{0.5\textwidth}%% [横幅] 0.2\textwidth = ページ幅の 20 %
         生成されるコード
         \begin{align*}
-          & \magenta{\Let ~y ~= ~t ~\In} \\
-          & ~~\fordo{i = 0}{n} \\
-          & ~~~~\fordo{j = 0}{m} \\
-          & ~~~~~~\aryset{a}{i,j}{b[i] + y}
+          & \langle \magenta{\Let ~u' ~= ~t' ~\In} \\
+          & ~~\fordo{x' = e1'}{e2'} \\
+          & ~~~~\fordo{y' = e3'}{e4'} \\
+          & ~~~~~~\aryset{a}{x',y'}{u'} \rangle
         \end{align*}
       \end{column}
     \end{columns}
@@ -89,81 +89,63 @@
 \subsection{多段階let 挿入}
 
 \begin{frame}
-  \frametitle{shift0/reset0 による多段階let挿入}
-  \begin{onlyenv}<1->
-    \begin{align*}
-      \Resetz (E[\Shiftz~ k \to e]) &\to e \ksubst{k}{E}
-    \end{align*}
-  \end{onlyenv}
+  \frametitle{shift0/reset0 によるlet挿入}
 
-  \begin{onlyenv}<1>
-    コード生成器
     \begin{align*}
-      & \red{...}~ \cfordo{i = 0}{n} \\
-      & ~~\red{...}~ \cfordo{j = 0}{m} \\
-      & ~~~~\red{...}~ \magenta{\cLet~y=t~\cIn} \\
-      & ~~~~~~\red{...}~ (\caryset{\code{a}}{(i,j)}{b[i] + y})
+\uncover<3->{
+      \Resetz ~(E[\Shiftz~ k \to e]) &\to e \ksubst{k}{E}
+}
     \end{align*}
 
-    \begin{invisibleenv}<1>
-      \begin{align*}
-        \red{k_1} &= ~~\cfordo{i = 0}{n} \\
-        \blue{k_2} &= ~~\cfordo{j = 0}{m} \\
-      \end{align*}
-    \end{invisibleenv}
-  \end{onlyenv}
+\noindent
+    \begin{align*}
+    \text{コード生成器:}~~
+      & \uncover<4->{\blue{\Resetz}} ~~\cfordo{x = e1}{e2} \\
+      & ~~\uncover<2-3>{\blue{\Resetz}} ~~\cfordo{y = e3}{e4} \\
+      & ~~~~\uncover<2->{\blue{\Shiftz}~\blue{k}~\to}~ 
+            \magenta{\cLet~u=t~\cIn} \\
+      & ~~~~~~\uncover<2->{(\blue{\Throw~k}}~(\caryset{a}{(x,y)}{u})
+              \uncover<2->{)} \\
+      &   \uncover<3,5->{\blue{k}} 
+\only<3>{\Leftarrow ~~\cfordo{y = e3}{e4}~[\ ]} 
+\only<5->{\Leftarrow ~~\cfordo{x = e1}{e2} ~~\cfordo{y = e3}{e4} ~~[\ ]} \\
+    \text{生成コード:}~~
+      & \uncover<3,5->{\langle~}
+\only<3>{\fordo{x' = e1'}{e2'}} \only<5->{\magenta{\Let ~u' ~= ~t' ~\In}} \\
+      & ~~ 
+\only<3>{\magenta{\Let ~u' ~= ~t' ~\In}} \only<5->{\fordo{x' = e1'}{e2'}} \\
+      & ~~~~\uncover<3,5->{\fordo{y' = e3'}{e4'}} \\
+      & ~~~~~~\uncover<3,5->{\aryset{a}{x',y'}{u'} ~\rangle}
+    \end{align*}
+\end{frame}
 
-  \begin{onlyenv}<2>
-    コード生成器
-    \begin{align*}
-      & \red{\Resetz} ~~\cfordo{i = 0}{n} \\
-      & ~~\blue{\Resetz} ~~\cfordo{j = 0}{m} \\
-      & ~~~~\blue{\Shiftz}~\blue{k_2}~\to~ \red{\Shiftz}~\red{k_1}~\to~ \magenta{\cLet~y=t~\cIn} \\
-      & ~~~~~~\red{k_1}~(\blue{k_2}~(\caryset{\code{a}}{(i,j)}{b[i] + y}))
-    \end{align*}
-    \begin{invisibleenv}<2>
-      \begin{align*}
-        \red{k_1} &= ~~\cfordo{i = 0}{n} \\
-        \blue{k_2} &= ~~\cfordo{j = 0}{m} \\
-      \end{align*}
-    \end{invisibleenv}
-  \end{onlyenv}
 
-  \begin{onlyenv}<3>
-    コード生成器
-    \begin{align*}
-      & \red{\Resetz} ~~\cfordo{i = 0}{n} \\
-      & ~~\blue{\Resetz} ~~\cfordo{j = 0}{m} \\
-      & ~~~~\blue{\Shiftz}~\blue{k_2}~\to~ \red{\Shiftz}~\red{k_1}~\to~ \magenta{\cLet~y=t~\cIn} \\
-      & ~~~~~~\red{k_1}~(\blue{k_2}~(\caryset{\code{a}}{(i,j)}{b[i] + y}))
-    \end{align*}
-    \begin{align*}
-      \red{k_1} &= ~~\cfordo{i = 0}{n} \\
-      \blue{k_2} &= ~~\cfordo{j = 0}{m} \\
-    \end{align*}
-  \end{onlyenv}
+\begin{frame}
+  \frametitle{shift0/reset0 による\alert{多段階}let挿入}
 
-  \begin{onlyenv}<4>
-    コード生成器
     \begin{align*}
-      & \magenta{\cLet~y=t~\cIn} \\
-      & ~~\red{k_1}~(\blue{k_2}~(\caryset{\code{a}}{(i,j)}{b[i] + y}))
+      \Resetz ~(E[\Shiftz~ k \to e]) &\to e \ksubst{k}{E}
     \end{align*}
-    \begin{align*}
-      \red{k_1} &= ~~\cfordo{i = 0}{n} \\
-      \blue{k_2} &= ~~\cfordo{j = 0}{m} \\
-    \end{align*}
-  \end{onlyenv}
 
-  \begin{onlyenv}<5>
-    生成されるコード
+\noindent
     \begin{align*}
-      & \magenta{\Let ~y ~= ~t ~\In} \\
-      & ~~\fordo{i = 0}{n} \\
-      & ~~~~\fordo{j = 0}{m} \\
-      & ~~~~~~\aryset{a}{i,j}{b[i] + y} \\
+    \text{コード生成器:}~~
+      & \red{\Resetz} ~~\cfordo{x = e1}{e2} \\
+      & ~~\blue{\Resetz} ~~\cfordo{y = e3}{e4} \\
+      & ~~~~\blue{\Shiftz}~\blue{k_2}~\to~ 
+            \red{\Shiftz}~\red{k_1}~\to~ 
+            \magenta{\cLet~u=t~\cIn} \\
+      & ~~~~~~\red{\Throw~k_1}~
+              (\blue{\Throw~k_2}~(\caryset{a}{(x,y)}{u})) \\
+%        & \red{k_1} \Leftarrow ~~\cfordo{x = e1}{e2}~[\ ] \\
+%        & \blue{k_2} \Leftarrow ~~\cfordo{y = e3}{e3}~[\ ] \\
+    \text{生成コード:}~~
+      & \langle~\magenta{\Let ~u' ~= ~t' ~\In} \\
+      & ~~\fordo{x' = e1'}{e2'} \\
+      & ~~~~\fordo{y' = e3'}{e4'} \\
+      & ~~~~~~\aryset{a}{x',y'}{u'} ~\rangle
     \end{align*}
-  \end{onlyenv}
+
 \end{frame}
 
 \begin{frame}
@@ -184,36 +166,104 @@
 \subsection{型システム}
 
 \begin{frame}
-  \frametitle{環境識別子 EC によるスコープ表現 [Taha+2003] [Sudo+2014]}
-  \begin{center}
-    \includegraphics[clip,height=5.7cm]{./img/ec_for.png}
-  \end{center}
-  \begin{flushright}
-    $\gamma_i ... \text{Refined Environment Classifier}$
-  \end{flushright}
+  \frametitle{環境識別子(EC)を利用したスコープ表現 [Sudo+2014]}
+%  \begin{center}
+%    \includegraphics[clip,height=5.7cm]{./img/ec_for.png}
+%  \end{center}
+%  \begin{flushright}
+%    $\gamma_i ... \text{Refined Environment Classifier}$
+%  \end{flushright}
+
+\newcommand\ml{\multicolumn}
+
+
+{\Large
+\begin{tabular}{l|l|l|l|l|l|}
+\cline{2-6} 
+\alert{$\mathbf \gamma0$} & \ml{5}{|l|}{\cfordo{x = e1}{e2}~~~~~~~~~~~~~~~} \\ \cline{3-5}
+          & \alert{$\mathbf \gamma1$} & \ml{3}{|l|}{\cfordo{y = e1}{e2}} & \\ \cline{4-4}
+          &           & \alert{$\mathbf \gamma2$} & \ml{1}{|l|}{\caryset{a}{(x,y)}~t} & ~~ & \\ \cline{4-4}
+          &           & \ml{3}{|l|}{\ }    &               \\ \cline{3-5}
+          & \ml{5}{|l|}{~~~~~~~~~~~~~~~~~~ } \\ \cline{2-6}
+\end{tabular}
+}
+
+\begin{center}
+\begin{tabular}{c|c}
+スコープ & 使えるコード変数 \\ \hline
+$\gamma0$ & なし \\ \hline
+$\gamma1$ & x \\ \hline
+$\gamma2$ & x,y
+\end{tabular}\qquad
+\end{center}
+
 \end{frame}
 
 \begin{frame}
-  \frametitle{ECの洗練化 （本研究）}
-  \begin{onlyenv}<1>
-    \flushleft
-    \includegraphics[clip,height=4cm]{./img/ecex.png}
-  \end{onlyenv}
+  \frametitle{環境識別子(EC)を利用したスコープ表現 [Sudo+2014]}
+
+型システムでコード変数のスコープを表現:
+\begin{align*}
+\gamma2 \ord \gamma1,~
+x : \codeTs{\textbf{int}}{\gamma1},~
+y : \codeTs{\textbf{int}}{\gamma2}
+& ~\vdash~ x : \codeTs{\textbf{float}}{\gamma2}  & \alert{\text{OK}}
+\\
+\gamma2 \ord \gamma1,~
+x : \codeTs{\textbf{int}}{\gamma1},~
+y : \codeTs{\textbf{int}}{\gamma2}
+& ~\vdash~ y : \codeTs{\textbf{float}}{\gamma1}  & \alert{\text{NG}}
+\\
+\gamma2 \ord \gamma1,~
+x : \codeTs{\textbf{int}}{\gamma1},~
+y : \codeTs{\textbf{int}}{\gamma2}
+& ~\vdash~ x\cPlus y : \codeTs{\textbf{int}}{\gamma2}  & \alert{\text{OK}}
+\end{align*}
+
+コードレベルのラムダ抽象の型付け規則で，固有変数条件を利用:
+
+  \[
+    \infer[(\gamma_2~\text{is eigen var})]
+    {\Gamma \vdash \cfun{x}{e} : \codeTs{t_1\to t_2}{\gamma_1} }
+    {\Gamma,~\gamma_2 \ord \gamma_1,~x:\codeTs{t_1}{\gamma_2} \vdash 
+      e : \codeTs{t_2}{\gamma_2}}
+  \]
+
 \end{frame}
 
 \begin{frame}
-  \frametitle{ECの洗練化 （本研究）}
-  \begin{onlyenv}<1>
-    \begin{center}
-      \includegraphics[clip,height=6cm]{./img/ecex_katsu.png}
-    \end{center}
-  \end{onlyenv}
+  \frametitle{環境識別子(EC)を利用したスコープ表現}
 
-  \begin{onlyenv}<2>
-    \begin{center}
-      \includegraphics[clip,height=6cm]{./img/ecex_join.png}
-    \end{center}
-  \end{onlyenv}
+先行研究:
+\begin{itemize}
+\item 局所的なスコープをもつ破壊的変数をもつコード生成の体系に対する(型安全な)型システムの構築
+ [Sudo,Kiselyov,Kameyama 2014]
+\item グローバルなスコープをもつ破壊的変数への拡張 
+ [Kiselyov,Kameyama,Sudo 2016]
+\item コントロールオペレータには非対応
+\end{itemize}
+
+\medskip
+問題点:
+shift0/reset0 などのコントロールオペレータは，スコープの包含関係を逆転させてしまう．
+\end{frame}
+
+\begin{frame}
+ここに，forループとshift0/reset0 の例を再掲する．
+
+もとのスライドの 24ページの絵をかく．
+\end{frame}
+
+\begin{frame}
+\frametitle{本研究での解決策}
+
+3つのアイディア:
+\begin{itemize}
+\item 包含関係にないEC 
+\item ジョイン演算子
+\item EC に関する多相性
+\end{itemize}
+
 \end{frame}
 
 

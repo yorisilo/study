@@ -28,24 +28,23 @@
 
 \subsection{コード生成の例}
 \begin{frame}
-  \frametitle{我々のコード生成言語による記述例}
+  \frametitle{コード生成言語による記述例}
 
-  コード生成器 から 生成されるコードの例をみる
   \pause
   \begin{align*}
-    \visible<1->{\text{コード生成器}} \visible<2->{&\to \text{生成されるコード}} \\
-    \visible<3->{(\cint~ 3)} \visible<4->{&\to \code{4}} \\
+    \visible<1->{\text{コード生成器}} \visible<2->{&\too \text{生成されるコード}} \\
+    \visible<3->{(\cint~ 3)} \visible<4->{&\too \code{3}} \\
     \visible<5->{(\cint~ 3)~ \cPlus~ (\cint~ 5)} \visible<6->{&\too \code{3 + 5}} \\
-    \visible<7->{\cfun{x}{x~ \cPlus~ (\cint~ 3)}} \visible<8->{&\too \code{\fun{x'}{x' + 3}}} \\
-    \visible<9->{\cfordo{x = n}{m}~ e} \visible<10->{&\to \code{\fordo{x = n}{m}~ e}}
+    \visible<7->{\cfun{x}{~x~ \cPlus~ (\cint~ 3)}} \visible<8->{&\too \code{\fun{x'}{x' + 3}}} \\
+    \visible<9->{\cfordo{x = \cdots}{\cdots}~ \cdots} 
+\visible<10->{&\too \code{\fordo{x' = \cdots}{\cdots}~ \cdots}}
   \end{align*}
 
   \begin{visibleenv}<11>
     \begin{exampleblock}{コードコンビネータ}
       \begin{itemize}
-      \item アンダーバーのついた演算子
-      \item レベル0の項をコード化する \\
-        ex. $1$ : レベル0項 , $\code{1}$ : コード化した項
+      \item 下線つきの演算子
+      \item コードを引数にとり、コードを返す
       \end{itemize}
     \end{exampleblock}
   \end{visibleenv}
@@ -62,14 +61,14 @@
   \begin{onlyenv}<1>
     普通のpower関数
     \begin{align*}
-      \text{power} =~ &\lam x. \fix~ \lam f. \lam n. \\
-                      &\iif~ n=0~ \then~  1 \\
-                      &\eelse~ x~ \times~ (f~ (n - 1))
+      \text{power} =~ &\lam x.~\fix~ \lam f. \lam n. \\
+                      &~~\iif~ n=0~ \then~  1 \\
+                      &~~\eelse~ x~ \times~ (f~ (n - 1))
     \end{align*}
   \end{onlyenv}
 
   \begin{onlyenv}<2->
-    コード化を行ったpower関数(powerコード生成器)
+    \texttt{gen\_power}: powerコード生成器
     \begin{align*}
       \text{gen\_power} =~ &\clam x. \fix~ \lam f. \lam n. \\
                            &\iif~ n=0~ \then~ (\cint~ 1) \\
@@ -79,10 +78,11 @@
 
   \pause
   \pause
-  $n = 5$に特化したコードの生成を行う
+  $n = 5$に特化したコード生成:
   \pause
   \begin{align*}
-    \cfun{x}{\text{gen\_power}~ x~ 5} \too \code{\fun{x'}{x' * x' * x' * x' * x' * 1}}
+    \cfun{x}{~\text{gen\_power}~ x~ 5} \too \code{\fun{x'}{~x' 
+\times x' \times x' \times x' \times x' \times 1}}
   \end{align*}
   \pause
   gen\_power 関数によって生成されたコードは power 関数より高速
@@ -122,23 +122,23 @@
 \end{frame}
 
 \begin{frame}[fragile]
-  \frametitle{for文を使ったコード生成の例}
+  \frametitle{二重forループのコード生成例}
   コード生成器
   \begin{align*}
-    & \cfordo{x = 0}{n} \\
-    & ~~\cfordo{y = 0}{m} \\
-    & ~~~~~~\caryset{a}{(x,y)}{(x + \text{complex calculation})} \\
+    & \cfordo{x = (\cint~0)}{(\cint~n)} \\
+    & ~~\cfordo{y = (\cint~0)}{(\cint~m)} \\
+    & ~~~~~~\caryset{a}{(x,y)}{(x ~\cPlus~ \text{complex calculation})} 
   \end{align*}
 
   \begin{visibleenv}<2>
     \begin{center}
-      \downtoo
+      \LARGE \downtoo
     \end{center}
     生成されるコード
     \begin{align*}
-      &\cbra~ \fordo{x = 0}{n} \\
-      & ~~~~\fordo{y = 0}{m} \\
-      & ~~~~~~\aryset{a}{x,y}{(x + \text{complex calculation})}~ \cket
+      &\cbra~ \fordo{x' = 0}{n} \\
+      & ~~~~\fordo{y' = 0}{m} \\
+      & ~~~~~~\aryset{a}{x',y'}{(x' + \text{complex calculation})}~ \cket
     \end{align*}
   \end{visibleenv}
 \end{frame}
@@ -147,12 +147,12 @@
   \frametitle{多段階let挿入}
   生成されるコード
   \begin{align*}
-    \visible<4-5>{&\cbra~ \Let ~u = \red{\text{complex calculation}}~ \In \visible<5>{\footnotesize\blue{\text{  --- u が x にも y にも依存しない式 }}} \\}
-                  &\visible<1-3>{\cbra~} \fordo{x = 0}{n} \\
-    \visible<2-3>{& ~~~~\Let ~u = \red{\text{complex calculation}}~ \In \visible<3>{\footnotesize\blue{\text{  --- u が x にのみ依存し y には依存しない式 }}} \\}
-                  & ~~~~\fordo{y = 0}{m} \\
+    \visible<4-5>{&\cbra~ \Let ~u = \red{\text{complex calculation}}~ \In \visible<5>{\footnotesize\blue{\text{  --- u が x' にも y' にも依存しない式 }}} \\}
+                  &\visible<1-3>{\cbra~} \fordo{x' = 0}{n} \\
+    \visible<2-3>{& ~~~~\Let ~u = \red{\text{complex calculation}}~ \In \visible<3>{\footnotesize\blue{\text{  --- u が x' にのみ依存し y' には依存しない式 }}} \\}
+                  & ~~~~\fordo{y' = 0}{m} \\
     \\
-                  & ~~~~~~\aryset{a}{x,y}{x + \visible<2->{u}~ \visible<1>{\red{\text{complex calculation}}}} \cket
+                  & ~~~~~~\aryset{a}{x',y'}{x' + \visible<2->{u}~ \visible<1>{\red{\text{complex calculation}}}} \cket
   \end{align*}
 \end{frame}
 
