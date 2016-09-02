@@ -39,10 +39,63 @@
   \end{columns}
 \end{frame}
 
-\subsection{あれもこれもできる}
+\newcommand\boxterm{\framebox{
+\only<2>{\green{\cint{3}}}
+\only<3>{\red{x~\cPlus~(\cint{3})}}
+\phantom{A}
+}}
 
 \begin{frame}
-  \frametitle{あれもこれもできる}
+  \frametitle{型付けの例(1)}
+  \begin{align*}
+    e1 & = \Resetz ~~(\cfordo{x = e1}{e2} \\
+      & \phantom{=}~~~ \Shiftz~k~\to~
+    {\cLet~u=\green{\boxterm}~\cIn}~\Throw~k~u)
+  \end{align*}
+
+\[
+\infer{\vdash e1 : \codeTs{t}{\gamma0};~\epsilon}
+      {\infer{\vdash \cfor{x=...} :
+                \codeTs{t}{\gamma0};~\codeTs{t}{\gamma0}}
+             {\infer{\gamma1 \ord \gamma0,~x:\codeTs{t}{\gamma1} 
+                     \vdash \Shiftz~k~\to~... :
+                     \codeTs{t}{\gamma1};~\codeTs{t}{\gamma0}}
+                    {\infer{\Gamma1 \vdash \cLet~u=...:\codeTs{t}{\gamma0};~\epsilon}
+                           {\infer{\Gamma2 \vdash
+                                    \Throw~k~u:\codeTs{t}{\gamma2};~\epsilon }
+                                  {\infer{\Gamma2 \vdash
+                                      u:\codeTs{t}{\gamma1 \cup \gamma2}}
+                                         {}
+                                  }
+                           &\infer*{\Gamma1 \vdash
+                                     \green{\boxterm}:\codeTs{t}{\gamma0};~\epsilon}
+                                   {}
+                           }
+                    }
+             }
+      }
+\]
+
+{\footnotesize
+\begin{align*}
+\Gamma1 &= \gamma1 \ord \gamma0,~x:\codeTs{t}{\gamma1},
+~k: \contT{\codeT{t}{\gamma_1}}{\codeT{t}{\gamma_0}} \\
+\Gamma2 &= \Gamma1,~\gamma2 \ord \gamma0,~u:\codeTs{t}{\gamma2}  
+\end{align*}
+}
+
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{型付けの例(2)}
+  \begin{align*}
+    e1 & = \red{\Resetz} ~~\cfordo{i = 0}{n} \\
+      & \phantom{=}~~~~\blue{\Resetz} ~~\cfordo{j = 0}{m} \\
+      & \phantom{=}~~~~~~ \blue{\Shiftz}~\blue{k_2}~\to~ \red{\Shiftz}~\red{k_1}~\to~ \magenta{\cLet~y=\green{t}~\cIn} \\
+      & \phantom{=}~~~~~~~~ \red{k_1}~(\blue{k_2}~(\caryset{\code{a}}{(i,j)}{b[i] + y}))
+  \end{align*}
+
 
 \end{frame}
 
