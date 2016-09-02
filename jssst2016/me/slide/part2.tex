@@ -29,24 +29,22 @@
   \huge{表現力を上げ（コードレベルでの多段階let挿入），安全性も保証するためにどうすればよいのか}
 \end{frame}
 
-\subsection{本研究の手法}
-\begin{frame}
-  % 須藤さんの
-  \frametitle{本研究の手法}
-  % \begin{itemize}
-  % \item shift0/reset0 の型システムを単純化; let挿入等に絞る
-  % \item これをコード生成言語の型システムに融合
-  % \item 型システムの安全性を保証: Kameyama+ 2009, Sudo+2014 の手法を利用
-  % \end{itemize}
-  \begin{columns}
-    \begin{column}{1.\textwidth}%% [横幅] 0.2\textwidth = ページ幅の 20 %
-      \center
-      \includegraphics[clip,height=3.2cm]{./img/code_s0r0.png}
-    \end{column}
-  \end{columns}
-\end{frame}
-
-
+% \subsection{本研究の手法}
+% \begin{frame}
+%   % 須藤さんの
+%   \frametitle{本研究の手法}
+%   % \begin{itemize}
+%   % \item shift0/reset0 の型システムを単純化; let挿入等に絞る
+%   % \item これをコード生成言語の型システムに融合
+%   % \item 型システムの安全性を保証: Kameyama+ 2009, Sudo+2014 の手法を利用
+%   % \end{itemize}
+%   \begin{columns}
+%     \begin{column}{1.\textwidth}%% [横幅] 0.2\textwidth = ページ幅の 20 %
+%       \center
+%       \includegraphics[clip,height=3.2cm]{./img/code_s0r0.png}
+%     \end{column}
+%   \end{columns}
+% \end{frame}
 
 \subsection{コード生成器と生成されるコード}
 
@@ -83,7 +81,7 @@
 
   \begin{visibleenv}<2>
     \begin{exampleblock}{shift0/reset0の導入}
-      $\red{...}$ のところに後に説明する \red{shift0/reset0} というコントロールオペレータを用いることで，多段階let挿入を行う
+      $\red{...}$ のところに \red{shift0/reset0} を用いることで，多段階let挿入を行う
     \end{exampleblock}
   \end{visibleenv}
 \end{frame}
@@ -94,7 +92,7 @@
   \frametitle{shift0/reset0 によるlet挿入}
   \noindent
   \begin{align*}
-    \uncover<3->{\Resetz ~(E[\Shiftz~ k \to e]) \to e \ksubst{k}{E}}
+    \uncover<3->{\Resetz ~(E[\Shiftz~ k \to e]) ~\leadsto~ e \ksubst{k}{E}}
   \end{align*}
 
   \noindent
@@ -142,7 +140,7 @@
   \frametitle{shift0/reset0 による\alert{多段階}let挿入}
   \noindent
   \begin{align*}
-    \Resetz ~(E[\Shiftz~ k \to e]) \to e \ksubst{k}{E}
+    \Resetz ~(E[\Shiftz~ k \to e]) ~\leadsto~ e \ksubst{k}{E}
   \end{align*}
 
   \noindent
@@ -168,8 +166,9 @@
     \scriptsize{\text{コード生成器:}}~~
     & \red{\Resetz} ~~\cfordo{x = e1}{e2} \\
     & ~~\blue{\Resetz} ~~\cfordo{y = e3}{e4} \\
-    & ~~~~ \caryset{a}{(x,y)}{\blue{\Shiftz~ k_1 \to}~ \magenta{\cLet~ u = cc1~ \cIn~} \blue{\Throw~ k_1}~ u} \\
-    & ~~~~ \caryset{b}{(x,y)}{\red{\Shiftz~ k_2 \to}~ \magenta{\cLet~ w = cc2~ \cIn~} \red{\Throw~ k_2}~ w} \\
+    & ~~~~ \caryset{a}{(x,y)}{\blue{\Shiftz~ k_1 \to}~ \magenta{\cLet~ u = cc1~ \cIn~} \blue{\Throw~ k_1}~ u;} \\
+    & ~~~~ \set~ b~ (x,y)~ \red{\Shiftz~ k_1 \to~ \Shiftz~ k_2 \to}~ \\
+    & ~~~~~~~~~~~~~~~~~~~~~~~~ \magenta{\cLet~ w = cc2~ \cIn~} \red{\Throw~ k_2 (\Throw~ k_1}~ w) \\
     % & \red{k_1} \Leftarrow ~~\cfordo{x = e1}{e2}~[\ ] \\
       % & \blue{k_2} \Leftarrow ~~\cfordo{y = e3}{e3}~[\ ] \\
     \uncover<2->{\scriptsize{\text{生成コード:}}~~}
@@ -225,7 +224,7 @@
       スコープ & 使えるコード変数 \\ \hline
       \red{$\gamma0$} & なし \\ \hline
       \red{$\gamma1$} & x \\ \hline
-      \red{$\gamma2$} & x,y
+      \red{$\gamma2$} & x, y
     \end{tabular}\qquad
   \end{center}
 
@@ -373,7 +372,7 @@
       \cline{2-10}
       & \ml{9}{|l|}{$\cfordo{x = e1}{e2}$~~~~~~~~~~~~~~~} \\ \cline{3-9}
       & \footnotesize{\alert{$\mathbf \gamma0$}} & \ml{7}{|l|}{$\Resetz~ \cfordo{y = e3}{e4}$~} & \\ \cline{4-8}
-      & & \footnotesize{\alert{$\mathbf \gamma1$}} & \ml{5}{|l|}{$\Shiftz~ k \to \cLet~ u = cc ~ \In$}  & & \\ \cline{5-7}
+      & & \footnotesize{\alert{$\mathbf \gamma1$}} & \ml{5}{|l|}{$\Shiftz~ k \to \magenta{\cLet~ u = cc ~ \In}$}  & & \\ \cline{5-7}
       & & & \footnotesize{\alert{$\mathbf \gamma2$}} & \ml{3}{|l|}{$\Throw~ k$}     &   &  &       \\ \cline{6-6}
       & & & & \footnotesize{\alert{$\mathbf \gamma3$}} & \ml{1}{|l|}{$\caryset{a}{(x,y)}{u}$} & & &  &  \\ \cline{6-6}
       & & & & \ml{3}{|l|}{\ }  &   &   &           \\ \cline{5-7}
@@ -410,9 +409,9 @@
   \begin{tabular}{c|c}
     スコープ & 使えるコード変数 \\ \hline
     \red{$\gamma0$} & x \\ \hline
-    \red{$\gamma1$} & x,y \\ \hline
-    \red{$\gamma2$} & x,y,u \\ \hline
-    \red{$\gamma3$} & x,y,u \\
+    \red{$\gamma1$} & x, y \\ \hline
+    \red{$\gamma2$} & x, y, u \\ \hline
+    \red{$\gamma3$} & x, y, u \\
   \end{tabular}\qquad
 
   \bigskip
@@ -420,10 +419,10 @@
   生成コード：
   \begin{tabular}{c|c}
     スコープ & 使えるコード変数 \\ \hline
-    \red{$\gamma0$} & x \\ \hline
-    \red{$\gamma1$} & x,u \\ \hline
-    \red{$\gamma2$} & x,y,u \\ \hline
-    \red{$\gamma3$} & x,y,u \\
+    \red{$\gamma0$} & x' \\ \hline
+    \red{$\gamma2$} & x', u' \\ \hline
+    \red{$\gamma1$} & x', y', u' \\ \hline
+    \red{$\gamma3$} & x', y', u' \\
   \end{tabular}\qquad
 
   \begin{itemize}
@@ -445,6 +444,10 @@
 
 % \end{frame}
 
+\begin{frame}
+  \center
+  \huge{解決策}
+\end{frame}
 
 \begin{frame}
   \frametitle{本研究の解決策 ECのジョイン}
@@ -462,15 +465,15 @@
   \frametitle{コード生成+shift0/reset0 の型システム\small{ (の一部)}}
   reset0:
   \[
-    \infer{\Gamma \vdash \resetz{e} : \codeT{t}{\gamma} ~;~ \sigma}
-    {\Gamma \vdash e : \codeT{t}{\gamma} ~;~ \codeT{t}{\gamma}, \sigma}
+    \infer{\Gamma \vdash \resetz{e} : \codeTs{t}{\gamma} ~;~ \sigma}
+    {\Gamma \vdash e : \codeTs{t}{\gamma} ~;~ \codeTs{t}{\gamma}, \sigma}
   \]
 
   shift0:
   \[
-    \infer{\Gamma \vdash \shiftz{k}{e} : \codeT{t_1}{\gamma_1} ~;~ \codeT{t_0}{\gamma_0},\sigma}
-    {\Gamma,~k:\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}{\sigma}
-      \vdash e : \codeT{t_0}{\gamma_0} ; \sigma
+    \infer{\Gamma \vdash \shiftz{k}{e} : \codeTs{t_1}{\gamma_1} ~;~ \codeTs{t_0}{\gamma_0},\sigma}
+    {\Gamma,~k:\contT{\codeTs{t_1}{\gamma_1}}{\codeTs{t_0}{\gamma_0}}
+      \vdash e : \codeTs{t_0}{\gamma_0} ; \sigma
       & \Gamma \models \gamma_1 \ord \gamma_0
     }
   \]
@@ -478,10 +481,10 @@
   throw:
   \[
     \infer
-    {\Gamma,~k:\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}{\sigma}
-      \vdash \throw{k}{v} : \codeT{t_0}{\gamma_2} ; \sigma}
+    {\Gamma,~k:\contT{\codeTs{t_1}{\gamma_1}}{\codeTs{t_0}{\gamma_0}}
+      \vdash \throw{k}{v} : \codeTs{t_0}{\gamma_2} ; \sigma}
     {\Gamma
-      \vdash v : \codeT{t_1}{\gamma_1 \cup \gamma_2} ; \sigma
+      \vdash v : \codeTs{t_1}{\red{\gamma_1 \cup \gamma_2}} ; \sigma
       & \Gamma \models \gamma_2 \ord \gamma_0
     }
   \]

@@ -5,24 +5,26 @@
 \begin{frame}
   \frametitle{概要}
   % 図にする？
-  プログラムを生成するプログラミング言語(=\alert{コード生成言語})の安全性を保証する研究
+  プログラムを生成するプログラミング言語の安全性を保証する研究
   \begin{itemize}
-  \item<2-> 効率的なコードの生成
-  \item<2-> 安全性の保証
-  \item<3-> [⇒] \alert{多段階let 挿入}を効率的かつ安全に扱うための型システムを構築
+  %\item<2-> 効率的なコードの生成
+  %\item<2-> 安全性の保証
+  \item<2-> [⇒] \alert{多段階let 挿入}を効率的かつ安全に扱うための型システムを構築
   \end{itemize}
 \end{frame}
 
 \subsection{コード生成}
 \begin{frame}
   \frametitle{コード生成}
-  \includegraphics[clip,width=12cm]{./img/prggen.png}
-  % この図を少し変更する
+  \medskip
+  \flushleft
+  \includegraphics[clip,height=2cm]{./img/prggen.png}
+
   \begin{itemize}
-  \item コード生成ステージとコード実行ステージ
+    % \item コード生成ステージとコード実行ステージ
     % \item 生成前の段階で，生成後のコードの安全性を保証する
-  \item コード生成をサポートするプログラム言語 ⇒ コード生成言語
-  \item[◯]<2-> 生成するプログラムだけでなく，生成されたプログラムも型の整合性が静的に (生成前に) 保証される
+  \item コード生成をサポートするプログラム言語(=\alert{コード生成言語})
+  %\item[◯]<2-> 生成するプログラムだけでなく，生成されたプログラムも型の整合性が静的に (生成前に) 保証される
   \end{itemize}
 \end{frame}
 
@@ -30,17 +32,16 @@
 \begin{frame}
   \frametitle{コード生成言語による記述例}
 
-  \pause
   \begin{align*}
-    \visible<1->{\text{コード生成器}} \visible<2->{&\too \text{生成されるコード}} \\
-    \visible<3->{(\cint~ 3)} \visible<4->{&\too \code{3}} \\
-    \visible<5->{(\cint~ 3)~ \cPlus~ (\cint~ 5)} \visible<6->{&\too \code{3 + 5}} \\
-    \visible<7->{\cfun{x}{~x~ \cPlus~ (\cint~ 3)}} \visible<8->{&\too \code{\fun{x'}{x' + 3}}} \\
-    \visible<9->{\cfordo{x = \cdots}{\cdots}~ \cdots}
-    \visible<10->{&\too \code{\fordo{x' = \cdots}{\cdots}~ \cdots}}
+    \visible<1->{\text{コード生成器}} \visible<1->{&\too \text{生成されるコード}} \\
+    \visible<2->{(\cint~ 3)} \visible<2->{&\too \code{3}} \\
+    \visible<2->{(\cint~ 3)~ \cPlus~ (\cint~ 5)} \visible<2->{&\too \code{3 + 5}} \\
+    \visible<2->{\cfun{x}{~x~ \cPlus~ (\cint~ 3)}} \visible<2->{&\too \code{\fun{x'}{x' + 3}}} \\
+    \visible<2->{\cfordo{x = \cdots}{\cdots}~ \cdots}
+    \visible<2->{&\too \code{\fordo{x' = \cdots}{\cdots}~ \cdots}}
   \end{align*}
 
-  \begin{visibleenv}<11>
+  \begin{visibleenv}<3>
     \begin{exampleblock}{コードコンビネータ}
       \begin{itemize}
       \item 下線つきの演算子
@@ -84,8 +85,12 @@
     \cfun{x}{~\text{gen\_power}~ x~ 5} \too \code{\fun{x'}{~x'
     \times x' \times x' \times x' \times x' \times 1}}
   \end{align*}
-  \pause
-  gen\_power 関数によって生成されたコードは power 関数より高速
+
+  \center
+  \begin{itemize}
+  \item power 関数より高速
+  \end{itemize}
+
 \end{frame}
 
 % \begin{frame}
@@ -133,19 +138,20 @@
   \frametitle{多段階let挿入の例}
   生成されるコード
   \begin{align*}
-    \visible<2->{&\cbra~ \Let ~\blue{w} = \blue{\text{complex calculation}}~ \In \\}
+    \visible<2->{&\cbra~ \Let ~\blue{w} = \blue{\text{cc1}}~ \In \\}
                  &\visible<1>{\cbra~} \fordo{x' = 0}{n} \\
-    \visible<2->{& ~~~~\Let ~\red{u} = \red{\text{complex calculation}}~ \In \\}
+    \visible<2->{& ~~~~\Let ~\red{u} = \red{\text{cc2}}~ \In \\}
                  & ~~~~\fordo{y' = 0}{m} \\
-                 & ~~~~~~\aryset{a}{x',y'}{\visible<2->{\red{u}}~ \visible<1>{\red{\text{complex calculation}}}} \\
-                 & ~~~~~~\aryset{b}{x',y'}{\visible<2->{\blue{w}}~ \visible<1>{\blue{\text{complex calculation}}}} \cket
+                 & ~~~~~~\aryset{a}{x',y'}{\visible<2->{\red{u}}~ \visible<1>{\red{\text{cc2}}}} \\
+                 & ~~~~~~\aryset{b}{x',y'}{\visible<2->{\blue{w}}~ \visible<1>{\blue{\text{cc1}}}} \cket
   \end{align*}
 
   \begin{visibleenv}<3>
     \begin{exampleblock}{多段階let挿入}
       \begin{itemize}
       \item 入れ子になったforループなどを飛び越えた\alert{複数のコード移動}を許す仕組み
-      \item ループ不変式の移動等によって，\alert{効率的なコード生成}に必要なプログラミング技法
+        % \item ループ不変式の移動等によって，\alert{効率的なコード生成}に必要なプログラミング技法
+      \item 効率的なコード生成に必要
       \end{itemize}
     \end{exampleblock}
   \end{visibleenv}
@@ -183,23 +189,20 @@
 
 \begin{frame}[fragile]
   \frametitle{危険なコード生成の例}
-    生成される\red{危険な}コード
-    \begin{align*}
-      \visible<2->{&\cbra~ \Let ~\blue{w} = \blue{\text{complex calculation}}~ \In \visible<3->{\footnotesize\magenta{\text{  --- w が x にも y にも依存する式 }}} \\}
-                   &\visible<1>{\cbra~} \fordo{x' = 0}{n} \\
-      \visible<2->{& ~~~~\Let ~\red{u} = \red{\text{complex calculation}}~ \In \visible<3->{\footnotesize\magenta{\text{  --- u が y に依存する式 }}} \\}
-                   & ~~~~\fordo{y' = 0}{m} \\
-                   & ~~~~~~\aryset{a}{x',y'}{\visible<2->{\red{u}}~ \visible<1>{\red{\text{complex calculation}}}} \\
-                   & ~~~~~~\aryset{b}{x',y'}{\visible<2->{\blue{w}}~ \visible<1>{\blue{\text{complex calculation}}}} \cket
-    \end{align*}
+  生成される\red{危険な}コード
+  \begin{align*}
+    \visible<2->{&\cbra~ \Let ~\blue{w} = \blue{\text{cc1}}~ \In \visible<3->{\footnotesize\magenta{\text{  --- cc1 に x か y が含まれる }}} \\}
+                 &\visible<1>{\cbra~} \fordo{x' = 0}{n} \\
+    \visible<2->{& ~~~~\Let ~\red{u} = \red{\text{cc2}}~ \In \visible<3->{\footnotesize\magenta{\text{  --- cc2 に y が 含まれる }}} \\}
+                 & ~~~~\fordo{y' = 0}{m} \\
+                 & ~~~~~~\aryset{a}{x',y'}{\visible<2->{\red{u}}~ \visible<1>{\red{\text{cc2}}}} \\
+                 & ~~~~~~\aryset{b}{x',y'}{\visible<2->{\blue{w}}~ \visible<1>{\blue{\text{cc1}}}} \cket
+  \end{align*}
 
   \begin{visibleenv}<4>
-    \begin{exampleblock}{complex calculation によって挿入できる場所が異なる}
-      \begin{itemize}
-      \item 多段階let挿入が可能となっても，安全に挿入できる場所とそうでない場所がある
-      \item 安全にlet挿入を行うためにどうすればよいかを考える必要がある
-      \end{itemize}
-    \end{exampleblock}
+    \begin{itemize}
+    \item 安全に挿入できる場所とそうでない場所がある
+    \end{itemize}
   \end{visibleenv}
 \end{frame}
 
@@ -240,7 +243,7 @@
 %   \end{onlyenv}
 % \end{frame}
 
-\subsection{コード生成の課題}
+\subsection{コード生成の利点と課題}
 
 \begin{frame}
   \frametitle{コード生成の利点と課題}
@@ -258,6 +261,39 @@
   \item 生成したコードのデバッグが容易ではない
   \item [⇒] \alert{コード生成の前に安全性を保証}したい
   \end{itemize}
+\end{frame}
+
+% \begin{frame}
+%   \center
+%   \huge{危険なコードは排除したい}
+% \end{frame}
+
+\begin{frame}
+  \frametitle{コード生成前に型付け，生成後のコードの型安全性を保証}
+  \begin{onlyenv}<1>
+    \center
+    \includegraphics[clip,height=1.9cm]{./img/prggen.png}
+  \end{onlyenv}
+
+  \begin{onlyenv}<2>
+    \center
+    \includegraphics[clip,height=2.4cm]{./img/prggen_type1.png}
+  \end{onlyenv}
+
+  \begin{onlyenv}<3>
+    \center
+    \includegraphics[clip,height=2.4cm]{./img/prggen_type2.png}
+  \end{onlyenv}
+
+  \begin{onlyenv}<4>
+    \center
+    \includegraphics[clip,height=3.0cm]{./img/prggen_type3.png}
+  \end{onlyenv}
+
+  \begin{onlyenv}<5>
+    \center
+    \includegraphics[clip,height=3.0cm]{./img/prggen_type4.png}
+  \end{onlyenv}
 \end{frame}
 
 % \subsection{限定継続}
