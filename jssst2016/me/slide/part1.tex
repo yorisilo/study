@@ -9,7 +9,7 @@
   \begin{itemize}
   %\item<2-> 効率的なコードの生成
   %\item<2-> 安全性の保証
-  \item<2-> [⇒] \alert{多段階let 挿入}を効率的かつ安全に扱うための型システムを構築
+  \item<1-> [⇒] \alert{多段階let 挿入}を効率的かつ安全に扱うための型システムを構築
   \end{itemize}
 \end{frame}
 
@@ -33,15 +33,15 @@
   \frametitle{コード生成言語による記述例}
 
   \begin{align*}
-    \visible<1->{\text{コード生成器}} \visible<1->{&\too \text{生成されるコード}} \\
-    \visible<2->{(\cint~ 3)} \visible<2->{&\too \code{3}} \\
-    \visible<2->{(\cint~ 3)~ \cPlus~ (\cint~ 5)} \visible<2->{&\too \code{3 + 5}} \\
-    \visible<2->{\cfun{x}{~x~ \cPlus~ (\cint~ 3)}} \visible<2->{&\too \code{\fun{x'}{x' + 3}}} \\
-    \visible<2->{\cfordo{x = \cdots}{\cdots}~ \cdots}
-    \visible<2->{&\too \code{\fordo{x' = \cdots}{\cdots}~ \cdots}}
+    \visible<1->{\text{コード生成器}} \visible<1->{&\phantom{\too} \text{生成されるコード}} \\
+    \visible<1->{(\cint~ 3)} \visible<1->{&\too \code{3}} \\
+    \visible<1->{(\cint~ 3)~ \cPlus~ (\cint~ 5)} \visible<1->{&\too \code{3 + 5}} \\
+    \visible<1->{\cfun{x}{~x~ \cPlus~ (\cint~ 3)}} \visible<1->{&\too \code{\fun{x'}{x' + 3}}} \\
+    \visible<1->{\cfordo{x = \cdots}{\cdots}~ \cdots}
+    \visible<1->{&\too \code{\fordo{x' = \cdots}{\cdots}~ \cdots}}
   \end{align*}
 
-  \begin{visibleenv}<3>
+  \begin{visibleenv}<2>
     \begin{exampleblock}{コードコンビネータ}
       \begin{itemize}
       \item 下線つきの演算子
@@ -118,7 +118,7 @@
   \begin{align*}
     & \cfordo{x = (\cint~0)}{(\cint~n)} \\
     & ~~\cfordo{y = (\cint~0)}{(\cint~m)} \\
-    & ~~~~~~\caryset{a}{(x,y)}{\text{complex calculation}}
+    & ~~~~~~\caryset{a}{(x,y)}{\text{complex\_calculation}}
   \end{align*}
 
   \begin{visibleenv}<2>
@@ -129,13 +129,13 @@
     \begin{align*}
       &\cbra~ \fordo{x' = 0}{n} \\
       & ~~~~\fordo{y' = 0}{m} \\
-      & ~~~~~~\aryset{a}{x',y'}{\text{complex calculation}}~ \cket
+      & ~~~~~~\aryset{a}{x',y'}{\text{complex\_calculation}}~ \cket
     \end{align*}
   \end{visibleenv}
 \end{frame}
 
 \begin{frame}
-  \frametitle{多段階let挿入の例}
+  \frametitle{ループ不変式の移動}
   生成されるコード
   \begin{align*}
     \visible<2->{&\cbra~ \Let ~\blue{w} = \blue{\text{cc1}}~ \In \\}
@@ -191,17 +191,18 @@
   \frametitle{危険なコード生成の例}
   生成される\red{危険な}コード
   \begin{align*}
-    \visible<2->{&\cbra~ \Let ~\blue{w} = \blue{\text{cc1}}~ \In \visible<3->{\footnotesize\magenta{\text{  --- cc1 に x か y が含まれる }}} \\}
+    \visible<2->{&\cbra~ \Let ~\blue{w} = \blue{\text{cc1}}~ \In \\ }%\visible<3->{\footnotesize\magenta{\text{  --- cc1 に x か y が含まれる }}} \\}
                  &\visible<1>{\cbra~} \fordo{x' = 0}{n} \\
-    \visible<2->{& ~~~~\Let ~\red{u} = \red{\text{cc2}}~ \In \visible<3->{\footnotesize\magenta{\text{  --- cc2 に y が 含まれる }}} \\}
+    \visible<2->{& ~~~~\Let ~\red{u} = \red{\text{cc2}}~ \In \\ }%\visible<3->{\footnotesize\magenta{\text{  --- cc2 に y が 含まれる }}} \\}
                  & ~~~~\fordo{y' = 0}{m} \\
                  & ~~~~~~\aryset{a}{x',y'}{\visible<2->{\red{u}}~ \visible<1>{\red{\text{cc2}}}} \\
                  & ~~~~~~\aryset{b}{x',y'}{\visible<2->{\blue{w}}~ \visible<1>{\blue{\text{cc1}}}} \cket
   \end{align*}
 
-  \begin{visibleenv}<4>
+  \begin{visibleenv}<3>
     \begin{itemize}
-    \item 安全に挿入できる場所とそうでない場所がある
+    \item \blue{cc1} が安全な条件 $\iff$ \blue{cc1} に $x'$ か $y'$ が含まれない
+    \item \red{cc2} が安全な条件 $\iff$ \red{cc2} に$y'$が含まれない
     \end{itemize}
   \end{visibleenv}
 \end{frame}
@@ -243,25 +244,25 @@
 %   \end{onlyenv}
 % \end{frame}
 
-\subsection{コード生成の利点と課題}
+% \subsection{コード生成の利点と課題}
 
-\begin{frame}
-  \frametitle{コード生成の利点と課題}
-  利点
-  \begin{itemize}
-  \item \alert{「保守性・再利用性の高さ」}と\alert{「実行性能の高さ」}の両立
-  \end{itemize}
+% \begin{frame}
+%   \frametitle{コード生成の利点と課題}
+%   利点
+%   \begin{itemize}
+%   \item \alert{「保守性・再利用性の高さ」}と\alert{「実行性能の高さ」}の両立
+%   \end{itemize}
 
-  \pause
+%   \pause
 
-  課題
-  \begin{itemize}
-  \item パラメータに応じて，非常に多数のコードが生成される
-    % \item 構文的，意味的に正しくないプログラムを生成しやすい
-  \item 生成したコードのデバッグが容易ではない
-  \item [⇒] \alert{コード生成の前に安全性を保証}したい
-  \end{itemize}
-\end{frame}
+%   課題
+%   \begin{itemize}
+%   \item パラメータに応じて，非常に多数のコードが生成される
+%     % \item 構文的，意味的に正しくないプログラムを生成しやすい
+%   \item 生成したコードのデバッグが容易ではない
+%   \item [⇒] \alert{コード生成の前に安全性を保証}したい
+%   \end{itemize}
+% \end{frame}
 
 % \begin{frame}
 %   \center

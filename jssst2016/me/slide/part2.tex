@@ -61,16 +61,16 @@
       \begin{column}{0.5\textwidth}%% [横幅] 0.2\textwidth = ページ幅の 20 %
         コード生成器
         \begin{align*}
-          & \red{...}~ \cfordo{x = e1}{e2} \\
-          & ~~\red{...}~ \cfordo{y = e3}{e4} \\
-          & ~~~~~~\caryset{\code{a}}{(x,y)}~ \red{...}~ \text{comp calc}
+          & \red{\circ}~ \cfordo{x = e1}{e2} \\
+          & ~~\red{\circ}~ \cfordo{y = e3}{e4} \\
+          & ~~~~~~\caryset{\code{a}}{(x,y)}~ \red{\circ}~ \text{cc}
         \end{align*}
       \end{column}
       $\too$
       \begin{column}{0.5\textwidth}%% [横幅] 0.2\textwidth = ページ幅の 20 %
         生成されるコード
         \begin{align*}
-          & \cbra \magenta{\Let ~u' ~= ~\text{comp calc}' ~\In} \\
+          & \cbra \magenta{\Let ~u' ~= ~\text{cc}' ~\In} \\
           & ~~\fordo{x' = e1'}{e2'} \\
           & ~~~~\fordo{y' = e3'}{e4'} \\
           & ~~~~~~\aryset{a}{x',y'}{u'} \cket
@@ -81,7 +81,7 @@
 
   \begin{visibleenv}<2>
     \begin{exampleblock}{shift0/reset0の導入}
-      $\red{...}$ のところに \red{shift0/reset0} を用いることで，多段階let挿入を行う
+      $\red{\circ}$ のところに \red{shift0/reset0} を用いることで，多段階let挿入を行う
     \end{exampleblock}
   \end{visibleenv}
 \end{frame}
@@ -167,8 +167,8 @@
     & \red{\Resetz} ~~\cfordo{x = e1}{e2} \\
     & ~~\blue{\Resetz} ~~\cfordo{y = e3}{e4} \\
     & ~~~~ \caryset{a}{(x,y)}{\blue{\Shiftz~ k_1 \to}~ \magenta{\cLet~ u = cc1~ \cIn~} \blue{\Throw~ k_1}~ u;} \\
-    & ~~~~ \set~ b~ (x,y)~ \red{\Shiftz~ k_1 \to~ \Shiftz~ k_2 \to}~ \\
-    & ~~~~~~~~~~~~~~~~~~~~~~~~ \magenta{\cLet~ w = cc2~ \cIn~} \red{\Throw~ k_2 (\Throw~ k_1}~ w) \\
+    & ~~~~ \set~ b~ (x,y)~ \blue{\Shiftz~ k_1 \to~} \red{\Shiftz~ k_2 \to}~ \\
+    & ~~~~~~~~~~~~~~~~~~~~~~~~ \magenta{\cLet~ w = cc2~ \cIn~} \red{\Throw~ k_2} (\blue{\Throw~ k_1}~ w) \\
     % & \red{k_1} \Leftarrow ~~\cfordo{x = e1}{e2}~[\ ] \\
       % & \blue{k_2} \Leftarrow ~~\cfordo{y = e3}{e3}~[\ ] \\
     \uncover<2->{\scriptsize{\text{生成コード:}}~~}
@@ -211,9 +211,9 @@
   {\Large
     \begin{tabular}{l|l|l|l|l|l|}
       \cline{2-6}
-      \alert{$\mathbf \gamma0$} & \ml{5}{|l|}{\cfordo{x = e1}{e2}~~~~~~~~~~~~~~~} \\ \cline{3-5}
-                                & \alert{$\mathbf \gamma1$} & \ml{3}{|l|}{\cfordo{y = e3}{e4}} & \\ \cline{4-4}
-                                &           & \alert{$\mathbf \gamma2$} & \ml{1}{|l|}{\caryset{a}{(x,y)} complex calc} & ~~ & \\ \cline{4-4}
+      \alert{$\mathbf \gamma0$} & \ml{5}{|l|}{$\cfordo{x = e1}{e2}~~~~~~~~~~~~~~~$} \\ \cline{3-5}
+                                & \alert{$\mathbf \gamma1$} & \ml{3}{|l|}{$\cfordo{y = e3}{e4}$} & \\ \cline{4-4}
+                                &           & \alert{$\mathbf \gamma2$} & \ml{1}{|l|}{$\caryset{a}{(x,y)} cc$} & ~~ & \\ \cline{4-4}
                                 &           & \ml{3}{|l|}{\ }    &               \\ \cline{3-5}
                                 & \ml{5}{|l|}{~~~~~~~~~~~~~~~~~~ } \\ \cline{2-6}
     \end{tabular}
@@ -223,8 +223,8 @@
     \begin{tabular}{c|c}
       スコープ & 使えるコード変数 \\ \hline
       \red{$\gamma0$} & なし \\ \hline
-      \red{$\gamma1$} & x \\ \hline
-      \red{$\gamma2$} & x, y
+      \red{$\gamma1$} & $x$ \\ \hline
+      \red{$\gamma2$} & $x, y$
     \end{tabular}\qquad
   \end{center}
 
@@ -234,25 +234,26 @@
   \frametitle{環境識別子(EC)を利用したスコープ表現\tiny{[Sudo+2014]}}
   % 大なり記号はスコープの大きさを表しているのではなく，使える自由変数の集合の大きさを表している
   型システムでコード変数のスコープを表現:
+
+  \center
   \begin{align*}
     & \Gamma = \gamma2 \ord \gamma1,~
       x : \codeTs{\textbf{int}}{\gamma1},~
-      y : \codeTs{\textbf{int}}{\gamma2} \\
-    \\
-    \uncover<2->{&\Gamma
-                   ~\vdash~ x : \codeTs{\textbf{int}}{\gamma2}~~   \alert{\text{OK}}}
-    \\
-    \uncover<3->{& \Gamma
-                   ~\vdash~ y : \codeTs{\textbf{int}}{\gamma1}~~   \alert{\text{NG}}}
-    \\
-    \uncover<4->{&\Gamma
-                   ~\vdash~ x\cPlus y : \codeTs{\textbf{int}}{\gamma1}~~  \alert{\text{NG}}}
-    \\
-    \uncover<5->{&\Gamma
-                   ~\vdash~ x\cPlus y : \codeTs{\textbf{int}}{\gamma2}~~  \alert{\text{OK}}}
+      y : \codeTs{\textbf{int}}{\gamma2}
   \end{align*}
 
-  \begin{uncoverenv}<6->
+  \begin{tabular}{c|c}
+    $\gamma1$ & $\gamma2$ \\ \hline \hline
+    \uncover<1->{$\Gamma ~\vdash~ x : \codeTs{\textbf{int}}{\gamma1}~~ \alert{\text{OK}}$} & \uncover<1->{$\Gamma ~\vdash~ x : \codeTs{\textbf{int}}{\gamma2}~~ \alert{\text{OK}}$} \\ \hline
+
+    \uncover<1->{$\Gamma ~\vdash~ y : \codeTs{\textbf{int}}{\gamma1}~~ \alert{\text{NG}}$} & \uncover<1->{$\Gamma ~\vdash~ y : \codeTs{\textbf{int}}{\gamma2}~~ \alert{\text{OK}}$} \\ \hline
+
+    \uncover<1->{$\Gamma ~\vdash~ x\cPlus y : \codeTs{\textbf{int}}{\gamma1}~~  \alert{\text{NG}}$} & \uncover<1->{$\Gamma ~\vdash~ x\cPlus y : \codeTs{\textbf{int}}{\gamma2}~~  \alert{\text{OK}}$}
+  \end{tabular}
+
+  \bigskip
+
+  \begin{uncoverenv}<2->
     コードレベルのラムダ抽象の型付け規則で固有変数条件を利用:
 
     \[
@@ -408,10 +409,10 @@
   コード生成器：
   \begin{tabular}{c|c}
     スコープ & 使えるコード変数 \\ \hline
-    \red{$\gamma0$} & x \\ \hline
-    \red{$\gamma1$} & x, y \\ \hline
-    \red{$\gamma2$} & x, y, u \\ \hline
-    \red{$\gamma3$} & x, y, u \\
+    \red{$\gamma0$} & $x$ \\ \hline
+    \red{$\gamma1$} & \uncover<1->{$x, y$} \uncover<2->{$\Rightarrow$ \red{$x, y, u$}} \\ \hline
+    \red{$\gamma2$} & \uncover<1->{$x, y, u$} \uncover<2->{$\Rightarrow$ \red{$x ,u$}}\\ \hline
+    \red{$\gamma3$} & $x, y, u$ \\
   \end{tabular}\qquad
 
   \bigskip
@@ -419,10 +420,10 @@
   生成コード：
   \begin{tabular}{c|c}
     スコープ & 使えるコード変数 \\ \hline
-    \red{$\gamma0$} & x' \\ \hline
-    \red{$\gamma2$} & x', u' \\ \hline
-    \red{$\gamma1$} & x', y', u' \\ \hline
-    \red{$\gamma3$} & x', y', u' \\
+    \red{$\gamma0$} & $x'$ \\ \hline
+    \red{$\gamma2$} & $x', u'$ \\ \hline
+    \red{$\gamma1$} & $x', y', u'$ \\ \hline
+    \red{$\gamma3$} & $x', y', u'$ \\
   \end{tabular}\qquad
 
   \begin{itemize}
@@ -454,10 +455,14 @@
   \flushleft
   \includegraphics[clip,height=3cm]{./img/ecgraph.png}
   \begin{itemize}
-  \item<2-> $\gamma_1$ のコードレベル変数は $\gamma_2$ では使えない
-  \item<2-> $\gamma_2$ のコードレベル変数は $\gamma_1$ では使えない
-  \item<2-> $\gamma_1, \gamma_2$ のコードレベル変数は $\gamma_3$ で使える
-  \item<3->[$\Rightarrow$] Sudoらの体系に $\cup$ を追加
+  \item<2-> $\gamma1$ のコードレベル変数は $\gamma2$ では使えない
+  \item<2-> $\gamma2$ のコードレベル変数は $\gamma1$ では使えない
+  \item<3->[$\Rightarrow$] $\gamma1$ と $\gamma2$ の間に順序を付けない
+  \end{itemize}
+
+  \begin{itemize}
+  \item<4-> $\gamma1, \gamma2$ のコードレベル変数は $\gamma3$ で使える
+  \item<5->[$\Rightarrow$] Sudoらの体系に $\cup$ (ユニオン) を追加
   \end{itemize}
 \end{frame}
 
@@ -471,21 +476,21 @@
 
   shift0:
   \[
-    \infer{\Gamma \vdash \shiftz{k}{e} : \codeTs{t_1}{\gamma_1} ~;~ \codeTs{t_0}{\gamma_0},\sigma}
-    {\Gamma,~k:\contT{\codeTs{t_1}{\gamma_1}}{\codeTs{t_0}{\gamma_0}}
-      \vdash e : \codeTs{t_0}{\gamma_0} ; \sigma
-      & \Gamma \models \gamma_1 \ord \gamma_0
+    \infer{\Gamma \vdash \shiftz{k}{e} : \codeTs{t1}{\red{\gamma1}} ~;~ \codeTs{t0}{\gamma0},\sigma}
+    {\Gamma,~k:\contT{\codeTs{t1}{\gamma1}}{\codeTs{t0}{\gamma0}}
+      \vdash e : \codeTs{t0}{\red{\gamma0}} ~;~ \sigma
+      & \Gamma \models \gamma1 \ord \gamma0
     }
   \]
 
   throw:
   \[
     \infer
-    {\Gamma,~k:\contT{\codeTs{t_1}{\gamma_1}}{\codeTs{t_0}{\gamma_0}}
-      \vdash \throw{k}{v} : \codeTs{t_0}{\gamma_2} ; \sigma}
+    {\Gamma,~k:\contT{\codeTs{t1}{\gamma1}}{\codeTs{t0}{\gamma0}}
+      \vdash \throw{k}{v} : \codeTs{t0}{\gamma2} ~;~ \sigma}
     {\Gamma
-      \vdash v : \codeTs{t_1}{\red{\gamma_1 \cup \gamma_2}} ; \sigma
-      & \Gamma \models \gamma_2 \ord \gamma_0
+      \vdash v : \codeTs{t1}{\red{\gamma1 \cup \gamma2}} ~;~ \sigma
+      & \Gamma \models \gamma2 \ord \gamma0
     }
   \]
 \end{frame}
