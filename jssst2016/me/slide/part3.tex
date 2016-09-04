@@ -20,9 +20,9 @@
 %       \includegraphics[clip,height=1cm]{./img/batsu.png}
 %       \begin{align*}
 %         e & \too \magenta{\Let ~y ~= ~\green{a[i][j]} ~\In} \\
-%           & \phantom{\too}~~~~ \fordo{i = 0}{n} \\
-%           & \phantom{\too}~~~~~~\fordo{j = 0}{m} \\
-%           & \phantom{\too}~~~~~~~~\aryset{a}{i,j}{b[i] + y} \\
+%         & \phantom{\too}~~~~ \fordo{i = 0}{n} \\
+%         & \phantom{\too}~~~~~~\fordo{j = 0}{m} \\
+%         & \phantom{\too}~~~~~~~~\aryset{a}{i,j}{b[i] + y} \\
 %       \end{align*}
 %     \end{column}
 
@@ -31,9 +31,9 @@
 %       \includegraphics[height=1cm]{./img/maru.png}
 %       \begin{align*}
 %         e & \too \magenta{\Let ~y ~= ~\green{7} ~\In} \\
-%           & \phantom{\too}~~~~ \fordo{i = 0}{n} \\
-%           & \phantom{\too}~~~~~~\fordo{j = 0}{m} \\
-%           & \phantom{\too}~~~~~~~~\aryset{a}{i,j}{b[i] + y} \\
+%         & \phantom{\too}~~~~ \fordo{i = 0}{n} \\
+%         & \phantom{\too}~~~~~~\fordo{j = 0}{m} \\
+%         & \phantom{\too}~~~~~~~~\aryset{a}{i,j}{b[i] + y} \\
 %       \end{align*}
 %     \end{column}
 %   \end{columns}
@@ -49,8 +49,8 @@
   \frametitle{型付けの例(1)}
   \begin{align*}
     e & = \Resetz ~~(\cfordo{x = e1}{e2} \\
-       & \phantom{=}~~~ \Shiftz~k~\to~
-         {\cLet~u=\green{\boxterm}~\cIn}~\Throw~k~u)
+      & \phantom{=}~~~ \Shiftz~k~\to~
+        {\cLet~u=\green{\boxterm}~\cIn}~\Throw~k~u)
   \end{align*}
 
   \[
@@ -81,7 +81,7 @@
   {\footnotesize
     \begin{align*}
       \Gamma a &= \gamma1 \ord \gamma0,~x:\codeTs{t}{\red{\gamma1}},
-                ~k: \contT{\codeTs{t}{\gamma_1}}{\codeTs{t}{\gamma_0}} \\
+                 ~k: \contT{\codeTs{t}{\gamma_1}}{\codeTs{t}{\gamma_0}} \\
       \Gamma b &= \Gamma a1,~\gamma2 \ord \gamma0,~u:\codeTs{t}{\gamma2}
     \end{align*}
   }
@@ -91,17 +91,17 @@
 \begin{frame}
   \frametitle{型付けの例(2)}
 
-\newcommand\gammaa{\gamma1 \ord \gamma0,~x:\codeTs{t}{\gamma1}}
-\newcommand\gammab{\Gamma a,\gamma2 \ord \gamma1,~y:\codeTs{t}{\gamma2}}
-\newcommand\gammac{\Gamma b,\blue{k_2}:\contT{\codeTs{t}{\gamma2}}{\codeTs{t}{\gamma1}}}
-\newcommand\gammad{\Gamma c,\red{k_1}:\contT{\codeTs{t}{\gamma1}}{\codeTs{t}{\gamma0}}}
-\newcommand\gammae{\Gamma d,\gamma3 \ord \gamma0,\magenta{u}:\codeTs{t}{\gamma3}}
+  \newcommand\gammaa{\gamma1 \ord \gamma0,~x:\codeTs{t}{\gamma1}}
+  \newcommand\gammab{\Gamma a,\gamma2 \ord \gamma1,~y:\codeTs{t}{\gamma2}}
+  \newcommand\gammac{\Gamma b,\blue{k_2}:\contT{\codeTs{t}{\gamma2}}{\codeTs{t}{\gamma1}}}
+  \newcommand\gammad{\Gamma c,\red{k_1}:\contT{\codeTs{t}{\gamma1}}{\codeTs{t}{\gamma0}}}
+  \newcommand\gammae{\Gamma d,\gamma3 \ord \gamma0,\magenta{u}:\codeTs{t}{\gamma3}}
 
-\footnotesize
+  \footnotesize
   \begin{align*}
     e'= & \red{\Resetz}~(\cfordo{x = e1}{e2}~\blue{\Resetz} ~(\cfordo{y = e3}{e4} \\
-       & \blue{\Shiftz}~\blue{k_2}\to~ \red{\Shiftz}~\red{k_1}\to~\magenta{\cLet~u=\green{X}~\cIn} 
-         ~\red{\Throw~k_1}~(\blue{\Throw~k_2}~e5)))
+        & \blue{\Shiftz}~\blue{k_2}\to~ \red{\Shiftz}~\red{k_1}\to~\magenta{\cLet~u=\green{X}~\cIn}
+          ~\red{\Throw~k_1}~(\blue{\Throw~k_2}~e5)))
   \end{align*}
 
   \[
@@ -109,29 +109,29 @@
     {\infer[(\gamma1^*)]
       {\vdash \cfor{x=...} : \codeTs{t}{\gamma0};~~~\codeTs{t}{\gamma0}}
       {\infer{\Gamma a=\gammaa\vdash \blue{\Resetz}\cdots : \codeTs{t}{\gamma1};~~~\codeTs{t}{\gamma0}}
-             {\infer[(\gamma2^*)]
-                 {\Gamma a\vdash \cfor{y=...}: \codeTs{t}{\gamma1};~~~\codeTs{t}{\gamma1},\codeTs{t}{\gamma0}}
-                 {\infer{\Gamma b=\gammab\vdash \blue{\Shiftz~k_2}... :\codeTs{t}{\gamma2}
-                               ;~~~\codeTs{t}{\gamma1},\codeTs{t}{\gamma0}}
-                        {\infer{\Gamma c=\gammac\vdash \red{\Shiftz~k_1}... :\codeTs{t}{\gamma1}
-                                      ;~~~\codeTs{t}{\gamma0}}
-                               {\infer[(\gamma3)]
-                                  {\Gamma d=\gammad\vdash \magenta{\cLet~u=...} : \codeTs{t}{\gamma0};~~\epsilon}
-                                  {\infer
-                                     {\Gamma e=\gammae\vdash \red{\Throw~k_1}~... : \codeTs{t}{\gamma3};~~\epsilon}
-                                     {\infer{\Gamma e\vdash \blue{\Throw~k_2}~e5 : 
-                                               \codeTs{t}{\gamma1\cup\gamma3};~~\epsilon}
-                                            {\infer*{\Gamma e\vdash e5:
-                                               \codeTs{t}{\gamma2\cup\gamma1\cup\gamma3};~~~\epsilon}
-                                                    {}
-                                            }
-                                     }
-                                  &\infer*{\Gamma d\vdash X:\codeTs{t}{\gamma0};\epsilon}{}
-                                  }
-                               }
-                        }
-                 }
-             }
+        {\infer[(\gamma2^*)]
+          {\Gamma a\vdash \cfor{y=...}: \codeTs{t}{\gamma1};~~~\codeTs{t}{\gamma1},\codeTs{t}{\gamma0}}
+          {\infer{\Gamma b=\gammab\vdash \blue{\Shiftz~k_2}... :\codeTs{t}{\gamma2}
+              ;~~~\codeTs{t}{\gamma1},\codeTs{t}{\gamma0}}
+            {\infer{\Gamma c=\gammac\vdash \red{\Shiftz~k_1}... :\codeTs{t}{\gamma1}
+                ;~~~\codeTs{t}{\gamma0}}
+              {\infer[(\gamma3)]
+                {\Gamma d=\gammad\vdash \magenta{\cLet~u=...} : \codeTs{t}{\gamma0};~~\epsilon}
+                {\infer
+                  {\Gamma e=\gammae\vdash \red{\Throw~k_1}~... : \codeTs{t}{\gamma3};~~\epsilon}
+                  {\infer{\Gamma e\vdash \blue{\Throw~k_2}~e5 :
+                      \codeTs{t}{\gamma1\cup\gamma3};~~\epsilon}
+                    {\infer*{\Gamma e\vdash e5:
+                        \codeTs{t}{\gamma2\cup\gamma1\cup\gamma3};~~~\epsilon}
+                      {}
+                    }
+                  }
+                  &\infer*{\Gamma d\vdash \green{X}:\codeTs{t}{\gamma0};\epsilon}{}
+                }
+              }
+            }
+          }
+        }
       }
     }
   \]
