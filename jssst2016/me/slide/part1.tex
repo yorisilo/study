@@ -6,10 +6,12 @@
   \frametitle{概要}
   % 図にする？
   プログラムを生成するプログラミング言語の安全性を保証する研究
+  プログラムを生成するプログラムの安全性を保証
   \begin{itemize}
   %\item<2-> 効率的なコードの生成
   %\item<2-> 安全性の保証
-  \item<1-> [⇒] \alert{多段階let 挿入}を効率的かつ安全に扱うための型システムを構築
+  %\item<1-> [⇒] \alert{多段階let 挿入}を効率的かつ安全に扱うための型システムを構築
+  \item<1-> [⇒] コード生成における効率的なプログラム技法のひとつである\alert{多段階let 挿入}を安全に扱うための型システムを構築
   \end{itemize}
 \end{frame}
 
@@ -76,8 +78,14 @@
                            &~~\eelse~ x~ \cTimes~ (f~ (n - 1))
     \end{align*}
   \end{onlyenv}
-
   \pause
+  \pause
+
+  \begin{itemize}
+  \item コード変数 ： 生成されたコードに出てくる変数
+  \item ここでは，$x$のこと
+  \end{itemize}
+
   \pause
   $n = 5$に特化したコード生成:
   \pause
@@ -118,20 +126,18 @@
   \begin{align*}
     & \cfordo{x = (\cint~0)}{(\cint~n)} \\
     & ~~\cfordo{y = (\cint~0)}{(\cint~m)} \\
-    & ~~~~~~\caryset{a}{(x,y)}{\text{complex\_calculation}}
+    & ~~~~~~\caryset{a}{(x,y)}{\only<1>{e} \only<2->{\text{complex\_calculation}}}
   \end{align*}
 
-  \begin{visibleenv}<2>
-    \begin{center}
-      \LARGE \downtoo
-    \end{center}
-    生成されるコード
-    \begin{align*}
-      &\cbra~ \fordo{x' = 0}{n} \\
-      & ~~~~\fordo{y' = 0}{m} \\
-      & ~~~~~~\aryset{a}{x',y'}{\text{complex\_calculation}}~ \cket
-    \end{align*}
-  \end{visibleenv}
+  \begin{center}
+    \LARGE \downtoo
+  \end{center}
+  生成されるコード
+  \begin{align*}
+    &\cbra~ \fordo{x' = 0}{n} \\
+    & ~~~~\fordo{y' = 0}{m} \\
+    & ~~~~~~\aryset{a}{x',y'}{\only<1>{e} \only<2->{\text{complex\_calculation}}}~ \cket
+  \end{align*}
 \end{frame}
 
 \begin{frame}
@@ -142,14 +148,16 @@
                  &\visible<1>{\cbra~} \fordo{x' = 0}{n} \\
     \visible<2->{& ~~~~\Let ~\red{u} = \red{\text{cc2}}~ \In \\}
                  & ~~~~\fordo{y' = 0}{m} \\
-                 & ~~~~~~\aryset{a}{x',y'}{\visible<2->{\red{u}}~ \visible<1>{\red{\text{cc2}}}} \\
+                 & ~~~~~~\aryset{a}{x',y'}{\visible<2->{\red{u}}~ \visible<1>{\red{\text{cc2}}}~ ;} \\
                  & ~~~~~~\aryset{b}{x',y'}{\visible<2->{\blue{w}}~ \visible<1>{\blue{\text{cc1}}}} \cket
   \end{align*}
 
   \begin{visibleenv}<3>
     \begin{exampleblock}{多段階let挿入}
       \begin{itemize}
-      \item 入れ子になったforループなどを飛び越えた\alert{複数のコード移動}を許す仕組み
+      \item let を用いたコード移動，コードの計算結果の共有
+      \item \red{異なる地点へのコード移動}
+        % \item 入れ子になったforループなどを飛び越えた\alert{複数のコード移動}を許す仕組み
         % \item ループ不変式の移動等によって，\alert{効率的なコード生成}に必要なプログラミング技法
       \item 効率的なコード生成に必要
       \end{itemize}
@@ -181,29 +189,23 @@
 
 % やりたいことは，このような多段階let挿入をコード生成の前の段階で静的に安全性の保証を行うということ．
 
-\begin{frame}
-  \center
-  \huge{危険な例}
-\end{frame}
-
-
 \begin{frame}[fragile]
-  \frametitle{危険なコード生成の例}
-  生成される\red{危険な}コード
+  \frametitle{安全なコードの条件}
+  生成されるコード
   \begin{align*}
-    \visible<2->{&\cbra~ \Let ~\blue{w} = \blue{\text{cc1}}~ \In \\ }%\visible<3->{\footnotesize\magenta{\text{  --- cc1 に x か y が含まれる }}} \\}
-                 &\visible<1>{\cbra~} \fordo{x' = 0}{n} \\
-    \visible<2->{& ~~~~\Let ~\red{u} = \red{\text{cc2}}~ \In \\ }%\visible<3->{\footnotesize\magenta{\text{  --- cc2 に y が 含まれる }}} \\}
+    \visible<1->{&\cbra~ \Let ~\blue{w} = \blue{\text{cc1}}~ \In \\ }%\visible<3->{\footnotesize\magenta{\text{  --- cc1 に x か y が含まれる }}} \\}
+                 &\visible<0>{\cbra~} \fordo{x' = 0}{n} \\
+    \visible<1->{& ~~~~\Let ~\red{u} = \red{\text{cc2}}~ \In \\ }%\visible<3->{\footnotesize\magenta{\text{  --- cc2 に y が 含まれる }}} \\}
                  & ~~~~\fordo{y' = 0}{m} \\
-                 & ~~~~~~\aryset{a}{x',y'}{\visible<2->{\red{u}}~ \visible<1>{\red{\text{cc2}}}} \\
-                 & ~~~~~~\aryset{b}{x',y'}{\visible<2->{\blue{w}}~ \visible<1>{\blue{\text{cc1}}}} \cket
+                 & ~~~~~~\aryset{a}{x',y'}{\visible<1->{\red{u}}~ \visible<0>{\red{\text{cc2}}}~ ; } \\
+                 & ~~~~~~\aryset{b}{x',y'}{\visible<1->{\blue{w}}~ \visible<0>{\blue{\text{cc1}}}} \cket
   \end{align*}
 
-  \begin{visibleenv}<3>
-    \begin{itemize}
-    \item \blue{cc1} が安全な条件 $\iff$ \blue{cc1} に $x'$ か $y'$ が含まれない
-    \item \red{cc2} が安全な条件 $\iff$ \red{cc2} に$y'$が含まれない
-    \end{itemize}
+  \begin{visibleenv}<2>
+    \begin{exampleblock}{安全なコードの条件}
+      {\scriptsize (この位置での)} \blue{cc1} が安全な条件 $\iff$ \blue{cc1} に $x'$ や $y'$ が含まれない \\
+      {\scriptsize (この位置での)} \red{cc2} が安全な条件 $\iff$ \red{cc2} に$y'$が含まれない
+    \end{exampleblock}
   \end{visibleenv}
 \end{frame}
 
