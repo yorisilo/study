@@ -31,13 +31,13 @@
 
 % \subsection{本研究の手法}
 % \begin{frame}
-%   % 須藤さんの
+%   %   須藤さんの
 %   \frametitle{本研究の手法}
-%   % \begin{itemize}
-%   % \item shift0/reset0 の型システムを単純化; let挿入等に絞る
-%   % \item これをコード生成言語の型システムに融合
-%   % \item 型システムの安全性を保証: Kameyama+ 2009, Sudo+2014 の手法を利用
-%   % \end{itemize}
+%   %   \begin{itemize}
+%   %   \item shift0/reset0 の型システムを単純化; let挿入等に絞る
+%   %   \item これをコード生成言語の型システムに融合
+%   %   \item 型システムの安全性を保証: Kameyama+ 2009, Sudo+2014 の手法を利用
+%   %   \end{itemize}
 %   \begin{columns}
 %     \begin{column}{1.\textwidth}%% [横幅] 0.2\textwidth = ページ幅の 20 %
 %       \center
@@ -119,20 +119,37 @@
 
   \begin{align*}
     \scriptsize{\text{コード生成器:}}~~
-    & \uncover<2->{\blue{\Resetz}} ~\cfordo{x = e1}{e2} \\
-    & ~~~~~~~~~~~\cfordo{y = e3}{e4} \\
-    & ~~~~~~~~~~~~\set~a~(x,y)~ \only<1>{cc} \uncover<2->{\blue{\Shiftz~ k \to} \magenta{\cLet~u = cc~\cIn}~ \blue{\Throw~ k}~ u} \\
+    & \uncover<2-3>{\blue{\Resetz}} \only<1-2>{~\cfordo{x = e1}{e2}} \uncover<3>{\green{~\cfordo{x = e1}{e2}}}\\
+    & ~~~~~~~~~~~ \only<1-2>{\cfordo{y = e3}{e4}} \uncover<3>{\green{\cfordo{y = e3}{e4}}}\\
+    & ~~~~~~~~~~~~ \only<1-2>{\set~a~(x,y)~} \only<3>{\green{\set~a~(x,y)}~} \only<4->{~~~~~~~~~~~~~~~} \only<1>{cc} \uncover<2-3>{\blue{\Shiftz~ k \to}} \uncover<2->{\magenta{\cLet~u = cc~\cIn}~ \blue{\Throw~ k}~ u \\}
     % & ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\uncover<2->{\magenta{\cLet~u = cc~\cIn}~ \blue{\Throw~ k}~ u} \\
-    & \uncover<3->{\blue{k} \Leftarrow ~~\cfordo{x = e1}{e2} \\
-    & ~~~~~~~~~~~\cfordo{y = e3}{e4} \\
-    & ~~~~~~~~~~~~~\caryset{a}{(x,y)}{} [\ ]} \\
-    \uncover<4->{\scriptsize{\text{生成コード:}}~~}
-    & \uncover<4->{\cbra~}
-      \uncover<4->{\magenta{\Let ~u' ~= ~cc' ~\In}} \\
-    & ~~~~\uncover<4->{\fordo{x' = e1'}{e2'}} \\
-    & ~~~~~~\uncover<4->{\fordo{y' = e3'}{e4'}} \\
-    & ~~~~~~~~\uncover<4->{\aryset{a}{x',y'}{u'} ~\cket}
+    & \uncover<3->{\blue{k} \Leftarrow ~~\green{\cfordo{x = e1}{e2}} \\
+    & ~~~~~~~~~~~\green{\cfordo{y = e3}{e4}} \\
+    & ~~~~~~~~~~~~~\green{\caryset{a}{(x,y)}{}} [\ ]} \\
+    \uncover<5->{\scriptsize{\text{生成コード:}}~~}
+    & \uncover<5->{\cbra~}
+      \uncover<5->{\magenta{\Let ~u' ~= ~cc' ~\In}} \\
+    & ~~~~\uncover<5->{\fordo{x' = e1'}{e2'}} \\
+    & ~~~~~~\uncover<5->{\fordo{y' = e3'}{e4'}} \\
+    & ~~~~~~~~\uncover<5->{\aryset{a}{x',y'}{u'} ~\cket}
   \end{align*}
+
+  % \begin{align*}
+  %   \scriptsize{\text{コード生成器:}}~~
+  %   & \uncover<2->{\blue{\Resetz}}~ \only<1-2>{\cfordo{x = e1}{e2}} \only<3>{\green{\cfordo{x = e1}{e2}}}\\
+  %   & ~~~~~~~~~~~\only<1-2>{\cfordo{y = e3}{e4}} \only<3>{\green{\cfordo{y = e3}{e4}}}\\
+  %   & ~~~~~~~~~~~~\only<1-2>{\set~a~(x,y)~} \only<3>{\green{\set~a~(x,y)~}} \only<1>{cc} \only<2>{\blue{\Shiftz~ k \to} \magenta{\cLet~u = cc~\cIn}~ \blue{\Throw~ k}~ u} \only<3->{\magenta{\cLet~u = cc~\cIn}~ \blue{\Throw~ k}~ u}\\
+  %   %   & ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\uncover<2->{\magenta{\cLet~u = cc~\cIn}~ \blue{\Throw~ k}~ u} \\
+  %   & \uncover<3->{\blue{k} \Leftarrow ~~ \green{\cfordo{x = e1}{e2}} \\
+  %   & ~~~~~~~~~~~\green{\cfordo{y = e3}{e4}} \\
+  %   & ~~~~~~~~~~~~~\green{\caryset{a}{(x,y)}{}} [\ ]} \\
+  %   \uncover<4->{\scriptsize{\text{生成コード:}}~~}
+  %   & \uncover<4->{\cbra~}
+  %   \uncover<4->{\magenta{\Let ~u' ~= ~cc' ~\In}} \\
+  %   & ~~~~\uncover<4->{\fordo{x' = e1'}{e2'}} \\
+  %   & ~~~~~~\uncover<4->{\fordo{y' = e3'}{e4'}} \\
+  %   & ~~~~~~~~\uncover<4->{\aryset{a}{x',y'}{u'} ~\cket}
+  % \end{align*}
 \end{frame}
 
 
@@ -149,12 +166,12 @@
   %   & \red{\Resetz} ~~\cfordo{x = e1}{e2} \\
   %   & ~~\blue{\Resetz} ~~\cfordo{y = e3}{e4} \\
   %   & ~~~~\blue{\Shiftz}~\blue{k_2}~\to~
-  %     \red{\Shiftz}~\red{k_1}~\to~
-  %     \magenta{\cLet~u=t~\cIn} \\
+  %   \red{\Shiftz}~\red{k_1}~\to~
+  %   \magenta{\cLet~u=t~\cIn} \\
   %   & ~~~~~~\red{\Throw~k_1}~
-  %     (\blue{\Throw~k_2}~(\caryset{a}{(x,y)}{u})) \\
-  %     % & \red{k_1} \Leftarrow ~~\cfordo{x = e1}{e2}~[\ ] \\
-  %     % & \blue{k_2} \Leftarrow ~~\cfordo{y = e3}{e3}~[\ ] \\
+  %   (\blue{\Throw~k_2}~(\caryset{a}{(x,y)}{u})) \\
+  %     %   & \red{k_1} \Leftarrow ~~\cfordo{x = e1}{e2}~[\ ] \\
+  %     %   & \blue{k_2} \Leftarrow ~~\cfordo{y = e3}{e3}~[\ ] \\
   %   \text{生成コード:}~~
   %   & \cbra~\magenta{\Let ~u' ~= ~t' ~\In} \\
   %   & ~~\fordo{x' = e1'}{e2'} \\
@@ -170,7 +187,7 @@
     & ~~~~ \set~ b~ (x,y)~ \blue{\Shiftz~ k_1 \to~} \red{\Shiftz~ k_2 \to}~ \\
     & ~~~~~~~~~~~~~~~~~~~~~~~~ \magenta{\cLet~ w = cc2~ \cIn~} \red{\Throw~ k_2} (\blue{\Throw~ k_1}~ w) \\
     % & \red{k_1} \Leftarrow ~~\cfordo{x = e1}{e2}~[\ ] \\
-      % & \blue{k_2} \Leftarrow ~~\cfordo{y = e3}{e3}~[\ ] \\
+    % & \blue{k_2} \Leftarrow ~~\cfordo{y = e3}{e3}~[\ ] \\
     \uncover<2->{\scriptsize{\text{生成コード:}}~~}
     & \uncover<2->{\cbra~\magenta{\Let ~w' ~= ~cc2' ~\In}} \\
     & \uncover<2->{~~~~\fordo{x' = e1'}{e2'}} \\
@@ -208,6 +225,7 @@
   % \end{flushright}
 
   \newcommand\ml{\multicolumn}
+  \center
   {\Large
     \begin{tabular}{l|l|l|l|l|l|}
       \cline{2-6}
@@ -228,6 +246,7 @@
     \end{tabular}\qquad
   \end{center}
 
+  \red{$\gamma2$} $\ord$ \red{$\gamma1$} $\ord$ \red{$\gamma0$}
 \end{frame}
 
 \begin{frame}
@@ -293,9 +312,9 @@
 
 % \begin{frame}
 %   \frametitle{環境識別子(EC)の問題点}
-%   % sudo らの研究の EC を素朴に適用させると問題があるということ言うスライド
-%   %ここに，forループとshift0/reset0 の例を再掲する．
-%   %もとのスライドの 24ページの絵をかく．
+%   %   sudo らの研究の EC を素朴に適用させると問題があるということ言うスライド
+%   %   ここに，forループとshift0/reset0 の例を再掲する．
+%   %   もとのスライドの 24ページの絵をかく．
 
 %   \newcommand\ml{\multicolumn}
 
@@ -361,57 +380,83 @@
 \begin{frame}
   \frametitle{コード生成前・後でスコープの包含関係が逆転}
   % sudo らの研究の EC を素朴に適用させると問題があるということ言うスライド
-  %ここに，forループとshift0/reset0 の例を再掲する．
-  %もとのスライドの 24ページの絵をかく．
+  % ここに，forループとshift0/reset0 の例を再掲する．
+  % もとのスライドの 24ページの絵をかく．
 
   \newcommand\ml{\multicolumn}
+  \begin{columns}
+    \only<1>{コード生成器：}
+    \begin{column}{0.6\textwidth}%% [横幅] 0.2\textwidth = ページ幅の 20 %
+      \center
+      \footnotesize
+      \begin{tabular}{l|l|l|l|l|l|l|l|l|l|l}
+        \cline{2-10}
+        & \ml{9}{|l|}{$\cfordo{x = e1}{e2}$~~~~~~~~~~~~~~~} \\ \cline{3-9}
+        & \footnotesize{\alert{$\mathbf \gamma0$}} & \ml{7}{|l|}{$\Resetz~ \cfordo{y = e3}{e4}$~} & \\ \cline{4-8}
+        & & \footnotesize{\alert{$\mathbf \gamma1$}} & \ml{5}{|l|}{$\Shiftz~ k \to \magenta{\cLet~ u = cc ~ \In}$}  & & \\ \cline{5-7}
+        & & & \footnotesize{\alert{$\mathbf \gamma2$}} & \ml{3}{|l|}{$\Throw~ k$}     &   &  &       \\ \cline{6-6}
+        & & & & \footnotesize{\alert{$\mathbf \gamma3$}} & \ml{1}{|l|}{$\caryset{a}{(x,y)}{u}$} & & &  &  \\ \cline{6-6}
+        & & & & \ml{3}{|l|}{\ }  &   &   &           \\ \cline{5-7}
+        & & & \ml{5}{|l|}{\ } &  &               \\ \cline{4-8}
+        & & \ml{7}{|l|}{\ }  & \\ \cline{3-9}
+        & \ml{9}{|l|}{~~~~~~~ } \\ \cline{2-10}
+      \end{tabular}
+    \end{column}
 
-  \begin{uncoverenv}<1->
-    コード生成器：
-    \footnotesize
-    \begin{tabular}{l|l|l|l|l|l|l|l|l|l|l|l|l|}
-      \cline{2-10}
-      & \ml{9}{|l|}{$\cfordo{x = e1}{e2}$~~~~~~~~~~~~~~~} \\ \cline{3-9}
-      & \footnotesize{\alert{$\mathbf \gamma0$}} & \ml{7}{|l|}{$\Resetz~ \cfordo{y = e3}{e4}$~} & \\ \cline{4-8}
-      & & \footnotesize{\alert{$\mathbf \gamma1$}} & \ml{5}{|l|}{$\Shiftz~ k \to \magenta{\cLet~ u = cc ~ \In}$}  & & \\ \cline{5-7}
-      & & & \footnotesize{\alert{$\mathbf \gamma2$}} & \ml{3}{|l|}{$\Throw~ k$}     &   &  &       \\ \cline{6-6}
-      & & & & \footnotesize{\alert{$\mathbf \gamma3$}} & \ml{1}{|l|}{$\caryset{a}{(x,y)}{u}$} & & &  &  \\ \cline{6-6}
-      & & & & \ml{3}{|l|}{\ }  &   &   &           \\ \cline{5-7}
-      & & & \ml{5}{|l|}{\ } &  &               \\ \cline{4-8}
-      & & \ml{7}{|l|}{\ }  & \\ \cline{3-9}
-      & \ml{9}{|l|}{~~~~~~~ } \\ \cline{2-10}
-    \end{tabular}
-  \end{uncoverenv}
+    \begin{column}{0.5\textwidth}%% [横幅] 0.2\textwidth = ページ幅の 20 %
+      \begin{onlyenv}<2->
+        \flushright
+        \footnotesize
+        \begin{align*}
+          \gamma3 \ord \red{\gamma2} \ord \red{\gamma1} \ord \gamma0 \\
+        \end{align*}
+      \end{onlyenv}
+
+    \end{column}
+  \end{columns}
 
   \bigskip
 
-  \begin{uncoverenv}<2>
-    生成コード：~~
-    \footnotesize
-    \begin{tabular}{l|l|l|l|l|l|l|l|l|l|l|l|l|}
-      \cline{2-10}
-      & \ml{9}{|l|}{$\fordo{x' = e1'}{e2'}$~~~~~~~~~~~~~~~} \\ \cline{3-9}
-      & \footnotesize{\alert{$\mathbf \gamma0$}} & \ml{7}{|l|}{\magenta{$\Let~ u' = cc' ~ \In$}~} & \\ \cline{4-8}
-      & & \footnotesize{\alert{$\mathbf \gamma2$}} & \ml{5}{|l|}{$\fordo{y' = e3'}{e4'}$}  & & \\ \cline{5-7}
-      & & & \footnotesize{\alert{$\mathbf \gamma1$}} & \ml{3}{|l|}{\ }     &   &  &       \\ \cline{6-6}
-      & & & & \footnotesize{\alert{$\mathbf \gamma3$}} & \ml{1}{|l|}{$\aryset{a}{(x',y')}{u'}$} & & &  &  \\ \cline{6-6}
-      & & & & \ml{3}{|l|}{\ }  &   &   &           \\ \cline{5-7}
-      & & & \ml{5}{|l|}{\ } &  &               \\ \cline{4-8}
-      & & \ml{7}{|l|}{\ }  & \\ \cline{3-9}
-      & \ml{9}{|l|}{~~~~~~~ } \\ \cline{2-10}
-    \end{tabular}
-  \end{uncoverenv}
+  \begin{columns}
+    \only<1>{生成コード：~~}
+    \begin{column}{0.6\textwidth}%% [横幅] 0.2\textwidth = ページ幅の 20 %
+      \footnotesize
+      \begin{tabular}{l|l|l|l|l|l|l|l|l|l|l|l|l|}
+        \cline{2-10}
+        & \ml{9}{|l|}{$\cbra$ $\fordo{x' = e1'}{e2'}$~~~~~~~~~~~~~~~} \\ \cline{3-9}
+        & \footnotesize{\alert{$\mathbf \gamma0$}} & \ml{7}{|l|}{\magenta{$\Let~ u' = cc' ~ \In$}~} & \\ \cline{4-8}
+        & & \footnotesize{\alert{$\mathbf \gamma2$}} & \ml{5}{|l|}{$\fordo{y' = e3'}{e4'}$}  & & \\ \cline{5-7}
+        & & & \footnotesize{\alert{$\mathbf \gamma1$}} & \ml{3}{|l|}{\ }     &   &  &       \\ \cline{6-6}
+        & & & & \footnotesize{\alert{$\mathbf \gamma3$}} & \ml{1}{|l|}{$\aryset{a}{(x',y')}{u'}$ $\cket$} & & &  &  \\ \cline{6-6}
+        & & & & \ml{3}{|l|}{\ }  &   &   &           \\ \cline{5-7}
+        & & & \ml{5}{|l|}{\ } &  &               \\ \cline{4-8}
+        & & \ml{7}{|l|}{\ }  & \\ \cline{3-9}
+        & \ml{9}{|l|}{~~~~~~~ } \\ \cline{2-10}
+      \end{tabular}
+    \end{column}
+
+    \begin{column}{0.5\textwidth}%% [横幅] 0.2\textwidth = ページ幅の 20 %
+      \begin{onlyenv}<2->
+        \flushright
+        \footnotesize
+        \begin{align*}
+          \gamma3 \ord \red{\gamma1} \ord \red{\gamma2} \ord \gamma0 \\
+        \end{align*}
+      \end{onlyenv}
+    \end{column}
+  \end{columns}
 \end{frame}
 
 \begin{frame}
   \frametitle{コード生成前・後でスコープの包含関係が逆転}
+  \smallskip
   \center
   コード生成器：
   \begin{tabular}{c|c}
-    スコープ & 使えるコード変数 \\ \hline
+    スコープ & 使えるコード変数？ \\ \hline
     \red{$\gamma0$} & $x$ \\ \hline
-    \red{$\gamma1$} & \uncover<1->{$x, y$} \uncover<2->{$\Rightarrow$ \red{$x, y, u$}} \\ \hline
-    \red{$\gamma2$} & \uncover<1->{$x, y, u$} \uncover<2->{$\Rightarrow$ \red{$x ,u$}}\\ \hline
+    \red{$\gamma1$} & \uncover<1->{\blue{$x, y$}} \\ \hline %\uncover<2->{$\Rightarrow$ \red{$x, y, u$}} \\ \hline
+    \red{$\gamma2$} & \uncover<1->{\blue{$x, y, u$}} \\ \hline %\uncover<2->{$\Rightarrow$ \red{$x ,u$}}\\ \hline
     \red{$\gamma3$} & $x, y, u$ \\
   \end{tabular}\qquad
 
@@ -419,16 +464,17 @@
 
   生成コード：
   \begin{tabular}{c|c}
-    スコープ & 使えるコード変数 \\ \hline
+    スコープ & 使えるコード変数？ \\ \hline
     \red{$\gamma0$} & $x'$ \\ \hline
-    \red{$\gamma2$} & $x', u'$ \\ \hline
-    \red{$\gamma1$} & $x', y', u'$ \\ \hline
+    \red{$\gamma2$} & \blue{$x', u'$} \\ \hline
+    \red{$\gamma1$} & \blue{$x', y', u'$} \\ \hline
     \red{$\gamma3$} & $x', y', u'$ \\
   \end{tabular}\qquad
 
   \begin{itemize}
   \item 生成前と生成後の$\gamma1$ と $\gamma2$ の間には順序関係がない
-  % \item $\gamma1$ $\cup$ $\gamma2$ = $\gamma3$
+    % \item $\gamma1$ $\cup$ $\gamma2$ = $\gamma3$
+  \item Sudo らの定義した環境識別子を素朴に使うと，型が合わない
   \end{itemize}
 \end{frame}
 
@@ -455,13 +501,13 @@
   \flushleft
   \includegraphics[clip,height=3cm]{./img/ecgraph.png}
   \begin{itemize}
-  \item<2-> $\gamma1$ のコードレベル変数は $\gamma2$ では使えない
-  \item<2-> $\gamma2$ のコードレベル変数は $\gamma1$ では使えない
+  \item<2-> $\gamma1$ のコード変数は $\gamma2$ では使ってはいけない
+  \item<2-> $\gamma2$ のコード変数は $\gamma1$ では使ってはいけない
   \item<3->[$\Rightarrow$] \red{$\gamma1$ と $\gamma2$ の間に順序を付けない}
   \end{itemize}
 
   \begin{itemize}
-  \item<4-> $\gamma1, \gamma2$ のコードレベル変数は $\gamma3$ で使える
+  \item<4-> $\gamma1, \gamma2$ のコードレベル変数は $\gamma3$ で使ってよい
   \item<5->[$\Rightarrow$] \red{Sudoらの体系に $\cup$ (ユニオン) を追加} % ジョイン
   \end{itemize}
 \end{frame}
