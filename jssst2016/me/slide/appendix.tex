@@ -6,7 +6,7 @@
 \begin{appendix}
   %% 予備スライドの先頭に APPENDIX と書かれたページを挟む（お好みで消去しても良い）
   \frame[plain]{\centerline{\Huge\bfseries\color{structure}APPENDIX}}
-\end{appendix}
+
 
 \section{健全性の証明}
 
@@ -22,6 +22,36 @@
     同じ自由変数を持つ)
   \end{block}
 \end{frame}
+
+\section{shift/reset と shift0/reset0 の意味論}
+
+\begin{frame}[fragile]
+  \frametitle{shift/reset と shift0/reset0 の意味論}
+
+  shift/reset
+  \noindent
+  \begin{align*}
+    \Resett ~(E[\Shiftt~ k \to e]) &~\leadsto~ \Resett~ e \ksubst{k}{E} \\
+    \uncover<2->{\Resett ~(E[\Shiftt~ k \to e]) &~\leadsto~ \Resett~ e[k := \fun{x}{\Resett~ E[x]}]}
+  \end{align*}
+
+  shift0/reset0
+  \noindent
+  \begin{align*}
+    \Resetz ~(E[\Shiftz~ k \to e]) &~\leadsto~ e \ksubst{k}{E} \\
+    \uncover<2->{\Resetz ~(E[\Shiftz~ k \to e]) &~\leadsto~ e[k := \fun{x}{\Resetz~ E[x]}]}
+  \end{align*}
+
+
+\end{frame}
+
+\end{appendix}
+
+% なぜ shift0/reset0 なの？ indexのあるshift/reset とか control/prompt とかは使えないの？
+
+% 証明はどこまで進んでるの？
+
+% answer type は型の列 こいつの説明
 
 %%% Local Variables:
 %%% mode: japanese-latex

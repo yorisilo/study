@@ -393,7 +393,7 @@
         \cline{2-10}
         & \ml{9}{|l|}{$\cfordo{x = e1}{e2}$~~~~~~~~~~~~~~~} \\ \cline{3-9}
         & \footnotesize{\alert{$\mathbf \gamma0$}} & \ml{7}{|l|}{$\Resetz~ \cfordo{y = e3}{e4}$~} & \\ \cline{4-8}
-        & & \footnotesize{\alert{$\mathbf \gamma1$}} & \ml{5}{|l|}{$\Shiftz~ k \to \magenta{\cLet~ u = cc ~ \In}$}  & & \\ \cline{5-7}
+        & & \footnotesize{\alert{$\mathbf \gamma1$}} & \ml{5}{|l|}{$\Shiftz~ k \to \magenta{\cLet~ u = cc ~ \cIn}$}  & & \\ \cline{5-7}
         & & & \footnotesize{\alert{$\mathbf \gamma2$}} & \ml{3}{|l|}{$\Throw~ k$}     &   &  &       \\ \cline{6-6}
         & & & & \footnotesize{\alert{$\mathbf \gamma3$}} & \ml{1}{|l|}{$\caryset{a}{(x,y)}{u}$} & & &  &  \\ \cline{6-6}
         & & & & \ml{3}{|l|}{\ }  &   &   &           \\ \cline{5-7}
@@ -447,36 +447,36 @@
   \end{columns}
 \end{frame}
 
-\begin{frame}
-  \frametitle{コード生成前・後でスコープの包含関係が逆転}
-  \smallskip
-  \center
-  コード生成器：
-  \begin{tabular}{c|c}
-    スコープ & 使えるコード変数？ \\ \hline
-    \red{$\gamma0$} & $x$ \\ \hline
-    \red{$\gamma1$} & \uncover<1->{\blue{$x, y$}} \\ \hline %\uncover<2->{$\Rightarrow$ \red{$x, y, u$}} \\ \hline
-    \red{$\gamma2$} & \uncover<1->{\blue{$x, y, u$}} \\ \hline %\uncover<2->{$\Rightarrow$ \red{$x ,u$}}\\ \hline
-    \red{$\gamma3$} & $x, y, u$ \\
-  \end{tabular}\qquad
+% \begin{frame}
+%   \frametitle{コード生成前・後でスコープの包含関係が逆転}
+%   \smallskip
+%   \center
+%   コード生成器：
+%   \begin{tabular}{c|c}
+%     スコープ & 使えるコード変数？ \\ \hline
+%     \red{$\gamma0$} & $x$ \\ \hline
+%     \red{$\gamma1$} & \uncover<1->{\blue{$x, y$}} \\ \hline %\uncover<2->{$\Rightarrow$ \red{$x, y, u$}} \\ \hline
+%     \red{$\gamma2$} & \uncover<1->{\blue{$x, y, u$}} \\ \hline %\uncover<2->{$\Rightarrow$ \red{$x ,u$}}\\ \hline
+%     \red{$\gamma3$} & $x, y, u$ \\
+%   \end{tabular}\qquad
 
-  \bigskip
+%   \bigskip
 
-  生成コード：
-  \begin{tabular}{c|c}
-    スコープ & 使えるコード変数？ \\ \hline
-    \red{$\gamma0$} & $x'$ \\ \hline
-    \red{$\gamma2$} & \blue{$x', u'$} \\ \hline
-    \red{$\gamma1$} & \blue{$x', y', u'$} \\ \hline
-    \red{$\gamma3$} & $x', y', u'$ \\
-  \end{tabular}\qquad
+%   生成コード：
+%   \begin{tabular}{c|c}
+%     スコープ & 使えるコード変数？ \\ \hline
+%     \red{$\gamma0$} & $x'$ \\ \hline
+%     \red{$\gamma2$} & \blue{$x', u'$} \\ \hline
+%     \red{$\gamma1$} & \blue{$x', y', u'$} \\ \hline
+%     \red{$\gamma3$} & $x', y', u'$ \\
+%   \end{tabular}\qquad
 
-  \begin{itemize}
-  \item 生成前と生成後の$\gamma1$ と $\gamma2$ の間には順序関係がない
-    % \item $\gamma1$ $\cup$ $\gamma2$ = $\gamma3$
-  \item Sudo らの定義した環境識別子を素朴に使うと，型が合わない
-  \end{itemize}
-\end{frame}
+%   \begin{itemize}
+%   \item 生成前と生成後の$\gamma1$ と $\gamma2$ の間には順序関係がない
+%     % \item $\gamma1$ $\cup$ $\gamma2$ = $\gamma3$
+%   \item Sudo らの定義した環境識別子を素朴に使うと，型が合わない
+%   \end{itemize}
+% \end{frame}
 
 
 % \begin{frame}
@@ -507,7 +507,7 @@
   \end{itemize}
 
   \begin{itemize}
-  \item<4-> $\gamma1, \gamma2$ のコードレベル変数は $\gamma3$ で使ってよい
+  \item<4-> $\gamma1, \gamma2$ のコード変数は $\gamma3$ で使ってよい
   \item<5->[$\Rightarrow$] \red{Sudoらの体系に $\cup$ (ユニオン) を追加} % ジョイン
   \end{itemize}
 \end{frame}
