@@ -43,12 +43,12 @@ type expr =
   | Bool  of bool
   | Eq    of int * int
 
-type v =                        (* v を value にする *)
+type value =                        (* v を value にする *)
   | VLam  of var * expr * env (* 関数定義の時に生成される closure *)
   | VCont of kont             (* shift により切り取られる continuation *)
 
-and env = (var * v) list
-and kont = v -> v
+and env = (var * value) list
+and kont = Kont of (value -> klist -> value)
 and klist = kont list
 (* and kont = Kont of (v -> klist -> v) *)
 (* and klist = kont list *)
@@ -69,6 +69,18 @@ let rec get (x, env) = match env with
 (* let id = fun a -> a *)
 let id a = a
 
+let add_klist k kl = Kont k :: kl
+
+let decompose_klist kl = match kl with
+  | [] -> failwith "shift without reset"
+  | k :: ks -> (k, ks)
+
+let un_kcont (Kont k) = k
+
+let id_cont v kl = match kl with
+  | [] -> v
+  | (Kont k) :: ks -> k v ks
+
 (* eval : expr * (var * v) list * k -> v *)
 (* eval : expr * env * kont * kont list -> v *)
 let rec eval expr env k kl = match expr with
@@ -78,20 +90,18 @@ let rec eval expr env k kl = match expr with
     eval expr1 env (fun v1 -> fun kl1 ->
         eval expr0 env (fun v0 -> fun kl0 ->
             (match v0 with
-             | VLam(x', expr', env') -> eval expr' ((x', v1) :: env') k kl
-             | VCont(k') -> k (k' v1 kl) kl)
-              kl0) kl1) kl
-  | S0(sk, expr) -> eval (expr, env(* env + skがk *), (fun v ->
-      (* klist のトップがk それ以外 klist *)
-      (match v with
-       | VLam(x', expr', env') -> eval expr' ((x', VCont(k)) :: env') id kl
-       | VCont(k') -> k' (VCont(k)))
-    ))
-  | R0(expr) -> eval expr env id (k :: kl)
-  | _ -> raise Error
+             | VLam(x', expr', env') -> eval expr' ((x', v1) :: env') k kl0 (* env に関する cons を用意する *)
+             | VCont(Kont k') -> k' v1 (add_klist k kl0)
+            )
+          ) kl1) kl
+  | S0(sk, expr) ->
+    let (k1, kl1) = decompose_klist kl in
+    eval expr ((sk, VCont (Kont k)) :: env) (un_kcont k1) kl1
+  | R0(expr) -> eval expr env id_cont (add_klist k kl)
+  | _ -> failwith "unknown expression"
 
 (* eval1 : expr -> v *)
-let eval1 expr = eval (expr, [], id)
+let eval1 expr = eval expr [] id_cont []
 
 let i = Lam ("x", Var "x")
 
