@@ -28,36 +28,40 @@ type kvar = string
 
 type var = string
 
-type exp =
-  | Var   of string
-  | Lam   of string * exp
-  | Lam_  of string * exp
-  | Lam__ of string * exp
-  | App   of exp * exp
-  | If    of bool * exp * exp
-  | S0    of string * exp         (* s0 -> k e とする *)
-  | R0    of exp
-  | T0    of string * exp
-  | Code  of exp
+type expr =
+  | Var   of var
+  | Lam   of var * expr
+  | Lam_  of var * expr
+  | Lam__ of var * expr
+  | App   of expr * expr
+  | If    of bool * expr * expr
+  | S0    of kvar * expr        (* s0 k ->  e とする *)
+  | R0    of expr
+  | T0    of kvar * expr
+  | Code  of expr
   | Int   of int
   | Bool  of bool
   | Eq    of int * int
 
-type v =
-  | VLam  of string * exp * env (* 関数定義の時に生成される closure *)
-  | VCont of k             (* shift により切り取られる continuation *)
-and env = (string * v) list
-and k = (v -> v)
+type v =                        (* v を value にする *)
+  | VLam  of var * expr * env (* 関数定義の時に生成される closure *)
+  | VCont of kont             (* shift により切り取られる continuation *)
+
+and env = (var * v) list
+and kont = v -> v
+and klist = kont list
+(* and kont = Kont of (v -> klist -> v) *)
+(* and klist = kont list *)
 
 (* combinator *)
-let cint (n:int) = fun (n:int) -> .<n>. ;;
-let cbool (b:bool) = fun (b:bool) -> .<b>. ;;
-let capp (cx,cy) = .<cx cy>.;;
+let cint  n = fun n -> Code n;;
+let cbool b = fun b -> Code b;;
+let capp cx cy = Code (cx cy);;
 
 exception Not_include_x_in_xs
 exception Error
 
-(* get : string * (string * v) list -> v *)
+(* get : var * (var * v) list -> v *)
 let rec get (x, env) = match env with
   | [] -> raise Not_include_x_in_xs
   | (x',v)::xvs -> if x = x' then v else get (x, xvs)
@@ -65,27 +69,29 @@ let rec get (x, env) = match env with
 (* let id = fun a -> a *)
 let id a = a
 
-(* eval : exp * (string * v) list * k -> v *)
-(* eval : exp * env * k -> v *)
-let rec eval (exp, env, k, kl) = match exp with
-  | Var(x) -> k (get(x, env))
-  | Lam(x, exp) -> k (VLam(x, exp, env))
-  | App(exp0, exp1) -> eval (exp1, env, (fun v1 ->
-      eval (exp0, env, (fun v0 ->
-          (match v0 with
-           | VLam(x', exp', env') -> eval (exp', (x', v1) :: env', k)
-           | VCont(k') -> k (k' v1))))))
-  | S0(sk, exp) -> eval (exp, env(* env + skがk *), (fun v ->
+(* eval : expr * (var * v) list * k -> v *)
+(* eval : expr * env * kont * kont list -> v *)
+let rec eval expr env k kl = match expr with
+  | Var(x) -> k (get(x, env)) kl
+  | Lam(x, expr) -> k (VLam(x, expr, env)) kl
+  | App(expr0, expr1) ->
+    eval expr1 env (fun v1 -> fun kl1 ->
+        eval expr0 env (fun v0 -> fun kl0 ->
+            (match v0 with
+             | VLam(x', expr', env') -> eval expr' ((x', v1) :: env') k kl
+             | VCont(k') -> k (k' v1 kl) kl)
+              kl0) kl1) kl
+  | S0(sk, expr) -> eval (expr, env(* env + skがk *), (fun v ->
       (* klist のトップがk それ以外 klist *)
       (match v with
-       | VLam(x', exp', env') -> eval (exp', (x', VCont(k)) :: env', id)
+       | VLam(x', expr', env') -> eval expr' ((x', VCont(k)) :: env') id kl
        | VCont(k') -> k' (VCont(k)))
     ))
-  | R0(exp) -> (eval (exp, env, id, k :: kl))
+  | R0(expr) -> eval expr env id (k :: kl)
   | _ -> raise Error
 
-(* eval1 : exp -> v *)
-let eval1 exp = eval (exp, [], id)
+(* eval1 : expr -> v *)
+let eval1 expr = eval (expr, [], id)
 
 let i = Lam ("x", Var "x")
 

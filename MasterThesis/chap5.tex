@@ -1,0 +1,332 @@
+\chapter{型システム}
+
+本研究での型システムについて述べる．
+
+基本型$b$，環境識別子(Environment Classifier)$\gamma$を以下の通り定義する．
+\begin{align*}
+  b & ::= \intT \mid \boolT \\
+  \gamma & ::= \gamma_x \mid \gamma \cup \gamma
+\end{align*}
+$\gamma$の定義における$\gamma_x$は環境識別子の変数を表す．
+すなわち，環境識別子は，変数であるかそれらを$\cup$で結合した形である．
+以下では，メタ変数と変数を区別せず$\gamma_x$を$\gamma$と表記する．
+ここで環境識別子として$\cup$を導入した理由は後述する．
+
+$L ::= \empty \mid \gamma$ は現在ステージと将来ステージをまとめ
+て表す記号である．たとえば，$\Gamma \vdash^L
+e:t~;~\sigma$は，$L=\empty$のとき現在ステージの判断で，
+$L=\gamma$のとき将来ステージの判断となる．
+
+レベル0の型$t^0$，レベル1の型$t^1$，(レベル0の)型の有限列$\sigma$,
+(レベル0の)継続の型$\kappa$を次の通り定義する．
+\begin{align*}
+  t^0 & ::= b \mid \funT{t^0}{t^0}{\sigma} \mid \codeT{t^1}{\gamma} \\
+  t^1 & ::= b \mid t^1 \to t^1 \\
+  \sigma & ::= \epsilon \mid \sigma,t^0 \\
+  \kappa^0 & ::= \contT{\codeT{t^1}{\gamma}}{\codeT{t^1}{\gamma}}{\sigma}
+\end{align*}
+
+レベル0の関数型$\funT{t^0}{t^0}{\sigma}$は，
+エフェクトをあらわす列$\sigma$を伴っている．これは，その関数型をもつ項
+を引数に適用したときに生じる計算エフェクトであり，具体的には，
+\Shiftz の answer type の列である．前述したようにshift0 は多段
+階の reset0 にアクセスできるため，$n$個先のreset0 の answer typeまで記
+憶するため，このように型の列$\sigma$で表現している．
+ただし，本研究の範囲では，answer type modification に対応する必要はな
+いので，エフェクトはシンプルに型の列($n$個先の reset0 のanswer type を
+$n=1,\cdots,k$に対して並べた列)で表現している．
+この型システムの詳細は，Materzokら\cite{Materzok2011}の研究を参照されたい．
+
+本稿の範囲では，コントロールオペレータは現在ステージのみにあらわれ，生
+成されるコードの中にはあらわないため，レベル1の関数型は，エフェクトを
+表す列を持たない．
+また，本項では，shift0/reset0 はコードを操作する目的にのみ使うため，継
+続の型は，コードからコードへの関数の形をしている．
+ここでは，後の定義を簡略化するため，継続を，通常の関数とは区別しており，
+そのため，継続の型も通常の関数の型とは区別して二重の横線で表現している．
+
+型判断は，以下の2つの形である．
+\begin{align*}
+  \Gamma \vdash^{L} e : t ;~\sigma \\
+  \Gamma \models \gamma \ord \gamma
+\end{align*}
+ここで，型文脈$\Gamma$は次のように定義される．
+\begin{align*}
+  \Gamma ::= \emptyset
+  \mid \Gamma, (\gamma \ord \gamma)
+  \mid \Gamma, (x : t)
+  \mid \Gamma, (u : t)^{\gamma}
+\end{align*}
+
+型判断の導出規則を与える．まず，$\Gamma \models \gamma \ord \gamma$の
+形に対する規則である．
+
+\[
+  \infer
+  {\Gamma \models \gamma_1 \ord \gamma_1}
+  {}
+  \quad
+  \infer
+  {\Gamma, \gamma_1 \ord \gamma_2 \models \gamma_1 \ord \gamma_2}
+  {}
+\]
+
+\[
+  \infer
+  {\Gamma \models \gamma_1 \ord \gamma_3}
+  {\Gamma \models \gamma_1 \ord \gamma_2 & \Gamma \models \gamma_2 \ord \gamma_3}
+\]
+
+\[
+  \infer
+  {\Gamma \models \gamma_1 \cup \gamma_2 \ord \gamma_1}
+  {}
+  \quad
+  \infer
+  {\Gamma \models \gamma_1 \cup \gamma_2 \ord \gamma_2}
+  {}
+\]
+
+\[
+  \infer
+  {\Gamma \models \gamma_3 \ord \gamma_1 \cup \gamma_2}
+  {\Gamma \models \gamma_3 \ord \gamma_1
+    &\Gamma \models \gamma_3 \ord \gamma_2}
+\]
+
+
+
+次に，$\Gamma \vdash^{L} e : t ;~\sigma$ の形に対する導出規則を与える．
+まずは，レベル0における単純な規則である．
+
+\[
+  \infer
+  {\Gamma, x : t \vdash x : t ~;~ \sigma}
+  {}
+  \quad
+  \infer
+  {\Gamma, (u : t)^\gamma \vdash^\gamma u : t ~;~ \sigma}
+  {}
+\]
+
+\[
+  \infer
+  {\Gamma \vdash^{L} c : t^c ~;~\sigma}
+  {}
+\]
+
+\[
+  \infer
+  {\Gamma \vdash^{L} e_1~ e_2 : t_1 ; \sigma}
+  {\Gamma \vdash^{L} e_1 : t_2 \to t_1 ; \sigma
+    & \Gamma \vdash^{L} e_2 : t_2  ; \sigma
+  }
+\]
+
+\[
+  \infer
+  {\Gamma \vdash \fun{x}{e} : \funT{t_1}{t_2}{\sigma} ~;~\sigma'}
+  {\Gamma,~x : t_1 \vdash e : t_2 ~;~ \sigma}
+  \quad
+  \infer
+  {\Gamma \vdash^\gamma \fun{x}{e} : \funT{t_1}{t_2}{} ~;~\sigma'}
+  {\Gamma,~(u : t_1)^\gamma \vdash^\gamma e : t_2 ~;~ \sigma}
+\]
+
+\[
+  \infer
+  {\Gamma \vdash^{L} \ift{e_1}{e_2}{e_3} : t ~;~ \sigma}
+  {\Gamma \vdash^{L} e_1 : \boolT ;~ \sigma
+    & \Gamma \vdash^{L} e_2 : t ; \sigma
+    & \Gamma \vdash^{L} e_3 : t ; \sigma}
+\]
+
+次にコードレベル変数に関するラムダ抽象の規則である．
+
+\[
+  \infer[(\gamma_1~\text{is eigen var})]
+  {\Gamma \vdash \cfun{x}{e} : \codeT{t_1\to t_2}{\gamma} ~;~ \sigma}
+  {\Gamma,~\gamma_1 \ord \gamma,~x:\codeT{t_1}{\gamma_1} \vdash e
+    : \codeT{t_2}{\gamma_1}; \sigma}
+\]
+
+\[
+  \infer
+  {\Gamma \vdash \ccfun{u^1}{e} : \codeT{t_1 \to t_2}{\gamma} ; \sigma}
+  {\Gamma, \gamma_1 \ord \gamma, x : (u : t_1)^{\gamma_1} \vdash e : \codeT{t_2}{\gamma_1} ; \sigma}
+\]
+
+コントロールオペレータに対する型導出規則である．
+
+\[
+  \infer{\Gamma \vdash \resetz{e} : \codeT{t}{\gamma} ~;~ \sigma}
+  {\Gamma \vdash e : \codeT{t}{\gamma} ~;~ \codeT{t}{\gamma}, \sigma}
+\]
+
+\[
+  \infer{\Gamma \vdash \shiftz{k}{e} : \codeT{t_1}{\gamma_1} ~;~ \codeT{t_0}{\gamma_0},\sigma}
+  {\Gamma,~k:\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}{\sigma}
+    \vdash e : \codeT{t_0}{\gamma_0} ; \sigma
+    & \Gamma \models \gamma_1 \ord \gamma_0
+  }
+\]
+
+\[
+  \infer
+  {\Gamma,~k:\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}{\sigma}
+    \vdash \throw{k}{v} : \codeT{t_0}{\gamma_2} ; \sigma}
+  {\Gamma
+    \vdash v : \codeT{t_1}{\gamma_1 \cup \gamma_2} ; \sigma
+    & \Gamma \models \gamma_2 \ord \gamma_0
+  }
+\]
+
+コード生成に関する補助的な規則として，Subsumptionに相当する規則等がある．
+\[
+  \infer
+  {\Gamma \vdash e : \codeT{t}{\gamma_2} ; \sigma}
+  {\Gamma \vdash e : \codeT{t}{\gamma_1} ; \sigma
+    & \Gamma \models \gamma_2 \ord \gamma_1
+  }
+\]
+
+\[
+  \infer
+  {\Gamma \vdash^{\gamma_2} e : t ~;~ \sigma}
+  {\Gamma \vdash^{\gamma_1} e : t ~;~ \sigma
+    & \Gamma \models \gamma_2 \ord \gamma_1
+  }
+\]
+
+
+\[
+  \infer
+  {\Gamma \vdash \code{e} : \codeT{t^1}{\gamma} ; \sigma}
+  {\Gamma \vdash^{\gamma} e : t^1 ; \sigma}
+\]
+
+
+\section{型付け例}
+
+上記の型システムのもとで，いくつかの項の型付けについて述べる．
+
+\begin{align*}
+  e_1 & = \Resetz ~~\cLet~x_1=\csp{3}~\cIn \\
+      & \phantom{=}~~ \Resetz ~~\cLet~x_2=\csp{5}~\cIn \\
+      & \phantom{=}~~ \Shiftz~k~\to~\cLet~y=t~\cIn \\
+      & \phantom{=}~~ \Throw~k~(x_1~\cPlus~x_2~\cPlus~y)
+\end{align*}
+
+この式$e_1$に対して，もし，$t=\csp{7}$ あるいは $t=x_1$であれば，
+$e_1$ は型付け可能である．
+一方，$t=x_2$ であれば，$e_1$ は型付けできない．
+
+\begin{align*}
+  e_2 & = \Resetz ~~\cLet~x_1=\csp{3}~\cIn \\
+      & \phantom{=}~~ \Resetz ~~\cLet~x_2=\csp{5}~\cIn \\
+      & \phantom{=}~~ \Shiftz~k_2~\to~ \Shiftz~k_1~\to~ \cLet~y=t~\cIn \\
+      & \phantom{=}~~ \Throw~k_1~(\Throw~k_2~(x_1~\cPlus~x_2~\cPlus~y))
+\end{align*}
+
+この式$e_2$に対して，もし$t=\csp{7}$であれば$e_1$は型付け可能である．
+一方，$t=x_2$ あるいは $t=x_1$であれば，$e_1$は型付けできない．
+
+このように，(少なくとも)上記の例については安全な式と危険な式を正しく峻
+別できていることがわかった．
+
+\section{型安全性について}
+
+本研究の型システムに対する型保存(Subject Reduction)定理について述べる．
+型保存定理は，(証明できれば)
+進行(Progress)定理とあわせて型システムの健全性を導く定理である．
+
+\begin{quote}
+  (型保存性)
+  $\vdash e:t~;~\sigma$ かつ $e \lto e'$ であれば，$\vdash e':t~;~\sigma$
+  である．
+\end{quote}
+
+この定理は reset0-shift0の計算規則が多相性を持たない場合には容易に証明
+できるが，多相性については精密な扱いが必要であり，
+現段階では，型保存定理の証明は進行中である．
+
+% \begin{lemm}[不要な仮定の除去]
+%   $\Gamma_1,\gamma_2 \ord \gamma_1 \vdash e : t_1 ~;~\sigma$
+%   かつ，$\gamma_2$が $\Gamma_1, e, t_1, \sigma$に出現しないなら，
+%   $\Gamma_1 \vdash e : t_1 ~;~\sigma$ である．
+% \end{lemm}
+%
+% \begin{lemm}[値に関する性質]
+%   $\Gamma_1 \vdash v : t_1 ~;~\sigma$
+%   ならば，
+%   $\Gamma_1 \vdash v : t_1 ~;~\sigma'$
+%   である．
+% \end{lemm}
+%
+% \begin{lemm}[代入]
+%   $\Gamma_1, \Gamma_2, x : t_1 \vdash e : t_2 ~;~\sigma$
+%   かつ
+%   $\Gamma_1 \vdash v : t_1 ~;~\sigma$
+%   ならば，
+%   $\Gamma_1, \Gamma_2 \vdash e\{x := v\} : t_2~;~\sigma$
+% \end{lemm}
+%
+% これらをもとに型保存定理を証明する．
+% 本研究の対象言語は，コントロールオペレータが操作する対象となる式の型を
+% コード型に限定するなど，注意深く設計しているので，ほとんどのケースの証
+% 明はスムーズであるが，reset0-shift0 に関する計算規則(shift0 が評価文脈
+% を捕捉して継続変数$k$に渡す規則)とthrowに関する計算規則では，
+% サブタイプ多相性に相当する性質を使っているので，以下の技術的な補題が必
+% 要である．
+%
+% \begin{lemm}[識別子に関する多相性]
+%   穴の周りにreset0を含まない評価文脈$E$，変数$x$，
+%   そして$\Gamma = (u_1:t_1)^{\gamma_1}, \cdots, (u_n:t_n)^{\gamma_n}$
+%   かつ$i=1,\cdots,n$に対して$\Gamma \models \gamma_0 \ord \gamma_i$であるとする．
+%   このとき，
+%   $\Gamma, x:\codeT{t_0}{\gamma'} \vdash E[x] : \codeT{t_1}{\gamma_0} ~;~\sigma$
+%   であれば，フレッシュな$\gamma$に対して，
+%   $\Gamma, x:\codeT{t_0}{\gamma'\cup \gamma} \vdash
+%   E[x] : \codeT{t_1}{\gamma_0 \cup \gamma} ~;~\sigma$
+%   である．
+% \end{lemm}
+%
+% この補題は，評価文脈$E$に対して，穴の型が$\codeT{t_0}{\gamma'}$で
+% 評価文脈全体の型が$\codeT{t_1}{\gamma_0}$であれば，
+% それぞれの環境識別子に$\gamma_2$を加えて，
+% $\codeT{t_0}{\gamma'\cup \gamma}$型から，
+% $\codeT{t_1}{\gamma_0\cup \gamma}$型への評価文脈として使ってもよい，
+% ということを主張している．ここで $\gamma \ord \gamma_0$ なので，
+% $\gamma$と$\gamma_0 \cup \gamma$は$\ord$の意味で等しくなり，
+% $\codeT{t_1}{\gamma_0\cup\gamma}$型を持つ項は，
+% $\codeT{t_1}{\gamma}$型も持つことがわかる．
+% この定理により，shift0が捕捉した継続を(環境識別子について)多相的に使う
+% ことが可能となり，reset0-shift0 の計算規則が正当化される．
+%
+% 上記の補題を証明すれば，型保存定理の証明の残りのケースは比較的容易であ
+% る．なお，この補題を使うケースにおいて，定理の言明にあらわれる項$e$が
+% 閉じた項であること(環境識別子に関する
+%
+%
+% 進行定理については
+% 精密な定式化が必要(reset0がない式でshift0を実行した時など)が必要なので，
+
+% \section{進行}
+% \begin{theo}[進行]
+%   $\vdash e:t$ が導出可能であれば，$e$ は 値 $v$ である．または，$e \lto e'$ であるような 項 $e'$ が存在する
+% \end{theo}
+%
+% \paragraph{証明}
+% $\vdash e:t$ の導出に関する帰納法による．\\
+% Const, Abs, Code 規則の場合 $e$ は値である．\\
+% Var 規則の場合 $\vdash e:t$ は導出可能でない．\\
+% Throw 規則の場合 $\vdash e:t$ は導出可能でない．\\
+% Reset0 規則の場合 $e = \Resetz~ e_1$ とする．
+% 帰納法の仮定より評価文脈における $\Resetz E$ より簡約が進み，\\
+% $e_1$ が値のとき，$e \lto v$ となるような $v$ が存在する．\\
+% $e_1$ が値でないとき，
+
+%%% Local Variables:
+%%% mode: japanese-latex
+%%% TeX-master: "master_oishi"
+%%% End:

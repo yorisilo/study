@@ -498,7 +498,7 @@ $L=\gamma$のとき将来ステージの判断となる．
   \infer
   {\Gamma \models \gamma_1 \ord \gamma_1}
   {}
-\quad
+  \quad
   \infer
   {\Gamma, \gamma_1 \ord \gamma_2 \models \gamma_1 \ord \gamma_2}
   {}
@@ -524,7 +524,7 @@ $L=\gamma$のとき将来ステージの判断となる．
   \infer
   {\Gamma \models \gamma_3 \ord \gamma_1 \cup \gamma_2}
   {\Gamma \models \gamma_3 \ord \gamma_1
-  &\Gamma \models \gamma_3 \ord \gamma_2}
+    &\Gamma \models \gamma_3 \ord \gamma_2}
 \]
 
 
@@ -668,7 +668,7 @@ If $t=x_2$ or $t=x_1$, then $e_1$ is not typable.
 本研究の型システムに対する型保存(Subject Reduction)定理とその証明のポイントを示す。
 
 \begin{theo}[型保存定理]
-$\vdash e:t~;~\sigma$ かつ $e \lto e'$ であれば，$\vdash e':t~;~\sigma$ である。
+  $\vdash e:t~;~\sigma$ かつ $e \lto e'$ であれば，$\vdash e':t~;~\sigma$ である。
 \end{theo}
 
 通常の型保存定理では、
@@ -703,29 +703,29 @@ $\vdash e:t~;~\sigma$ かつ $e \lto e'$ であれば，$\vdash e':t~;~\sigma$ �
 \begin{lemm}[識別子に関する多相性]
   穴の周りにreset0を含まない評価文脈$E$、変数$x$、
   そして$\Gamma = (u_1:t_1)^{\gamma_1}, \cdots, (u_n:t_n)^{\gamma_n}$
-      かつ$i=1,\cdots,n$に対して$\gamma_0 \ord \gamma_i$であるとする。
+  かつ$i=1,\cdots,n$に対して$\gamma_0 \ord \gamma_i$であるとする。
   このとき、
   $\Gamma, x:\codeT{t_0}{\gamma'} \vdash E[x] : \codeT{t_1}{\gamma_0} ~;~\sigma$
   であれば、$\Gamma \models \gamma \ord \gamma_0$となる任意の$\gamma$に対して、
   $\Gamma, x:\codeT{t_0}{\gamma'\cup \gamma} \vdash
-   E[x] : \codeT{t_1}{\gamma_0} ~;~\sigma$
+  E[x] : \codeT{t_1}{\gamma_0} ~;~\sigma$
   である。
 \end{lemm}
 
-%\subsection{進行}
-%\begin{theo}[進行]
-%  $\vdash e:t$ が導出可能であれば，$e$ は 値 $v$ である．または，$e \lto e'$ であるような 項 $e'$ が存在する
-%\end{theo}
+% \subsection{進行}
+% \begin{theo}[進行]
+%   $\vdash e:t$ が導出可能であれば，$e$ は 値 $v$ である．または，$e \lto e'$ であるような 項 $e'$ が存在する
+% \end{theo}
 %
-%\paragraph{証明}
-%$\vdash e:t$ の導出に関する帰納法による．\\
-%Const, Abs, Code 規則の場合 $e$ は値である．\\
-%Var 規則の場合 $\vdash e:t$ は導出可能でない．\\
-%Throw 規則の場合 $\vdash e:t$ は導出可能でない．\\
-%Reset0 規則の場合 $e = \Resetz~ e_1$ とする．
-%帰納法の仮定より評価文脈における $\Resetz E$ より簡約が進み，\\
-%$e_1$ が値のとき，$e \lto v$ となるような $v$ が存在する．\\
-%$e_1$ が値でないとき，
+% \paragraph{証明}
+% $\vdash e:t$ の導出に関する帰納法による．\\
+% Const, Abs, Code 規則の場合 $e$ は値である．\\
+% Var 規則の場合 $\vdash e:t$ は導出可能でない．\\
+% Throw 規則の場合 $\vdash e:t$ は導出可能でない．\\
+% Reset0 規則の場合 $e = \Resetz~ e_1$ とする．
+% 帰納法の仮定より評価文脈における $\Resetz E$ より簡約が進み，\\
+% $e_1$ が値のとき，$e \lto v$ となるような $v$ が存在する．\\
+% $e_1$ が値でないとき，
 
 \section{関連研究と結論}
 
