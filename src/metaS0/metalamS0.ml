@@ -42,10 +42,12 @@ type expr =
   | Int   of int
   | Bool  of bool
   | Eq    of int * int
+  | Add   of expr * expr
 
 type value =                        (* v を value にする *)
   | VLam  of var * expr * env (* 関数定義の時に生成される closure *)
   | VCont of kont             (* shift により切り取られる continuation *)
+  | VInt of int
 
 and env = (var * value) list
 and kont = Kont of (value -> klist -> value)
@@ -84,6 +86,8 @@ let id_cont v kl = match kl with
 (* eval : expr * (var * v) list * k -> v *)
 (* eval : expr * env * kont * kont list -> v *)
 let rec eval expr env k kl = match expr with
+  | Add(Int n, Int m) -> k (VInt (n + m)) kl
+  | Int(n) -> k (VInt n) kl
   | Var(x) -> k (get(x, env)) kl
   | Lam(x, expr) -> k (VLam(x, expr, env)) kl
   | App(expr0, expr1) ->
@@ -92,6 +96,7 @@ let rec eval expr env k kl = match expr with
             (match v0 with
              | VLam(x', expr', env') -> eval expr' ((x', v1) :: env') k kl0 (* env に関する cons を用意する *)
              | VCont(Kont k') -> k' v1 (add_klist k kl0)
+             | VInt _ -> failwith "VInt not apply function"
             )
           ) kl1) kl
   | S0(sk, expr) ->
@@ -111,4 +116,8 @@ let s = Lam ("x", (Lam ("y", Lam ("z", (App ((App ((Var "x"), (Var "z"))), (App 
 
 let skk = App (App (s,k),k)
 
-(* let example1 = eval1 @@ App (skk, (Var "x")) (\* うまくうごかない．．． *\) *)
+let _ = eval1 @@ App (skk, (Int 1))
+let _ = eval1 @@ R0(Int 1)
+let _ = eval1 @@ R0(S0("k", Int 1))
+let _ = eval1 @@ R0(S0("k", App(Var "k", Int 1)))
+let _ = eval1 @@ R0(Add(Int 1, S0("k", App(Var "k", Int 1))))

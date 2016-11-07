@@ -108,26 +108,26 @@ control/promptに類似した control0/prompt0)の振舞いとなる．
 
 % 計算の例を以下に示す．
 % \begin{align*}
-    %     e_1 & = \Resetz ~~\cLet~x_1=\csp{3}~\cIn \\
-    %               & \phantom{=}~~ \Resetz ~~\cLet~x_2=\csp{5}~\cIn \\
-    %               & \phantom{=}~~ \Shiftz~k~\to~\cLet~y=t~\cIn \\
-    %               & \phantom{=}~~ \Throw~ k~ (x_1~\cPlus~x_2~\cPlus~y) \\
-    %   \end{align*}
-    %
-    %     \begin{align*}
-    %     [ e_1 ] &\lto [ \Resetz (\cLet~x_1=\csp{3}~\cIn \\
-    %               &\Resetz~ \cLet~x_2=\csp{5}~\cIn \\
-    %               &[ \Shiftz~ k~ \to~ \cLet~ y=t~ \cIn \\
-    %               &[ \Throw~ k~(x_1~\cPlus~x_2~\cPlus~y) ] ] ) ] \\
-    %               &\lto [ \cLet~ y=t~ \cIn \\
-    %               &[ \cfun{x}{\Resetz~ (\cLet~x_1=\csp{3}~ \cIn~ \Resetz~ (\cLet~ x_2=\csp{5}~ \cIn [x]))} (x_1~\cPlus~x_2~\cPlus~y) ]] \\
-    %               &\lto [ \cfun{y}{(\cfun{x}{\Resetz~ (\cLet~x_1=\csp{3}~ \cIn~ \Resetz~ (\cLet~ x_2=\csp{5}~ \cIn [x]))} (x_1~\cPlus~x_2~\cPlus~y))}~ \cat~ t ] \\
-    %               &\lto [[\cfun{y}{(\cfun{x}{\Resetz~ (\cLet~x_1=\csp{3}~ \cIn~ \Resetz~ (\cLet~ x_2=\csp{5}~ \cIn [x]))} (x_1~\cPlus~x_2~\cPlus~y))}]~ \cat~ t] \\
-    %               &\lto [[\ccfun{y_1}{(\cfun{x}{\Resetz~ (\cLet~x_1=\csp{3}~ \cIn~ \Resetz~ (\cLet~ x_2=\csp{5}~ \cIn [x]))} (x_1~\cPlus~x_2~\cPlus~ \code{y_1}))}]~ \cat~ t] \\
-    %               &\lto
-                      %   \end{align*}
+%   e_1 & = \Resetz ~~\cLet~x_1=\csp{3}~\cIn \\
+%   & \phantom{=}~~ \Resetz ~~\cLet~x_2=\csp{5}~\cIn \\
+%   & \phantom{=}~~ \Shiftz~k~\to~\cLet~y=t~\cIn \\
+%   & \phantom{=}~~ \Throw~ k~ (x_1~\cPlus~x_2~\cPlus~y) \\
+% \end{align*}
+%
+% \begin{align*}
+%   [ e_1 ] &\lto [ \Resetz (\cLet~x_1=\csp{3}~\cIn \\
+%   &\Resetz~ \cLet~x_2=\csp{5}~\cIn \\
+%   &[ \Shiftz~ k~ \to~ \cLet~ y=t~ \cIn \\
+%   &[ \Throw~ k~(x_1~\cPlus~x_2~\cPlus~y) ] ] ) ] \\
+%   &\lto [ \cLet~ y=t~ \cIn \\
+%   &[ \cfun{x}{\Resetz~ (\cLet~x_1=\csp{3}~ \cIn~ \Resetz~ (\cLet~ x_2=\csp{5}~ \cIn [x]))} (x_1~\cPlus~x_2~\cPlus~y) ]] \\
+%   &\lto [ \cfun{y}{(\cfun{x}{\Resetz~ (\cLet~x_1=\csp{3}~ \cIn~ \Resetz~ (\cLet~ x_2=\csp{5}~ \cIn [x]))} (x_1~\cPlus~x_2~\cPlus~y))}~ \cat~ t ] \\
+%   &\lto [[\cfun{y}{(\cfun{x}{\Resetz~ (\cLet~x_1=\csp{3}~ \cIn~ \Resetz~ (\cLet~ x_2=\csp{5}~ \cIn [x]))} (x_1~\cPlus~x_2~\cPlus~y))}]~ \cat~ t] \\
+%   &\lto [[\ccfun{y_1}{(\cfun{x}{\Resetz~ (\cLet~x_1=\csp{3}~ \cIn~ \Resetz~ (\cLet~ x_2=\csp{5}~ \cIn [x]))} (x_1~\cPlus~x_2~\cPlus~ \code{y_1}))}]~ \cat~ t] \\
+%   &\lto
+% \end{align*}
 
-                      %%%   Local Variables:
-                      %%%   mode: japanese-latex
-                      %%%   TeX-master: "master_oishi"
-                      %%%   End:
+%%% Local Variables:
+%%% mode: japanese-latex
+%%% TeX-master: "master_oishi"
+%%% End:
