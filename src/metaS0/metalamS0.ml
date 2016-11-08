@@ -1,28 +1,3 @@
-(* type ('a,'b) c = *)
-(*   | I of int *)
-(*   | B of bool *)
-(*   | Cint of int *)
-(*   | Capp of ('a code * 'b code) *)
-
-(* type ('a,'b) v = *)
-(*   | VVar of string *)
-(*   | Vc of ('a,'b) c *)
-
-(* type ('a,'b) e0 = *)
-(*   | E0Var of ('a,'b) v *)
-(*   | E0If of ('a,'b) e0 * ('a,'b) e0 * ('a,'b) e0 *)
-(*   | E0App of ('a,'b) e0 * ('a,'b) e0 *)
-(*   | E0Lam_ of string * ('a,'b) e0 *)
-(*   | E0Lam__ of string * ('a,'b) e0 *)
-(*   | E0R0 of ('a,'b) e0 *)
-(*   | E0S0 of ('a,'b) e0 *)
-
-(* type ('a,'b) e1 = *)
-(*   | E1Var of string *)
-(*   | E1C of ('a,'b) c *)
-(*   | E1Lam of string * ('a,'b) e1 *)
-(*   | E1App of ('a,'b) e1 * ('a,'b) e1 *)
-(*   | E1If of ('a,'b) e1 * ('a,'b) e1 * ('a,'b) e1 *)
 
 type kvar = string
 
