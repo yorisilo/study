@@ -44,7 +44,7 @@ Answer type modificationはなし
 
 # これからやりたいこと
 * 評価器の実装 (tagless final + GADT ? or data type を普通に定義してやっていく？)
-(tagless final + GADT においてGADTを使うのは，様々なanswer typeの列を入れるために多相なリストがほしいから)
+  (tagless final + GADT においてGADTを使うのは，様々なanswer typeの列を入れるために多相なリストがほしいから)
   * 例を書く
 
 * 型検査器の実装
@@ -85,3 +85,5 @@ Answer type modificationはなし
   * power関数とか gen_power 関数とか code + s0/r0 の例 を書いていく
   * 動かなかったら，先生に相談したりする
 * 論文の図目次がきちんと出るように画像の挿入のtexを書き換える
+
+### 11/14-11/20

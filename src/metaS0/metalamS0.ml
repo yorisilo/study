@@ -19,10 +19,10 @@ type expr =
   | Add     of expr * expr
   | PrimOp2 of string * expr * expr
   | Let     of var * expr * expr
-  | Fix     of var * var * expr
+  | Fix     of var * var * expr (* let rec fix f n = f (fix f) n *)
 type value =                        (* v を value にする *)
   | VLam  of var * expr * env (* 関数定義の時に生成される closure *)
-  | VClos of var * var * expr * env
+  | VRLam of var * var * expr * env (* rec 関数定義の時に生成される closure *)
   | VCont of kont             (* shift により切り取られる continuation *)
   | VInt of int
   | VBool of bool
@@ -39,13 +39,14 @@ let cint  n = fun n -> Code n;;
 let cbool b = fun b -> Code b;;
 let capp cx cy = Code (cx cy);;
 
-exception Not_include_x_in_xs
 exception Error
 
+let extend (x,v) env = (x,v) :: env
+
 (* get : var * (var * v) list -> v *)
-let rec get (x, env) = match env with
-  | [] -> raise Not_include_x_in_xs
-  | (x',v)::xvs -> if x = x' then v else get (x, xvs)
+let rec get x env = match env with
+  | [] -> failwith ("unbound variable: " ^ x)
+  | (x',v)::xvs -> if x = x' then v else get x xvs
 
 (* let id = fun a -> a *)
 let id a = a
@@ -65,16 +66,16 @@ let id_cont v kl = match kl with
 let counter = ref 0
 let new_var x =
   counter := !counter + 1;
-    "_" ^ x ^ (string_of_int !counter)
+  "_" ^ x ^ (string_of_int !counter)
 
 (* eval : expr * (var * v) list * k -> v *)
 (* eval : expr * env * kont * kont list -> v *)
 let rec eval expr env k kl = match expr with
-  | Var(x) -> k (get(x, env)) kl
+  | Var(x) -> k (get x env) kl
   | Lam(x, expr) -> k (VLam(x, expr, env)) kl
   | Lam_(x, e) ->
     let y = new_var x in
-    eval e ((x, VCode (Var y)) :: env) (fun v0 -> fun kl0 ->
+    eval e (extend (x, VCode (Var y)) env) (fun v0 -> fun kl0 ->
         match v0 with
         | VCode e -> k (VCode(Lam(y, e))) kl
         | _ -> failwith "not Code in Lam_"
@@ -83,17 +84,17 @@ let rec eval expr env k kl = match expr with
     eval expr1 env (fun v1 -> fun kl1 ->
         eval expr0 env (fun v0 -> fun kl0 ->
             (match v0 with
-             | VLam(x', expr', env') -> eval expr' ((x', v1) :: env') k kl0 (* env に関する cons を用意する *)
-             | VClos(f, x, e, env') -> eval e ((f, v0) :: (x, v1) :: env') k kl0
+             | VLam(x', expr', env') -> eval expr' (extend (x',v1) env') k kl0 (* env に関する cons を用意する *)
+             | VRLam(f, x, e, env') -> eval e (extend (f,v0) (extend (x,v1) env')) k kl0
              | VCont(Kont k') -> k' v1 (add_klist k kl0)
              | _ -> failwith "not apply function"
             )
           ) kl1) kl
   | S0(sk, expr) ->
     let (k1, kl1) = decompose_klist kl in
-    eval expr ((sk, VCont (Kont k)) :: env) (un_kcont k1) kl1
+    eval expr (extend (sk, VCont (Kont k)) env) (un_kcont k1) kl1
   | R0(expr) -> eval expr env id_cont (add_klist k kl)
-  | Fix(f, x, e) -> k (VClos (f, x, e, env)) kl
+  | Fix(f, x, e) -> k (VRLam (f, x, e, env)) kl
   | Add(e0, e1) ->
     eval e0 env (fun v0 -> fun kl0 ->
         eval e1 env (fun v1 -> fun kl1 ->
@@ -107,6 +108,10 @@ let rec eval expr env k kl = match expr with
             match (x, v0, v1) with
             | ("Add", VInt n, VInt m) -> k (VInt (n + m)) kl1
             | ("Add_", VCode e0, VCode e1) -> k (VCode (PrimOp2 ("Add", e0, e1))) kl1
+            | ("Min", VInt n, VInt m) -> k (VInt (n - m)) kl1
+            | ("Min_", VCode e0, VCode e1) -> k (VCode (PrimOp2 ("Min", e0, e1))) kl1
+            | ("Mult", VInt n, VInt m) -> k (VInt (n * m)) kl1
+            | ("Mult_", VCode e0, VCode e1) -> k (VCode (PrimOp2 ("Mult", e0, e1))) kl1
             | ("Eq", VInt n, VInt m) when n = m -> k (VBool true) kl1
             | ("Eq", VInt n, VInt m) when n != m -> k (VBool false) kl1
             | _ -> failwith "not Integer in PrimOp2")
@@ -124,7 +129,7 @@ let rec eval expr env k kl = match expr with
       ) kl
   | Let(x, e0, e1) ->
     eval e0 env (fun v0 -> fun kl0 ->
-        eval e1 ((x, v0) :: env) k kl0) kl
+        eval e1 (extend (x, v0) env) k kl0) kl
   | Code(e) -> k (VCode e) kl
   | _ -> failwith "unknown expression"
 
@@ -139,19 +144,24 @@ let s = Lam ("x", (Lam ("y", Lam ("z", (App ((App ((Var "x"), (Var "z"))), (App 
 
 let skk = App (App (s,k),k)
 
+let ce1 = Code(Int 1)
+let ce2 = Code(Int 2)
 let _ = eval1 @@ App (skk, (Int 1))
 let _ = eval1 @@ R0(Int 1)
 let _ = eval1 @@ R0(S0("k", Int 1))
 let _ = eval1 @@ R0(S0("k", App(Var "k", Int 1)))
 let _ = eval1 @@ R0(Add(Int 1, S0("k", App(Var "k", Int 1))))
-let e1 = Code(Int 1)
-let e2 = Code(Int 2)
-let _ = eval1 @@ e1
+let _ = eval1 @@ ce1
+let _ = eval1 @@ ce2
 let _ = eval1 @@ PrimOp2("Add", Int 1, Int 2)
-let _ = eval1 @@ PrimOp2("Add_", e1, e2)
-let _ = eval1 @@ Lam_("x", e1)
+let _ = eval1 @@ PrimOp2("Add_", ce1, ce2)
+let _ = eval1 @@ Lam_("x", ce1)
 let _ = eval1 @@ Lam_("x", Var "x")
-let _ = eval1 @@ Lam_("x", PrimOp2("Add_", e1, Var "x"))
+let _ = eval1 @@ Lam_("x", PrimOp2("Add_", ce1, Var "x"))
 let _ = eval1 @@ Lam_("x", Lam_("y", PrimOp2("Add_", Var "x", Var "y")))
 let _ = eval1 @@ Lam_("x", Lam_("x", PrimOp2("Add_", Var "x", Var "x")))
-let _ = eval1 @@ Lam_("x", Lam_("x", PrimOp2("Add_", Var "y", Var "x")))
+(* let _ = eval1 @@ Lam_("x", Lam_("x", PrimOp2("Add_", Var "y", Var "x"))) *)
+
+let _ = eval1 @@ Lam("x", Fix("f", "n", If(PrimOp2("Eq", Var "n", Int 0), Int 1, PrimOp2("Mult", Var "x", App(Var "f", PrimOp2("Min", Var "n", Int 1))))))
+let _ = eval1 @@ App(App(Lam("x", Fix("f", "n", If(PrimOp2("Eq", Var "n", Int 0), Int 1, PrimOp2("Mult", Var "x", App(Var "f", PrimOp2("Min", Var "n", Int 1)))))), Int 2), Int 10)
+let _ = eval1 @@ Lam_("x", Fix("f", "n", If(PrimOp2("Eq", Var "n", Int 0), Code(Int 1), PrimOp2("Mult_", Var "x", App(Var "f", PrimOp2("Min", Var "n", Int 1))))))
