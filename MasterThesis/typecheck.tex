@@ -1,0 +1,102 @@
+\documentclass[a4j]{jsarticle}
+
+\usepackage[dvipdfmx]{graphicx,color}
+\usepackage{ascmac}
+
+\usepackage{theorem}
+\usepackage{amsmath,amssymb}
+\usepackage{ascmac}
+\usepackage{mathtools}
+\usepackage{proof}
+\usepackage{stmaryrd}
+\usepackage{listings,jlisting}
+
+\input{newcommand}
+
+\title{型検査器について}
+\author{大石 純平}
+\date{\today}
+
+\begin{document}
+\maketitle
+\section{型検査器}
+
+\subsection{制約を導く}
+入力: $(\Gamma, e, t, \sigma, l, C)$
+出力: $C_t \, C_{\sigma}$
+
+入力
+\begin{itemize}
+\item $\Gamma$ : 型文脈
+\item $e$ : 項
+\item $t$ : 型
+\item $\sigma$ : answer type の列
+\item $l$ : レベルを表す(現在レベル 0, or コードレベル 1)
+\item $C$ : constraint(制約):
+\end{itemize}
+
+環境識別子(Environment Classifier)$\gamma$
+\begin{align*}
+  \gamma & ::= \gamma_x \mid \gamma \cup \gamma
+\end{align*}
+
+型文脈$\Gamma$
+\begin{align*}
+  \Gamma ::= \emptyset
+  \mid \Gamma, (\gamma \ord \gamma)
+  \mid \Gamma, (x : t)
+  \mid \Gamma, (u : t)^{\gamma}
+\end{align*}
+
+型の有限列(\Shiftz の answer typeの列)$\sigma$
+\begin{align*}
+  \sigma & ::= \epsilon \mid \sigma,t^0 \\
+\end{align*}
+
+
+出力
+\begin{itemize}
+\item $C_t$ : 型の集合
+\item $C_{\sigma}$ : ec や ec の 不等式 の集合
+
+\end{itemize}
+
+\subsection{制約を解く}
+型に対しては $C_t$ が分かればすぐわかるが，
+ecに対しては すぐわからない．
+
+$C_{\sigma}$は，environment classifier の 不等式，等式 などの集合である．
+その制約を解いて，解$\theta$があれば，$\theta$ のもとで，
+$\Gamma \vdash^{L} e : t ;~\sigma$ がおｋ．
+
+\begin{align*}
+  C_{x} ::= \gamma_x \mid C_{\gamma} \\
+  C_{\gamma} ::= \gamma_x \mid C_{\gamma} \cup C_{\gamma} \mid C_{x} \\
+  \text{\oishi{ここはもう少し考える．}}
+\end{align*}
+
+$\gamma$ は 以下のようにツリーの位置によって，包含関係は決まる．
+\[
+  \infer{(.) \cfun ...}
+  {\infer{(1) \cfun ... }
+    {(1,1) \cfun ... & (1,2) \cfun ...}
+    &
+    \infer{(2) \cfun ... }
+    {(2,1) \cfun ...}
+  }
+\]
+各$(i,j)$に対して $(i,j)\# C_{\gamma}$ であるかどうかを調べれば良い
+
+
+\begin{align*}
+  \Gamma \vDash C_{\gamma} \ord C_{\gamma} \\
+  C_{\gamma} \ord C_{\gamma},... \vDash C_{\gamma} \ord C_{\gamma} \\
+  \gamma_x \# C_{\gamma}
+\end{align*}
+$\gamma_x \# C_{\gamma}$ は $\gamma_x$ は $C_{\gamma}$に含まれないという意味
+
+\end{document}
+%%% Local Variables:
+%%% mode: japanese-latex
+%%% TeX-master: t
+%%% End:
