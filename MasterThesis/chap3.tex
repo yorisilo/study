@@ -12,10 +12,15 @@ Tahaら\cite{Taha:2003:EC:604131.604134}は，純粋な(副作用のない)コ�
 須藤ら\cite{Sudo2014}は，破壊的変数を持つコード生成言語に対する型安全性を保証するため，
 環境識別子を精密化した．本節では，須藤らのアイディアを解説する．
 以下の図は，彼らの言語における危険なプログラム例である．
-\begin{center}
+
+\begin{figure}[ht]
+  \centering
   \includegraphics[clip,width=5cm]{./img/sudo_ref.png}
-  危険な例
-\end{center}
+  \caption{危険な例}
+  \label{fig:sudo_ref}
+\end{figure}
+
+
 ここで，$r$は，整数のコードを格納する参照(破壊的セル)であり，$r:=y$と
 $!r$はそれぞれ，$r$への代入と$r$の中身の読み出しを表す．
 上記のプログラムは，コードレベルのラムダ抽象($y$に対するラムダ抽象)で

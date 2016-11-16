@@ -150,6 +150,7 @@ let _ = eval1 @@ App (skk, (Int 1))
 let _ = eval1 @@ R0(Int 1)
 let _ = eval1 @@ R0(S0("k", Int 1))
 let _ = eval1 @@ R0(S0("k", App(Var "k", Int 1)))
+let _ = eval1 @@ R0(S0("k", App(Var "k", Code (Int 1))))
 let _ = eval1 @@ R0(Add(Int 1, S0("k", App(Var "k", Int 1))))
 let _ = eval1 @@ ce1
 let _ = eval1 @@ ce2
