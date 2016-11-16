@@ -1,0 +1,67 @@
+% 
+% Type inference algorithm draft (for Oishi System)
+%
+\documentclass{jsarticle}
+\addtolength{\topmargin}{-2cm}
+\addtolength{\textwidth}{3cm}
+\addtolength{\oddsidemargin}{-1.5cm}
+\usepackage{amsmath,amssymb}
+%\usepackage[dvipdfm]{graphicx}
+
+\newenvironment{vq}
+{%begin
+\VerbatimEnvironment \begin{screen} \begin{quote} \begin{Verbatim}
+}
+{%end
+\end{Verbatim} \end{quote} \end{screen}
+}
+
+%\newcommand*\defeq{\stackrel{\text{def}}{=}}
+
+\overfullrule=0pt
+
+\begin{document}
+
+\begin{center}
+Oishi Type System に対する型推論アルゴリズム
+\end{center}
+
+\section{型システム}
+
+いまのところ、2016/09JSSST大会バージョンものとする。
+
+\section{型推論アルゴリズム}
+
+概要: 以下の2ステップから構成
+\begin{itemize}
+\item 制約生成:与えられた項にたいして、(型およびクラシファイアに関する)制約を返す。
+\item 制約を解く。
+\end{itemize}
+
+\subsection{制約生成}
+
+これは、もの型システム($T_1$とする)を
+「トップダウンでの制約生成向け型システム($T_2$とする)」に変
+形することであたえる。
+
+$T_2$の設計指針:
+\begin{itemize}
+\item $T_1$と$T_2$は「型付けできる」という関係として等価である。
+\item $T_2$は、term-oriented である。
+(結論側の式のトップレベルの形だけで、どの型付けルールを適用可能か、一意的にわかる。)
+\item $T_2$は、制約生成をする。
+(結論側の式の要素は変数として、
+「それがこういう形でなければいけない」という条件は、制約の形で「生成」する。)
+\end{itemize}
+
+以上をどう見たすか？ ポイントは、subsumption rule の適用タイミング(な
+るべく subsumption rule を適用するのを避けたい)である。
+
+定理1. $T_1$で型付け可能であれば、
+「subsumption rule を、コードレベルのラムダ抽象、shift0,reset0,throw0
+ルールの直前もしくは、変数ルールの直後にのみ適用した導出」が存在する。
+
+
+\subsection{制約解消}
+
+\end{document}
