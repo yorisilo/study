@@ -2,8 +2,27 @@
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \contentsline {figure}{\numberline {3.1}{\ignorespaces 危険な例}}{8}
+\contentsline {figure}{\numberline {3.2}{\ignorespaces 型によるコードレベル変数のスコープ表現}}{9}
+\contentsline {figure}{\numberline {3.3}{\ignorespaces コード生成によるlet挿入}}{10}
+\contentsline {figure}{\numberline {3.4}{\ignorespaces 誤った環境識別子の順序}}{10}
+\contentsline {figure}{\numberline {3.5}{\ignorespaces 正しい環境識別子の順序}}{10}
 \addvspace {10\p@ }
+\contentsline {figure}{\numberline {4.1}{\ignorespaces 対象言語の構文の定義}}{13}
+\contentsline {figure}{\numberline {4.2}{\ignorespaces 評価文脈}}{14}
+\contentsline {figure}{\numberline {4.3}{\ignorespaces $e \leadsto e' $の評価関係}}{14}
+\contentsline {figure}{\numberline {4.4}{\ignorespaces 計算規則}}{15}
+\contentsline {figure}{\numberline {4.5}{\ignorespaces 継続への代入}}{15}
+\contentsline {figure}{\numberline {4.6}{\ignorespaces コードコンビネータの規則}}{15}
 \addvspace {10\p@ }
+\contentsline {figure}{\numberline {5.1}{\ignorespaces 基本型，環境識別子の定義}}{16}
+\contentsline {figure}{\numberline {5.2}{\ignorespaces (レベル0の)継続の型の定義}}{16}
+\contentsline {figure}{\numberline {5.3}{\ignorespaces 型判断の定義}}{17}
+\contentsline {figure}{\numberline {5.4}{\ignorespaces 型文脈の定義}}{17}
+\contentsline {figure}{\numberline {5.5}{\ignorespaces $\Gamma \models \gamma \ge \gamma $の形に対する型導出規則}}{18}
+\contentsline {figure}{\numberline {5.6}{\ignorespaces (レベル0の)$\Gamma \vdash ^{L} e : t ;\nobreakspace {}\sigma $ の形に対する型導出規則}}{19}
+\contentsline {figure}{\numberline {5.7}{\ignorespaces コードレベルのラムダ抽象の型導出規則}}{19}
+\contentsline {figure}{\numberline {5.8}{\ignorespaces コントロールオペレータに対する型導出規則}}{20}
+\contentsline {figure}{\numberline {5.9}{\ignorespaces コード生成に関するSubsumptionの型導出規則}}{20}
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }

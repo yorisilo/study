@@ -28,8 +28,13 @@
 \usepackage{proof}
 \usepackage{stmaryrd}
 \usepackage{listings,jlisting}
+\usepackage{here}
 
 \input{newcommand}
+\renewcommand{\topfraction}{.85}
+\renewcommand{\bottomfraction}{.60}
+\renewcommand{\textfraction}{.15}
+\renewcommand{\floatpagefraction}{.6}
 
 %% タイトル
 %% 【注意】タイトルの最後に\\ を入れるとエラーになります
@@ -85,14 +90,14 @@ forループを飛び越えたコード移動を許す仕組みであり，ル�
 \pagebreak \setcounter{page}{1}
 \pagenumbering{arabic} % 1,2,3
 
-\input{chap1}
-\input{chap2}
-\input{chap3}
-\input{chap4}
-\input{chap5}
-\input{chap6}
-\input{chap7}
-\input{chap8}
+\input{intro}
+\input{code_generation}
+\input{idea}
+\input{target_lang}
+\input{type_system}
+\input{proof}
+\input{background}
+\input{conc}
 
 \chapter*{謝辞}
 \addcontentsline{toc}{chapter}{\numberline{}謝辞}

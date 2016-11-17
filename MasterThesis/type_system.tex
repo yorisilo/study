@@ -3,10 +3,17 @@
 本研究での型システムについて述べる．
 
 基本型$b$，環境識別子(Environment Classifier)$\gamma$を以下の通り定義する．
-\begin{align*}
-  b & ::= \intT \mid \boolT \\
-  \gamma & ::= \gamma_x \mid \gamma \cup \gamma
-\end{align*}
+
+\begin{figure}[H]
+  \centering
+  \begin{align*}
+    b & ::= \intT \mid \boolT \\
+    \gamma & ::= \gamma_x \mid \gamma \cup \gamma
+  \end{align*}
+  \caption{基本型，環境識別子の定義}
+  \label{fig:bec_def}
+\end{figure}
+
 $\gamma$の定義における$\gamma_x$は環境識別子の変数を表す．
 すなわち，環境識別子は，変数であるかそれらを$\cup$で結合した形である．
 以下では，メタ変数と変数を区別せず$\gamma_x$を$\gamma$と表記する．
@@ -19,12 +26,18 @@ $L=\gamma$のとき将来ステージの判断となる．
 
 レベル0の型$t^0$，レベル1の型$t^1$，(レベル0の)型の有限列$\sigma$,
 (レベル0の)継続の型$\kappa$を次の通り定義する．
-\begin{align*}
-  t^0 & ::= b \mid \funT{t^0}{t^0}{\sigma} \mid \codeT{t^1}{\gamma} \\
-  t^1 & ::= b \mid t^1 \to t^1 \\
-  \sigma & ::= \epsilon \mid \sigma,t^0 \\
-  \kappa^0 & ::= \contT{\codeT{t^1}{\gamma}}{\codeT{t^1}{\gamma}}{\sigma}
-\end{align*}
+
+\begin{figure}[H]
+  \centering
+  \begin{align*}
+    t^0 & ::= b \mid \funT{t^0}{t^0}{\sigma} \mid \codeT{t^1}{\gamma} \\
+    t^1 & ::= b \mid t^1 \to t^1 \\
+    \sigma & ::= \epsilon \mid \sigma,t^0 \\
+    \kappa^0 & ::= \contT{\codeT{t^1}{\gamma}}{\codeT{t^1}{\gamma}}{\sigma}
+  \end{align*}
+  \caption{(レベル0の)継続の型の定義}
+  \label{fig:k_def}
+\end{figure}
 
 レベル0の関数型$\funT{t^0}{t^0}{\sigma}$は，
 エフェクトをあらわす列$\sigma$を伴っている．これは，その関数型をもつ項
@@ -46,165 +59,208 @@ $n=1,\cdots,k$に対して並べた列)で表現している．
 そのため，継続の型も通常の関数の型とは区別して二重の横線で表現している．
 
 型判断は，以下の2つの形である．
-\begin{align*}
-  \Gamma \vdash^{L} e : t ;~\sigma \\
-  \Gamma \models \gamma \ord \gamma
-\end{align*}
+
+\begin{figure}[H]
+  \centering
+  \begin{align*}
+    \Gamma \vdash^{L} e : t ;~\sigma \\
+    \Gamma \models \gamma \ord \gamma
+  \end{align*}
+  \caption{型判断の定義}
+  \label{fig:judgement_def}
+\end{figure}
+
 ここで，型文脈$\Gamma$は次のように定義される．
-\begin{align*}
-  \Gamma ::= \emptyset
-  \mid \Gamma, (\gamma \ord \gamma)
-  \mid \Gamma, (x : t)
-  \mid \Gamma, (u : t)^{\gamma}
-\end{align*}
+
+\begin{figure}[H]
+  \centering
+  \begin{align*}
+    \Gamma ::= \emptyset
+    \mid \Gamma, (\gamma \ord \gamma)
+    \mid \Gamma, (x : t)
+    \mid \Gamma, (u : t)^{\gamma}
+  \end{align*}
+  \caption{型文脈の定義}
+  \label{fig:type_context_def}
+\end{figure}
+
 
 型判断の導出規則を与える．まず，$\Gamma \models \gamma \ord \gamma$の
 形に対する規則である．
 
-\[
-  \infer
-  {\Gamma \models \gamma_1 \ord \gamma_1}
-  {}
-  \quad
-  \infer
-  {\Gamma, \gamma_1 \ord \gamma_2 \models \gamma_1 \ord \gamma_2}
-  {}
-\]
+\begin{figure}[H]
+  \centering
+  \[
+    \infer
+    {\Gamma \models \gamma_1 \ord \gamma_1}
+    {}
+    \quad
+    \infer
+    {\Gamma, \gamma_1 \ord \gamma_2 \models \gamma_1 \ord \gamma_2}
+    {}
+  \]
 
-\[
-  \infer
-  {\Gamma \models \gamma_1 \ord \gamma_3}
-  {\Gamma \models \gamma_1 \ord \gamma_2 & \Gamma \models \gamma_2 \ord \gamma_3}
-\]
+  \[
+    \infer
+    {\Gamma \models \gamma_1 \ord \gamma_3}
+    {\Gamma \models \gamma_1 \ord \gamma_2 & \Gamma \models \gamma_2 \ord \gamma_3}
+  \]
 
-\[
-  \infer
-  {\Gamma \models \gamma_1 \cup \gamma_2 \ord \gamma_1}
-  {}
-  \quad
-  \infer
-  {\Gamma \models \gamma_1 \cup \gamma_2 \ord \gamma_2}
-  {}
-\]
+  \[
+    \infer
+    {\Gamma \models \gamma_1 \cup \gamma_2 \ord \gamma_1}
+    {}
+    \quad
+    \infer
+    {\Gamma \models \gamma_1 \cup \gamma_2 \ord \gamma_2}
+    {}
+  \]
 
-\[
-  \infer
-  {\Gamma \models \gamma_3 \ord \gamma_1 \cup \gamma_2}
-  {\Gamma \models \gamma_3 \ord \gamma_1
-    &\Gamma \models \gamma_3 \ord \gamma_2}
-\]
+  \[
+    \infer
+    {\Gamma \models \gamma_3 \ord \gamma_1 \cup \gamma_2}
+    {\Gamma \models \gamma_3 \ord \gamma_1
+      &\Gamma \models \gamma_3 \ord \gamma_2}
+  \]
+  \caption{$\Gamma \models \gamma \ord \gamma$の形に対する型導出規則}
+  \label{fig:gmg_rule}
+\end{figure}
 
 
 
-次に，$\Gamma \vdash^{L} e : t ;~\sigma$ の形に対する導出規則を与える．
+次に，$\Gamma \vdash^{L} e : t ;~\sigma$ の形に対する型導出規則を与える．
 まずは，レベル0における単純な規則である．
 
-\[
-  \infer
-  {\Gamma, x : t \vdash x : t ~;~ \sigma}
-  {}
-  \quad
-  \infer
-  {\Gamma, (u : t)^\gamma \vdash^\gamma u : t ~;~ \sigma}
-  {}
-\]
+\begin{figure}[H]
+  \centering
+  \[
+    \infer
+    {\Gamma, x : t \vdash x : t ~;~ \sigma}
+    {}
+    \quad
+    \infer
+    {\Gamma, (u : t)^\gamma \vdash^\gamma u : t ~;~ \sigma}
+    {}
+  \]
 
-\[
-  \infer
-  {\Gamma \vdash^{L} c : t^c ~;~\sigma}
-  {}
-\]
+  \[
+    \infer
+    {\Gamma \vdash^{L} c : t^c ~;~\sigma}
+    {}
+  \]
 
-\[
-  \infer
-  {\Gamma \vdash^{L} e_1~ e_2 : t_1 ; \sigma}
-  {\Gamma \vdash^{L} e_1 : t_2 \to t_1 ; \sigma
-    & \Gamma \vdash^{L} e_2 : t_2  ; \sigma
-  }
-\]
+  \[
+    \infer
+    {\Gamma \vdash^{L} e_1~ e_2 : t_1 ; \sigma}
+    {\Gamma \vdash^{L} e_1 : t_2 \to t_1 ; \sigma
+      & \Gamma \vdash^{L} e_2 : t_2  ; \sigma
+    }
+  \]
 
-\[
-  \infer
-  {\Gamma \vdash \fun{x}{e} : \funT{t_1}{t_2}{\sigma} ~;~\sigma'}
-  {\Gamma,~x : t_1 \vdash e : t_2 ~;~ \sigma}
-  \quad
-  \infer
-  {\Gamma \vdash^\gamma \fun{x}{e} : \funT{t_1}{t_2}{} ~;~\sigma'}
-  {\Gamma,~(u : t_1)^\gamma \vdash^\gamma e : t_2 ~;~ \sigma}
-\]
+  \[
+    \infer
+    {\Gamma \vdash \fun{x}{e} : \funT{t_1}{t_2}{\sigma} ~;~\sigma'}
+    {\Gamma,~x : t_1 \vdash e : t_2 ~;~ \sigma}
+    \quad
+    \infer
+    {\Gamma \vdash^\gamma \fun{x}{e} : \funT{t_1}{t_2}{} ~;~\sigma'}
+    {\Gamma,~(u : t_1)^\gamma \vdash^\gamma e : t_2 ~;~ \sigma}
+  \]
 
-\[
-  \infer
-  {\Gamma \vdash^{L} \ift{e_1}{e_2}{e_3} : t ~;~ \sigma}
-  {\Gamma \vdash^{L} e_1 : \boolT ;~ \sigma
-    & \Gamma \vdash^{L} e_2 : t ; \sigma
-    & \Gamma \vdash^{L} e_3 : t ; \sigma}
-\]
+  \[
+    \infer
+    {\Gamma \vdash^{L} \ift{e_1}{e_2}{e_3} : t ~;~ \sigma}
+    {\Gamma \vdash^{L} e_1 : \boolT ;~ \sigma
+      & \Gamma \vdash^{L} e_2 : t ; \sigma
+      & \Gamma \vdash^{L} e_3 : t ; \sigma}
+  \]
+  \caption{(レベル0の)$\Gamma \vdash^{L} e : t ;~\sigma$ の形に対する型導出規則}
+  \label{fig:gvs_rule}
+\end{figure}
+
 
 次にコードレベル変数に関するラムダ抽象の規則である．
 
-\[
-  \infer[(\gamma_1~\text{is eigen var})]
-  {\Gamma \vdash \cfun{x}{e} : \codeT{t_1\to t_2}{\gamma} ~;~ \sigma}
-  {\Gamma,~\gamma_1 \ord \gamma,~x:\codeT{t_1}{\gamma_1} \vdash e
-    : \codeT{t_2}{\gamma_1}; \sigma}
-\]
+\begin{figure}[H]
+  \centering
+  \[
+    \infer[(\gamma_1~\text{is eigen var})]
+    {\Gamma \vdash \cfun{x}{e} : \codeT{t_1\to t_2}{\gamma} ~;~ \sigma}
+    {\Gamma,~\gamma_1 \ord \gamma,~x:\codeT{t_1}{\gamma_1} \vdash e
+      : \codeT{t_2}{\gamma_1}; \sigma}
+  \]
 
-\[
-  \infer
-  {\Gamma \vdash \ccfun{u^1}{e} : \codeT{t_1 \to t_2}{\gamma} ; \sigma}
-  {\Gamma, \gamma_1 \ord \gamma, x : (u : t_1)^{\gamma_1} \vdash e : \codeT{t_2}{\gamma_1} ; \sigma}
-\]
+  \[
+    \infer
+    {\Gamma \vdash \ccfun{u^1}{e} : \codeT{t_1 \to t_2}{\gamma} ; \sigma}
+    {\Gamma, \gamma_1 \ord \gamma, x : (u : t_1)^{\gamma_1} \vdash e : \codeT{t_2}{\gamma_1} ; \sigma}
+  \]
+  \caption{コードレベルのラムダ抽象の型導出規則}
+  \label{fig:code_abs_type_rule}
+\end{figure}
+
 
 コントロールオペレータに対する型導出規則である．
 
-\[
-  \infer{\Gamma \vdash \resetz{e} : \codeT{t}{\gamma} ~;~ \sigma}
-  {\Gamma \vdash e : \codeT{t}{\gamma} ~;~ \codeT{t}{\gamma}, \sigma}
-\]
+\begin{figure}[H]
+  \centering
+  \[
+    \infer{\Gamma \vdash \resetz{e} : \codeT{t}{\gamma} ~;~ \sigma}
+    {\Gamma \vdash e : \codeT{t}{\gamma} ~;~ \codeT{t}{\gamma}, \sigma}
+  \]
 
-\[
-  \infer{\Gamma \vdash \shiftz{k}{e} : \codeT{t_1}{\gamma_1} ~;~ \codeT{t_0}{\gamma_0},\sigma}
-  {\Gamma,~k:\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}{\sigma}
-    \vdash e : \codeT{t_0}{\gamma_0} ; \sigma
-    & \Gamma \models \gamma_1 \ord \gamma_0
-  }
-\]
+  \[
+    \infer{\Gamma \vdash \shiftz{k}{e} : \codeT{t_1}{\gamma_1} ~;~ \codeT{t_0}{\gamma_0},\sigma}
+    {\Gamma,~k:\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}{\sigma}
+      \vdash e : \codeT{t_0}{\gamma_0} ; \sigma
+      & \Gamma \models \gamma_1 \ord \gamma_0
+    }
+  \]
 
-\[
-  \infer
-  {\Gamma,~k:\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}{\sigma}
-    \vdash \throw{k}{v} : \codeT{t_0}{\gamma_2} ; \sigma}
-  {\Gamma
-    \vdash v : \codeT{t_1}{\gamma_1 \cup \gamma_2} ; \sigma
-    & \Gamma \models \gamma_2 \ord \gamma_0
-  }
-\]
+  \[
+    \infer
+    {\Gamma,~k:\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}{\sigma}
+      \vdash \throw{k}{v} : \codeT{t_0}{\gamma_2} ; \sigma}
+    {\Gamma
+      \vdash v : \codeT{t_1}{\gamma_1 \cup \gamma_2} ; \sigma
+      & \Gamma \models \gamma_2 \ord \gamma_0
+    }
+  \]
+  \caption{コントロールオペレータに対する型導出規則}
+  \label{fig:controlop_type_rule}
+\end{figure}
+
 
 コード生成に関する補助的な規則として，Subsumptionに相当する規則等がある．
-\[
-  \infer
-  {\Gamma \vdash e : \codeT{t}{\gamma_2} ; \sigma}
-  {\Gamma \vdash e : \codeT{t}{\gamma_1} ; \sigma
-    & \Gamma \models \gamma_2 \ord \gamma_1
-  }
-\]
 
-\[
-  \infer
-  {\Gamma \vdash^{\gamma_2} e : t ~;~ \sigma}
-  {\Gamma \vdash^{\gamma_1} e : t ~;~ \sigma
-    & \Gamma \models \gamma_2 \ord \gamma_1
-  }
-\]
+\begin{figure}[H]
+  \centering
+  \[
+    \infer
+    {\Gamma \vdash e : \codeT{t}{\gamma_2} ; \sigma}
+    {\Gamma \vdash e : \codeT{t}{\gamma_1} ; \sigma
+      & \Gamma \models \gamma_2 \ord \gamma_1
+    }
+  \]
+
+  \[
+    \infer
+    {\Gamma \vdash^{\gamma_2} e : t ~;~ \sigma}
+    {\Gamma \vdash^{\gamma_1} e : t ~;~ \sigma
+      & \Gamma \models \gamma_2 \ord \gamma_1
+    }
+  \]
 
 
-\[
-  \infer
-  {\Gamma \vdash \code{e} : \codeT{t^1}{\gamma} ; \sigma}
-  {\Gamma \vdash^{\gamma} e : t^1 ; \sigma}
-\]
+  \[
+    \infer
+    {\Gamma \vdash \code{e} : \codeT{t^1}{\gamma} ; \sigma}
+    {\Gamma \vdash^{\gamma} e : t^1 ; \sigma}
+  \]
 
+  \caption{コード生成に関するSubsumptionの型導出規則}
+  \label{fig:code_gen_subs_type_rule}
+\end{figure}
 
 \section{型付け例}
 
@@ -249,6 +305,7 @@ $e_1$ は型付け可能である．
 この定理は reset0-shift0の計算規則が多相性を持たない場合には容易に証明
 できるが，多相性については精密な扱いが必要であり，
 現段階では，型保存定理の証明は進行中である．
+
 
 % \begin{lemm}[不要な仮定の除去]
 %   $\Gamma_1,\gamma_2 \ord \gamma_1 \vdash e : t_1 ~;~\sigma$

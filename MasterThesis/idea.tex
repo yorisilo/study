@@ -44,9 +44,13 @@ $r$に$y$を代入することはできず，$r:=y$のところで型エラー�
 コードレベルの変数スコープと，型によるスコープの表現をあらわしたのが，以下の図である．
 forやletなどコードレベルの束縛子があるたびに，新しいスコープが開かれ，
 使える変数が増えていくことが分かるだろう．
-\begin{center}
+
+\begin{figure}[ht]
+  \centering
   \includegraphics[clip,height=4cm]{./img/ec_for.png}
-\end{center}
+  \caption{型によるコードレベル変数のスコープ表現}
+  \label{fig:ec_for}
+\end{figure}
 
 コードレベルの変数の型に，(精密化した)環境識別子を付与することで，その
 変数が使えるスコープがわかり，破壊的代入などの副作用があるプログラムにおいても
@@ -67,16 +71,28 @@ forやletなどコードレベルの束縛子があるたびに，新しいス�
 
 このため，前述の2重のforループ生成において，その中間にlet挿入をするプログラムに
 ついて考察する．その概形は下記の1つ目の図である．
-\begin{center}
+\begin{figure}[ht]
+  \centering
   \includegraphics[clip,height=8cm]{./img/ecex_for_non_gamma.png}
+  \caption{コード生成によるlet挿入}
+  \label{fig:ecex_for_non_gamma}
+\end{figure}
+
+\begin{center}
+
 \end{center}
 上の方の図で，使えるコードレベル変数が異なる場所ごとに，
 $\gamma_0,\gamma_1,\gamma_2,\gamma_3$と名付けた．
 須藤らの体系通りであれば，これらの環境識別子の間の順序は，スコープの包
 含関係通りであるので，
-\begin{center}
+
+\begin{figure}[ht]
+  \centering
   \includegraphics[clip,width=4cm]{./img/gamma_normal.png}
-\end{center}
+  \caption{誤った環境識別子の順序}
+  \label{fig:gamma_normal}
+\end{figure}
+
 という順序がつくはずである．
 しかし，計算を進めて得られたコードを見ると(上記の下の図はコードの中身を示している)，
 $\gamma_1$(緑色)と$\gamma_2$(黄色)の位置関係が入れ代わっている．
@@ -85,9 +101,14 @@ $\gamma_1$(緑色)と$\gamma_2$(黄色)の位置関係が入れ代わってい�
 一方で，赤字で示された$\gamma_3$においては，$\gamma_1$の変数も
 $\gamma_2$の変数も使って構わない．
 これらを考慮すると，環境識別子の間の順序は以下の図となる．
-\begin{center}
+
+\begin{figure}[ht]
+  \centering
   \includegraphics[clip,width=7cm]{./img/gamma.png}
-\end{center}
+  \caption{正しい環境識別子の順序}
+  \label{fig:gamma}
+\end{figure}
+
 ここでのポイントは，$\gamma_0$ から，2つの異なる(包含関係のな
 い)$\gamma_1$と$\gamma_2$に別れたあと，再び$\gamma_3$で合流することで
 ある．須藤らの体系では，環境識別子のなす半順序集合全体は木の形であったが，
