@@ -1,4 +1,4 @@
-%
+% 
 % Type inference algorithm draft (for Oishi System)
 %
 \documentclass{jsarticle}
@@ -6,62 +6,165 @@
 \addtolength{\textwidth}{3cm}
 \addtolength{\oddsidemargin}{-1.5cm}
 \usepackage{amsmath,amssymb}
-% \usepackage[dvipdfm]{graphicx}
+%\usepackage[dvipdfm]{graphicx}
 
 \newenvironment{vq}
 {%begin
-  \VerbatimEnvironment \begin{screen} \begin{quote} \begin{Verbatim}
-      }
-      {%end
-      \end{Verbatim} \end{quote} \end{screen}
+\VerbatimEnvironment \begin{screen} \begin{quote} \begin{Verbatim}
+}
+{%end
+\end{Verbatim} \end{quote} \end{screen}
 }
 
-% \newcommand*\defeq{\stackrel{\text{def}}{=}}
+\usepackage{proof}
+
+\usepackage{theorem}
+\newtheorem{theorem}{theorem}[section]
+
+\newcommand\greaterthan{\ge}
+\newcommand\codeT[2]{\langle {#1} \rangle^{#2}}
+%\newcommand*\defeq{\stackrel{\text{def}}{=}}
+\newcommand\funT[3]{{#1}\stackrel{#3}{\to}{#2}}
+\newcommand\Int{\mbox{\texttt{Int}}}
+\newcommand\Bool{\mbox{\texttt{Bool}}}
 
 \overfullrule=0pt
 
 \begin{document}
 
 \begin{center}
-  Oishi Type System ã«å¯¾ã™ã‚‹å‹æ¨è«–ã‚¢ãƒ«ã‚´ãƒªã‚ºãƒ 
+Oishi Type System ¤ËÂĞ¤¹¤ë·¿¿äÏÀ¥¢¥ë¥´¥ê¥º¥à \\
+2016/11/19
 \end{center}
 
-\section{å‹ã‚·ã‚¹ãƒ†ãƒ }
+\section{·¿¥·¥¹¥Æ¥à}
 
-ã„ã¾ã®ã¨ã“ã‚ã€2016/09JSSSTå¤§ä¼šãƒãƒ¼ã‚¸ãƒ§ãƒ³ã‚‚ã®ã¨ã™ã‚‹ã€‚
+¤¤¤Ş¤Î¤È¤³¤í¡¢2016/09JSSSTÂç²ñ¥Ğ¡¼¥¸¥ç¥ó¤â¤Î¤È¤¹¤ë¡£
 
-\section{å‹æ¨è«–ã‚¢ãƒ«ã‚´ãƒªã‚ºãƒ }
+\section{·¿¿äÏÀ¥¢¥ë¥´¥ê¥º¥à}
 
-æ¦‚è¦: ä»¥ä¸‹ã®2ã‚¹ãƒ†ãƒƒãƒ—ã‹ã‚‰æ§‹æˆ
+³µÍ×: °Ê²¼¤Î2¥¹¥Æ¥Ã¥×¤«¤é¹½À®
 \begin{itemize}
-\item åˆ¶ç´„ç”Ÿæˆ:ä¸ãˆã‚‰ã‚ŒãŸé …ã«ãŸã„ã—ã¦ã€(å‹ãŠã‚ˆã³ã‚¯ãƒ©ã‚·ãƒ•ã‚¡ã‚¤ã‚¢ã«é–¢ã™ã‚‹)åˆ¶ç´„ã‚’è¿”ã™ã€‚
-\item åˆ¶ç´„ã‚’è§£ãã€‚
+\item À©ÌóÀ¸À®:Í¿¤¨¤é¤ì¤¿¹à¤Ë¤¿¤¤¤·¤Æ¡¢(·¿¤ª¤è¤Ó¥¯¥é¥·¥Õ¥¡¥¤¥¢¤Ë´Ø¤¹¤ë)À©Ìó¤òÊÖ¤¹¡£
+\item À©Ìó¤ò²ò¤¯¡£
 \end{itemize}
 
-\subsection{åˆ¶ç´„ç”Ÿæˆ}
+\subsection{À©ÌóÀ¸À®}
 
-ã“ã‚Œã¯ã€ã‚‚ã¨ã®å‹ã‚·ã‚¹ãƒ†ãƒ ($T_1$ã¨ã™ã‚‹)ã‚’
-ã€Œãƒˆãƒƒãƒ—ãƒ€ã‚¦ãƒ³ã§ã®åˆ¶ç´„ç”Ÿæˆå‘ã‘å‹ã‚·ã‚¹ãƒ†ãƒ ($T_2$ã¨ã™ã‚‹)ã€ã«å¤‰
-å½¢ã™ã‚‹ã“ã¨ã§ã‚ãŸãˆã‚‹ã€‚
+¤³¤ì¤Ï¡¢¤â¤Î·¿¥·¥¹¥Æ¥à($T_1$¤È¤¹¤ë)¤ò
+¡Ö¥È¥Ã¥×¥À¥¦¥ó¤Ç¤ÎÀ©ÌóÀ¸À®¸ş¤±·¿¥·¥¹¥Æ¥à($T_2$¤È¤¹¤ë)¡×¤ËÊÑ
+·Á¤¹¤ë¤³¤È¤Ç¤¢¤¿¤¨¤ë¡£
 
-$T_2$ã®è¨­è¨ˆæŒ‡é‡:
+$T_2$¤ÎÀß·×»Ø¿Ë:
 \begin{itemize}
-\item $T_1$ã¨$T_2$ã¯ã€Œå‹ä»˜ã‘ã§ãã‚‹ã€ã¨ã„ã†é–¢ä¿‚ã¨ã—ã¦ç­‰ä¾¡ã§ã‚ã‚‹ã€‚
-\item $T_2$ã¯ã€term-oriented ã§ã‚ã‚‹ã€‚
-  (çµè«–å´ã®å¼ã®ãƒˆãƒƒãƒ—ãƒ¬ãƒ™ãƒ«ã®å½¢ã ã‘ã§ã€ã©ã®å‹ä»˜ã‘ãƒ«ãƒ¼ãƒ«ã‚’é©ç”¨å¯èƒ½ã‹ã€ä¸€æ„çš„ã«ã‚ã‹ã‚‹ã€‚)
-\item $T_2$ã¯ã€åˆ¶ç´„ç”Ÿæˆã‚’ã™ã‚‹ã€‚
-  (çµè«–å´ã®å¼ã®è¦ç´ ã¯å¤‰æ•°ã¨ã—ã¦ã€
-  ã€Œãã‚ŒãŒã“ã†ã„ã†å½¢ã§ãªã‘ã‚Œã°ã„ã‘ãªã„ã€ã¨ã„ã†æ¡ä»¶ã¯ã€åˆ¶ç´„ã®å½¢ã§ã€Œç”Ÿæˆã€ã™ã‚‹ã€‚)
+\item $T_1$¤È$T_2$¤Ï¡Ö·¿ÉÕ¤±¤Ç¤­¤ë¡×¤È¤¤¤¦´Ø·¸¤È¤·¤ÆÅù²Á¤Ç¤¢¤ë¡£
+\item $T_2$¤Ï¡¢term-oriented ¤Ç¤¢¤ë¡£
+(·ëÏÀÂ¦¤Î¼°¤Î¥È¥Ã¥×¥ì¥Ù¥ë¤Î·Á¤À¤±¤Ç¡¢¤É¤Î·¿ÉÕ¤±¥ë¡¼¥ë¤òÅ¬ÍÑ²ÄÇ½¤«¡¢°ì°ÕÅª¤Ë¤ï¤«¤ë¡£)
+\item $T_2$¤Ï¡¢À©ÌóÀ¸À®¤ò¤¹¤ë¡£
+(·ëÏÀÂ¦¤Î¼°¤ÎÍ×ÁÇ¤ÏÊÑ¿ô¤È¤·¤Æ¡¢
+¡Ö¤½¤ì¤¬¤³¤¦¤¤¤¦·Á¤Ç¤Ê¤±¤ì¤Ğ¤¤¤±¤Ê¤¤¡×¤È¤¤¤¦¾ò·ï¤Ï¡¢À©Ìó¤Î·Á¤Ç¡ÖÀ¸À®¡×¤¹¤ë¡£)
 \end{itemize}
 
-ä»¥ä¸Šã‚’ã©ã†è¦‹ãŸã™ã‹ï¼Ÿ ãƒã‚¤ãƒ³ãƒˆã¯ã€subsumption rule ã®é©ç”¨ã‚¿ã‚¤ãƒŸãƒ³ã‚°(ãª
-ã‚‹ã¹ã subsumption rule ã‚’é©ç”¨ã™ã‚‹ã®ã‚’é¿ã‘ãŸã„)ã§ã‚ã‚‹ã€‚
+°Ê¾å¤ò¤É¤¦Ëş¤¿¤¹¤«¡© ¥İ¥¤¥ó¥È¤Ï¡¢subsumption rule ¤ÎÅ¬ÍÑ¥¿¥¤¥ß¥ó¥°(¤Ê
+¤ë¤Ù¤¯ subsumption rule ¤òÅ¬ÍÑ¤¹¤ë¤Î¤òÈò¤±¤¿¤¤)¤Ç¤¢¤ë¡£
 
-å®šç†1. $T_1$ã§å‹ä»˜ã‘å¯èƒ½ã§ã‚ã‚Œã°ã€
-ã€Œsubsumption rule ã‚’ã€ã‚³ãƒ¼ãƒ‰ãƒ¬ãƒ™ãƒ«ã®ãƒ©ãƒ ãƒ€æŠ½è±¡ã€shift0,reset0,throw0
-ãƒ«ãƒ¼ãƒ«ã®ç›´å‰ã‚‚ã—ãã¯ã€å¤‰æ•°ãƒ«ãƒ¼ãƒ«ã®ç›´å¾Œã«ã®ã¿é©ç”¨ã—ãŸå°å‡ºã€ãŒå­˜åœ¨ã™ã‚‹ã€‚
+\subsection{·¿¥·¥¹¥Æ¥à$T_2$¤ÎÆ³Æş}
+
+subsumption rule ¤¬½Ğ¸½¤¹¤ë¾ì½ê¤ò¸ÂÄê¤¹¤ë¤³¤È¤¬¤Ç¤­¤ë¡¥
+ ÆÃ¤Ë¡¤¥ë¡¼¥ë¤È¡¤¤½¤ÎÄ¾¸å¤Ë subsumption ¤¬¤Ä¤«¤ï¤ì¤ë¾ì¹ç¤ò¹Í¤¨¤Æ¤ß¤è¤¦¡¥
+°Ê²¼¤Ç¡¤¡Övar1¡×Åù¤È¤¤¤Ã¤¿É½µ­¤Ï¡¤
+¡Ö¤â¤È¤â¤È¤¢¤ëver1¥ë¡¼¥ë¤ò subsumptionµ¬Â§¤ÈÁÈ¤ß¹ç¤ï¤»¤¿·Á¤Ë²şÄû¤·¤¿¤â
+  ¤Î¡×¤Ç¤¢¤ë¡¥
+¤Ş¤¿¡¤²£ËÀ¤Î±¦¤Ë½ñ¤¤¤Æ¤¢¤ëConstr;... ¤Ï(¥ë¡¼¥ë¤ò²¼¤«¤é¾å¤Ë¤à¤±¤Æ
+»È¤¦¤È¤­)¡¤Constr °Ê²¼¤ÎÀ©Ìó¤¬À¸À®¤µ¤ì¤ë¡¤¤È¤¤¤¦°ÕÌ£¤Ç¤¢¤ë¡¥
+
+(var1)
+\[
+\infer[Constr;~\Gamma \models t \greaterthan t']
+      {\Gamma \vdash x:t;~\sigma}
+      {(x:t') \in \Gamma
+      }
+\]
+
+(var2)
+
+\[
+\infer[Constr;~\Gamma \models \gamma \greaterthan \gamma']
+       {\Gamma \vdash^{\gamma} u:t;~\sigma}
+       {(u:t)^{\gamma'} \in \Gamma
+       }
+\]
+
+(const)
+
+\[
+\infer[Constr;~\Gamma \models t \greaterthan t^c]
+       {\Gamma \vdash^{L} c:t;~\sigma}
+       {}
+\]
+
+(app)
+
+\[
+\infer[Constr;~\Gamma \models t \greaterthan t_1]
+       {\Gamma \vdash^L e_1 \, e_2 : t;~\sigma}
+       {\Gamma \vdash^L e_1 : t_2 \to t_1;~\sigma
+       &\Gamma \vdash^L e_2 : t_2;~\sigma
+       }
+\]
+
+(lambda1)
+
+\[
+\infer[Constr;~t=\funT{t_1}{t_2}{\sigma}]
+       {\Gamma \vdash \lambda x.e : t;~\sigma}
+       {\Gamma,~x:t_1 \vdash e : t_2;~\sigma'}
+\]
+
+(lambda2)
+
+\[
+\infer[Constr;~t=\funT{t_1}{t_2}{}]
+       {\Gamma \vdash^\gamma \lambda u.e : t;~\sigma}
+       {\Gamma,~(u:t_1)^\gamma \vdash^\gamma e : t_2;~\sigma'}
+\]
+
+(if)
+
+\[
+\infer[Constr;~(none)]
+       {\Gamma \vdash^L
+         \textbf{if}~e_1 \textbf{then}~e_2 \textbf{else}~e_3 ~:~t; ~ \sigma}
+       {\Gamma \vdash^L e_1 : \Bool;~\sigma
+       &\Gamma \vdash^L e_2 : t;~\sigma
+       &\Gamma \vdash^L e_3 : t;~\sigma
+       }
+\]
+
+(code-lambda)
+
+\[
+\infer[Constr;~t=\codeT{t_1 \to t_2}{\gamma}]
+       {\Gamma \vdash^L \underline{\lambda}x.e ~:~t;~\sigma}
+       {\Gamma,\gamma' \greaterthan \gamma,x:\codeT{t_1}{\gamma'}
+         \vdash^L e : \codeT{t_2}{\gamma_1};~\sigma
+       }
+\]
+
+(reset0)
+
+\[
+\infer[Constr;~t=\codeT{t'}{\gamma}]
+       {\Gamma \vdash \textbf{reset0}~e ~:~ t; ~\sigma}
+       {\Gamma \vdash e:\codeT{t'}{\gamma};~\codeT{t}{\gamma},\sigma
+       }
+\]
+
+(shift0)
 
 
-\subsection{åˆ¶ç´„è§£æ¶ˆ}
+(throw0)
+
+\subsection{À©Ìó²ò¾Ã}
 
 \end{document}
