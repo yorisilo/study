@@ -1,12 +1,21 @@
 % 
 % Type inference algorithm draft (for Oishi System)
 %
-\documentclass{jsarticle}
+\documentclass[dvipdfmx]{jsarticle}
+
+\usepackage[dvipdfmx]{graphicx,color}
 \addtolength{\topmargin}{-2cm}
 \addtolength{\textwidth}{3cm}
 \addtolength{\oddsidemargin}{-1.5cm}
+
+\usepackage{theorem}
 \usepackage{amsmath,amssymb}
-%\usepackage[dvipdfm]{graphicx}
+\usepackage{ascmac}
+\usepackage{mathtools}
+\usepackage{proof}
+\usepackage{stmaryrd}
+\usepackage{listings,jlisting}
+\usepackage{here}
 
 \newenvironment{vq}
 {%begin
@@ -15,16 +24,14 @@
 {%end
 \end{Verbatim} \end{quote} \end{screen}
 }
-
-\usepackage{proof}
-
-\usepackage{theorem}
 \newtheorem{theorem}{theorem}[section]
 
-\newcommand\greaterthan{\ge}
-\newcommand\codeT[2]{\langle {#1} \rangle^{#2}}
+\input{newcommand}
+
+\newcommand\smallerscope[2]{#1 \ord #2}
+\newcommand\greaterscope[2]{#2 \ord #1}
+\newcommand\longer[2]{{#1} \ord {#2}}
 %\newcommand*\defeq{\stackrel{\text{def}}{=}}
-\newcommand\funT[3]{{#1}\stackrel{#3}{\to}{#2}}
 \newcommand\Int{\mbox{\texttt{Int}}}
 \newcommand\Bool{\mbox{\texttt{Bool}}}
 
@@ -78,9 +85,27 @@ subsumption rule が出現する場所を限定することができる．
 また，横棒の右に書いてあるConstr;... は(ルールを下から上にむけて
 使うとき)，Constr 以下の制約が生成される，という意味である．
 
+また、型$t_1, t_2$に対する$\longer{}{}$の記号は以下の意味であるが、
+とりあえず、(以下の意味にしたがって分解はせずに)
+$\longer{t_1}{t_2}$ の形のまま、制約として生成する。
+\begin{itemize}
+\item $\longer{\codeT{t_1}{\gamma_1}}{\codeT{t_2}{\gamma_2}}$
+は、「$t_1=t_2$ かつ $\longer{\gamma_1}{\gamma_2}$
+\item $\codeT{t}{\gamma}$の形でない$t_1,t_2$に対しては、
+$t_1 = t_2$。
+\end{itemize}
+(型推論のプロセスの最中では、$t_1, t_2$ はメタ型変瑞。洽筅キ、譴此その場合、どちらの形かは決定できないので、$\longer{t_1}{t_2}$を
+上記の意味にしたがって、「ほどく」ことはできない。なので、
+$\longer{t_1}{t_2}$という形のまま制約として生成する。)
+
+(亀山メモ:
+ただ、もしかすると、
+「レベル0の型変数」と「レベル1の型変数」を最初からわけておく方法もある
+かもしれない。そうすると、上記はとける？)
+
 (var1)
 \[
-\infer[Constr;~\Gamma \models t \greaterthan t']
+\infer[Constr;~\Gamma \models \longer{t}{t'}]
       {\Gamma \vdash x:t;~\sigma}
       {(x:t') \in \Gamma
       }
@@ -89,7 +114,7 @@ subsumption rule が出現する場所を限定することができる．
 (var2)
 
 \[
-\infer[Constr;~\Gamma \models \gamma \greaterthan \gamma']
+\infer[Constr;~\Gamma \models \longer{\gamma}{\gamma'}]
        {\Gamma \vdash^{\gamma} u:t;~\sigma}
        {(u:t)^{\gamma'} \in \Gamma
        }
@@ -98,7 +123,7 @@ subsumption rule が出現する場所を限定することができる．
 (const)
 
 \[
-\infer[Constr;~\Gamma \models t \greaterthan t^c]
+\infer[Constr;~\Gamma \models \longer{t}{t^c}]
        {\Gamma \vdash^{L} c:t;~\sigma}
        {}
 \]
@@ -106,22 +131,22 @@ subsumption rule が出現する場所を限定することができる．
 (app)
 
 \[
-\infer[Constr;~\Gamma \models t \greaterthan t_1]
+\infer[Constr;~\Gamma \models \longer{t}{t_1}]
        {\Gamma \vdash^L e_1 \, e_2 : t;~\sigma}
        {\Gamma \vdash^L e_1 : t_2 \to t_1;~\sigma
        &\Gamma \vdash^L e_2 : t_2;~\sigma
        }
 \]
 
-(lambda1)
+(lambda0)
 
 \[
-\infer[Constr;~t=\funT{t_1}{t_2}{\sigma}]
+\infer[Constr;~t=\funT{t_1}{t_2}{\sigma'}]
        {\Gamma \vdash \lambda x.e : t;~\sigma}
        {\Gamma,~x:t_1 \vdash e : t_2;~\sigma'}
 \]
 
-(lambda2)
+(lambda1)
 
 \[
 \infer[Constr;~t=\funT{t_1}{t_2}{}]
@@ -144,27 +169,54 @@ subsumption rule が出現する場所を限定することができる．
 (code-lambda)
 
 \[
-\infer[Constr;~t=\codeT{t_1 \to t_2}{\gamma}]
+\infer[Constr;~\longer{t}{\codeT{t_1 \to t_2}{\gamma}}]
        {\Gamma \vdash^L \underline{\lambda}x.e ~:~t;~\sigma}
-       {\Gamma,\gamma' \greaterthan \gamma,x:\codeT{t_1}{\gamma'}
-         \vdash^L e : \codeT{t_2}{\gamma_1};~\sigma
+       {\Gamma,\longer{\gamma'}{\gamma},x:\codeT{t_1}{\gamma'}
+         \vdash^L e : \codeT{t_2}{\gamma'};~\sigma
        }
 \]
 
 (reset0)
 
 \[
-\infer[Constr;~t=\codeT{t'}{\gamma}]
+\infer[Constr;~\longer{t}{\codeT{t'}{\gamma}}]
        {\Gamma \vdash \textbf{reset0}~e ~:~ t; ~\sigma}
-       {\Gamma \vdash e:\codeT{t'}{\gamma};~\codeT{t}{\gamma},\sigma
+       {\Gamma \vdash e:\codeT{t'}{\gamma};~\codeT{t'}{\gamma},\sigma
        }
 \]
 
 (shift0)
 
+\[
+\infer[Constr;~\longer{t}{\codeT{t_1}{\gamma_1}},~ t_2 =\codeT{t_0}{\gamma_0}]
+  {\Gamma \vdash \shiftz{k}{e} : t~;~ t_2,\sigma}
+  {\Gamma,~k:\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}{\sigma}
+      \vdash e : \codeT{t_0}{\gamma_0} ; \sigma
+      & \Gamma \models \longer{\gamma_1}{\gamma_0}
+    }
+\]
+
 
 (throw0)
 
-\subsection{制約解消}
+\[
+\infer[Constr;~\longer{t}{\codeT{t_0}{\gamma_2}}]
+  {\Gamma,~k:\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}{\sigma}
+      \vdash \throw{k}{v} : t ; \sigma}
+  {\Gamma
+      \vdash v : \codeT{t_1}{\gamma_1 \cup \gamma_2} ; \sigma
+      & \Gamma \models \gamma_2 \ord \gamma_0
+  }
+\]
+
+(code)
+
+\[
+\infer[Constr;~\longer{t}{\codeT{t_1}{\gamma}}]
+       {\Gamma \vdash \code{e} : t;~\sigma}
+       {\Gamma \vdash^\gamma e : t_1;~\sigma}
+\]
+
+
 
 \end{document}
