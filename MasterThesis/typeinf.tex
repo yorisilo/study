@@ -1,4 +1,4 @@
-% 
+%
 % Type inference algorithm draft (for Oishi System)
 %
 \documentclass[dvipdfmx]{jsarticle}
@@ -19,19 +19,23 @@
 
 \newenvironment{vq}
 {%begin
-\VerbatimEnvironment \begin{screen} \begin{quote} \begin{Verbatim}
-}
-{%end
-\end{Verbatim} \end{quote} \end{screen}
+  \VerbatimEnvironment \begin{screen} \begin{quote} \begin{Verbatim}
+      }
+      {%end
+      \end{Verbatim} \end{quote} \end{screen}
 }
 \newtheorem{theorem}{theorem}[section]
 
+\usepackage{color}
+
 \input{newcommand}
+\newcommand\greaterthan{\ge}
+
 
 \newcommand\smallerscope[2]{#1 \ord #2}
 \newcommand\greaterscope[2]{#2 \ord #1}
 \newcommand\longer[2]{{#1} \ord {#2}}
-%\newcommand*\defeq{\stackrel{\text{def}}{=}}
+% \newcommand*\defeq{\stackrel{\text{def}}{=}}
 \newcommand\Int{\mbox{\texttt{Int}}}
 \newcommand\Bool{\mbox{\texttt{Bool}}}
 
@@ -40,183 +44,226 @@
 \begin{document}
 
 \begin{center}
-Oishi Type System ¤ËÂĞ¤¹¤ë·¿¿äÏÀ¥¢¥ë¥´¥ê¥º¥à \\
-2016/11/19
+  Oishi Type System ã«å¯¾ã™ã‚‹å‹æ¨è«–ã‚¢ãƒ«ã‚´ãƒªã‚ºãƒ  \\
+  2016/11/19
 \end{center}
 
-\section{·¿¥·¥¹¥Æ¥à}
+\section{å‹ã‚·ã‚¹ãƒ†ãƒ }
 
-¤¤¤Ş¤Î¤È¤³¤í¡¢2016/09JSSSTÂç²ñ¥Ğ¡¼¥¸¥ç¥ó¤â¤Î¤È¤¹¤ë¡£
+ã„ã¾ã®ã¨ã“ã‚ã€2016/09JSSSTå¤§ä¼šãƒãƒ¼ã‚¸ãƒ§ãƒ³ã‚‚ã®ã¨ã™ã‚‹ã€‚
 
-\section{·¿¿äÏÀ¥¢¥ë¥´¥ê¥º¥à}
+\section{å‹æ¨è«–ã‚¢ãƒ«ã‚´ãƒªã‚ºãƒ }
 
-³µÍ×: °Ê²¼¤Î2¥¹¥Æ¥Ã¥×¤«¤é¹½À®
+æ¦‚è¦: ä»¥ä¸‹ã®2ã‚¹ãƒ†ãƒƒãƒ—ã‹ã‚‰æ§‹æˆ
 \begin{itemize}
-\item À©ÌóÀ¸À®:Í¿¤¨¤é¤ì¤¿¹à¤Ë¤¿¤¤¤·¤Æ¡¢(·¿¤ª¤è¤Ó¥¯¥é¥·¥Õ¥¡¥¤¥¢¤Ë´Ø¤¹¤ë)À©Ìó¤òÊÖ¤¹¡£
-\item À©Ìó¤ò²ò¤¯¡£
+\item åˆ¶ç´„ç”Ÿæˆ:ä¸ãˆã‚‰ã‚ŒãŸé …ã«ãŸã„ã—ã¦ã€(å‹ãŠã‚ˆã³ã‚¯ãƒ©ã‚·ãƒ•ã‚¡ã‚¤ã‚¢ã«é–¢ã™ã‚‹)åˆ¶ç´„ã‚’è¿”ã™ã€‚
+\item åˆ¶ç´„ã‚’è§£ãã€‚
 \end{itemize}
 
-\subsection{À©ÌóÀ¸À®}
+\subsection{åˆ¶ç´„ç”Ÿæˆ}
 
-¤³¤ì¤Ï¡¢¤â¤Î·¿¥·¥¹¥Æ¥à($T_1$¤È¤¹¤ë)¤ò
-¡Ö¥È¥Ã¥×¥À¥¦¥ó¤Ç¤ÎÀ©ÌóÀ¸À®¸ş¤±·¿¥·¥¹¥Æ¥à($T_2$¤È¤¹¤ë)¡×¤ËÊÑ
-·Á¤¹¤ë¤³¤È¤Ç¤¢¤¿¤¨¤ë¡£
+ã“ã‚Œã¯ã€ã‚‚ã®å‹ã‚·ã‚¹ãƒ†ãƒ ($T_1$ã¨ã™ã‚‹)ã‚’
+ã€Œãƒˆãƒƒãƒ—ãƒ€ã‚¦ãƒ³ã§ã®åˆ¶ç´„ç”Ÿæˆå‘ã‘å‹ã‚·ã‚¹ãƒ†ãƒ ($T_2$ã¨ã™ã‚‹)ã€ã«å¤‰
+å½¢ã™ã‚‹ã“ã¨ã§ã‚ãŸãˆã‚‹ã€‚
 
-$T_2$¤ÎÀß·×»Ø¿Ë:
+$T_2$ã®è¨­è¨ˆæŒ‡é‡:
 \begin{itemize}
-\item $T_1$¤È$T_2$¤Ï¡Ö·¿ÉÕ¤±¤Ç¤­¤ë¡×¤È¤¤¤¦´Ø·¸¤È¤·¤ÆÅù²Á¤Ç¤¢¤ë¡£
-\item $T_2$¤Ï¡¢term-oriented ¤Ç¤¢¤ë¡£
-(·ëÏÀÂ¦¤Î¼°¤Î¥È¥Ã¥×¥ì¥Ù¥ë¤Î·Á¤À¤±¤Ç¡¢¤É¤Î·¿ÉÕ¤±¥ë¡¼¥ë¤òÅ¬ÍÑ²ÄÇ½¤«¡¢°ì°ÕÅª¤Ë¤ï¤«¤ë¡£)
-\item $T_2$¤Ï¡¢À©ÌóÀ¸À®¤ò¤¹¤ë¡£
-(·ëÏÀÂ¦¤Î¼°¤ÎÍ×ÁÇ¤ÏÊÑ¿ô¤È¤·¤Æ¡¢
-¡Ö¤½¤ì¤¬¤³¤¦¤¤¤¦·Á¤Ç¤Ê¤±¤ì¤Ğ¤¤¤±¤Ê¤¤¡×¤È¤¤¤¦¾ò·ï¤Ï¡¢À©Ìó¤Î·Á¤Ç¡ÖÀ¸À®¡×¤¹¤ë¡£)
+\item $T_1$ã¨$T_2$ã¯ã€Œå‹ä»˜ã‘ã§ãã‚‹ã€ã¨ã„ã†é–¢ä¿‚ã¨ã—ã¦ç­‰ä¾¡ã§ã‚ã‚‹ã€‚
+\item $T_2$ã¯ã€term-oriented ã§ã‚ã‚‹ã€‚
+  (çµè«–å´ã®å¼ã®ãƒˆãƒƒãƒ—ãƒ¬ãƒ™ãƒ«ã®å½¢ã ã‘ã§ã€ã©ã®å‹ä»˜ã‘ãƒ«ãƒ¼ãƒ«ã‚’é©ç”¨å¯èƒ½ã‹ã€ä¸€æ„çš„ã«ã‚ã‹ã‚‹ã€‚)
+\item $T_2$ã¯ã€åˆ¶ç´„ç”Ÿæˆã‚’ã™ã‚‹ã€‚
+  (çµè«–å´ã®å¼ã®è¦ç´ ã¯å¤‰æ•°ã¨ã—ã¦ã€
+  ã€Œãã‚ŒãŒã“ã†ã„ã†å½¢ã§ãªã‘ã‚Œã°ã„ã‘ãªã„ã€ã¨ã„ã†æ¡ä»¶ã¯ã€åˆ¶ç´„ã®å½¢ã§ã€Œç”Ÿæˆã€ã™ã‚‹ã€‚)
 \end{itemize}
 
-°Ê¾å¤ò¤É¤¦Ëş¤¿¤¹¤«¡© ¥İ¥¤¥ó¥È¤Ï¡¢subsumption rule ¤ÎÅ¬ÍÑ¥¿¥¤¥ß¥ó¥°(¤Ê
-¤ë¤Ù¤¯ subsumption rule ¤òÅ¬ÍÑ¤¹¤ë¤Î¤òÈò¤±¤¿¤¤)¤Ç¤¢¤ë¡£
+ä»¥ä¸Šã‚’ã©ã†æº€ãŸã™ã‹ï¼Ÿ ãƒã‚¤ãƒ³ãƒˆã¯ã€subsumption rule ã®é©ç”¨ã‚¿ã‚¤ãƒŸãƒ³ã‚°(ãª
+ã‚‹ã¹ã subsumption rule ã‚’é©ç”¨ã™ã‚‹ã®ã‚’é¿ã‘ãŸã„)ã§ã‚ã‚‹ã€‚
 
-\subsection{·¿¥·¥¹¥Æ¥à$T_2$¤ÎÆ³Æş}
+\subsection{å‹ã‚·ã‚¹ãƒ†ãƒ $T_2$ã®å°å…¥}
 
-subsumption rule ¤¬½Ğ¸½¤¹¤ë¾ì½ê¤ò¸ÂÄê¤¹¤ë¤³¤È¤¬¤Ç¤­¤ë¡¥
- ÆÃ¤Ë¡¤¥ë¡¼¥ë¤È¡¤¤½¤ÎÄ¾¸å¤Ë subsumption ¤¬¤Ä¤«¤ï¤ì¤ë¾ì¹ç¤ò¹Í¤¨¤Æ¤ß¤è¤¦¡¥
-°Ê²¼¤Ç¡¤¡Övar1¡×Åù¤È¤¤¤Ã¤¿É½µ­¤Ï¡¤
-¡Ö¤â¤È¤â¤È¤¢¤ëver1¥ë¡¼¥ë¤ò subsumptionµ¬Â§¤ÈÁÈ¤ß¹ç¤ï¤»¤¿·Á¤Ë²şÄû¤·¤¿¤â
-  ¤Î¡×¤Ç¤¢¤ë¡¥
-¤Ş¤¿¡¤²£ËÀ¤Î±¦¤Ë½ñ¤¤¤Æ¤¢¤ëConstr;... ¤Ï(¥ë¡¼¥ë¤ò²¼¤«¤é¾å¤Ë¤à¤±¤Æ
-»È¤¦¤È¤­)¡¤Constr °Ê²¼¤ÎÀ©Ìó¤¬À¸À®¤µ¤ì¤ë¡¤¤È¤¤¤¦°ÕÌ£¤Ç¤¢¤ë¡¥
+subsumption rule ãŒå‡ºç¾ã™ã‚‹å ´æ‰€ã‚’é™å®šã™ã‚‹ã“ã¨ãŒã§ãã‚‹ï¼
+ç‰¹ã«ï¼Œãƒ«ãƒ¼ãƒ«ã¨ï¼Œãã®ç›´å¾Œã« subsumption ãŒã¤ã‹ã‚ã‚Œã‚‹å ´åˆã‚’è€ƒãˆã¦ã¿ã‚ˆã†ï¼
+ä»¥ä¸‹ã§ï¼Œã€Œvar1ã€ç­‰ã¨ã„ã£ãŸè¡¨è¨˜ã¯ï¼Œ
+ã€Œã‚‚ã¨ã‚‚ã¨ã‚ã‚‹ver1ãƒ«ãƒ¼ãƒ«ã‚’ subsumptionè¦å‰‡ã¨çµ„ã¿åˆã‚ã›ãŸå½¢ã«æ”¹è¨‚ã—ãŸã‚‚
+ã®ã€ã§ã‚ã‚‹ï¼
+ã¾ãŸï¼Œæ¨ªæ£’ã®å³ã«æ›¸ã„ã¦ã‚ã‚‹Constr;... ã¯(ãƒ«ãƒ¼ãƒ«ã‚’ä¸‹ã‹ã‚‰ä¸Šã«ã‚€ã‘ã¦
+ä½¿ã†ã¨ã)ï¼ŒConstr ä»¥ä¸‹ã®åˆ¶ç´„ãŒç”Ÿæˆã•ã‚Œã‚‹ï¼Œã¨ã„ã†æ„å‘³ã§ã‚ã‚‹ï¼
 
-¤Ş¤¿¡¢·¿$t_1, t_2$¤ËÂĞ¤¹¤ë$\longer{}{}$¤Îµ­¹æ¤Ï°Ê²¼¤Î°ÕÌ£¤Ç¤¢¤ë¤¬¡¢
-¤È¤ê¤¢¤¨¤º¡¢(°Ê²¼¤Î°ÕÌ£¤Ë¤·¤¿¤¬¤Ã¤ÆÊ¬²ò¤Ï¤»¤º¤Ë)
-$\longer{t_1}{t_2}$ ¤Î·Á¤Î¤Ş¤Ş¡¢À©Ìó¤È¤·¤ÆÀ¸À®¤¹¤ë¡£
+\oishi{å‹ä»˜ã‘è¦å‰‡ã®é©ç”¨ã®ç›´å¾Œã« subsumption ã‚’é©ç”¨ã™ã‚‹ã®ãªã‚‰ã°ï¼Œä»¥ä¸‹ã®ã‚ˆã†ãªå½¢ã«ãªã‚‹ã®ã§ã¯ï¼Ÿ
+  \\
+  (å‹ä»˜ã‘è¦å‰‡ X1)
+  \[
+    \infer[Constr;~\Gamma \models \gamma_2 \greaterthan \gamma_1, ...]
+    {\Gamma \vdash e : \codeT{t}{\gamma_2} ; \sigma}
+    {\Gamma \vdash e : \codeT{t}{\gamma_1} ; \sigma
+      % & \Gamma \models \gamma_2 \ord \gamma_1
+    }
+  \]
+  (å‹ä»˜ã‘è¦å‰‡ X2)
+  \[
+    \infer[Constr;~\Gamma \models \gamma_2 \greaterthan \gamma_1, ...]
+    {\Gamma \vdash^{\gamma_2} e : t ~;~ \sigma}
+    {\Gamma \vdash^{\gamma_1} e : t ~;~ \sigma
+      % & \Gamma \models \gamma_2 \ord \gamma_1
+    }
+  \]
+}
+
+ã¾ãŸã€å‹$t_1, t_2$ã«å¯¾ã™ã‚‹$\longer{}{}$ã®è¨˜å·ã¯ä»¥ä¸‹ã®æ„å‘³ã§ã‚ã‚‹ãŒã€
+ã¨ã‚Šã‚ãˆãšã€(ä»¥ä¸‹ã®æ„å‘³ã«ã—ãŸãŒã£ã¦åˆ†è§£ã¯ã›ãšã«)
+$\longer{t_1}{t_2}$ ã®å½¢ã®ã¾ã¾ã€åˆ¶ç´„ã¨ã—ã¦ç”Ÿæˆã™ã‚‹ã€‚
 \begin{itemize}
 \item $\longer{\codeT{t_1}{\gamma_1}}{\codeT{t_2}{\gamma_2}}$
-¤Ï¡¢¡Ö$t_1=t_2$ ¤«¤Ä $\longer{\gamma_1}{\gamma_2}$
-\item $\codeT{t}{\gamma}$¤Î·Á¤Ç¤Ê¤¤$t_1,t_2$¤ËÂĞ¤·¤Æ¤Ï¡¢
-$t_1 = t_2$¡£
+  ã¯ã€ã€Œ$t_1=t_2$ ã‹ã¤ $\longer{\gamma_1}{\gamma_2}$
+\item $\codeT{t}{\gamma}$ã®å½¢ã§ãªã„$t_1,t_2$ã«å¯¾ã—ã¦ã¯ã€
+  $t_1 = t_2$ã€‚
 \end{itemize}
-(·¿¿äÏÀ¤Î¥×¥í¥»¥¹¤ÎºÇÃæ¤Ç¤Ï¡¢$t_1, t_2$ ¤Ï¥á¥¿·¿ÊÑ¿ğ¡£Şªä¦¥­¡¢ì¤º¡¤½¤Î¾ì¹ç¡¢¤É¤Á¤é¤Î·Á¤«¤Ï·èÄê¤Ç¤­¤Ê¤¤¤Î¤Ç¡¢$\longer{t_1}{t_2}$¤ò
-¾åµ­¤Î°ÕÌ£¤Ë¤·¤¿¤¬¤Ã¤Æ¡¢¡Ö¤Û¤É¤¯¡×¤³¤È¤Ï¤Ç¤­¤Ê¤¤¡£¤Ê¤Î¤Ç¡¢
-$\longer{t_1}{t_2}$¤È¤¤¤¦·Á¤Î¤Ş¤ŞÀ©Ìó¤È¤·¤ÆÀ¸À®¤¹¤ë¡£)
+(å‹æ¨è«–ã®ãƒ—ãƒ­ã‚»ã‚¹ã®æœ€ä¸­ã§ã¯ã€$t_1, t_2$ ã¯ãƒ¡ã‚¿å‹å¤‰ç‘ã€‚æ´½ç­…ã‚­ã€è­´æ­¤ãã®å ´åˆã€ã©ã¡ã‚‰ã®å½¢ã‹ã¯æ±ºå®šã§ããªã„ã®ã§ã€$\longer{t_1}{t_2}$ã‚’
+ä¸Šè¨˜ã®æ„å‘³ã«ã—ãŸãŒã£ã¦ã€ã€Œã»ã©ãã€ã“ã¨ã¯ã§ããªã„ã€‚ãªã®ã§ã€
+$\longer{t_1}{t_2}$ã¨ã„ã†å½¢ã®ã¾ã¾åˆ¶ç´„ã¨ã—ã¦ç”Ÿæˆã™ã‚‹ã€‚)
 
-(µµ»³¥á¥â:
-¤¿¤À¡¢¤â¤·¤«¤¹¤ë¤È¡¢
-¡Ö¥ì¥Ù¥ë0¤Î·¿ÊÑ¿ô¡×¤È¡Ö¥ì¥Ù¥ë1¤Î·¿ÊÑ¿ô¡×¤òºÇ½é¤«¤é¤ï¤±¤Æ¤ª¤¯ÊıË¡¤â¤¢¤ë
-¤«¤â¤·¤ì¤Ê¤¤¡£¤½¤¦¤¹¤ë¤È¡¢¾åµ­¤Ï¤È¤±¤ë¡©)
+(äº€å±±ãƒ¡ãƒ¢:
+ãŸã ã€ã‚‚ã—ã‹ã™ã‚‹ã¨ã€
+ã€Œãƒ¬ãƒ™ãƒ«0ã®å‹å¤‰æ•°ã€ã¨ã€Œãƒ¬ãƒ™ãƒ«1ã®å‹å¤‰æ•°ã€ã‚’æœ€åˆã‹ã‚‰ã‚ã‘ã¦ãŠãæ–¹æ³•ã‚‚ã‚ã‚‹
+ã‹ã‚‚ã—ã‚Œãªã„ã€‚ãã†ã™ã‚‹ã¨ã€ä¸Šè¨˜ã¯ã¨ã‘ã‚‹ï¼Ÿ)
 
 (var1)
 \[
-\infer[Constr;~\Gamma \models \longer{t}{t'}]
-      {\Gamma \vdash x:t;~\sigma}
-      {(x:t') \in \Gamma
-      }
+  \infer[Constr;~\Gamma \models \longer{t}{t'}]
+  {\Gamma \vdash x:t;~\sigma}
+  {(x:t') \in \Gamma
+  }
 \]
 
-(var2)
+\oishi{
+  $Constr;~\Gamma \models t \greaterthan t'$ ãŒã‚ã‹ã‚‰ãªã„ï¼
+  $\greaterthan$ ã¯ å‹$t$ ã§ã¯ãªãï¼Œç’°å¢ƒè­˜åˆ¥å­ $\gamma$  ã«ã®ã¿å®šç¾©ã•ã‚Œã¦ã„ã‚‹ã®ã§ã¯ï¼Ÿ
+  $\to$ ãŠãã‚‰ãç•¥è¨˜ã—ã¦ã„ã¦ï¼Œ$t$ ã¨ $t'$ ã®è‚©ã«ã¤ã„ã¦ã„ã‚‹ç’°å¢ƒè­˜åˆ¥å­ $\gamma$ ã¨ $\gamma'$ã®å¤§ãªã‚Šã®é–¢ä¿‚ã‚’è¡¨ã—ã¦ã„ã‚‹ï¼\\
+  (var1æ”¹ : $t$ ãŒ $\codeT{t}{\gamma}$ ã¿ãŸã„ãªå½¢ã˜ã‚ƒãªã„å ´åˆ)
+  \[
+    \infer[Constr;~ (x:t) \in \Gamma]
+    {\Gamma \vdash x:t;~\sigma}
+    {}
+  \]
+  (var1æ”¹ : $t$ ãŒ $\codeT{t}{\gamma}$ ã¿ãŸã„ãªå½¢ã®å ´åˆ)
+  \[
+    \infer[Constr;~ (x:t) \in \Gamma, \Gamma \models \gamma \ge \gamma']
+    {\Gamma \vdash x:\codeT{t}{\gamma};~\sigma}
+    {(x:\codeT{t}{\gamma'}) \in \Gamma}
+  \]
+}
 
+(var2)
 \[
-\infer[Constr;~\Gamma \models \longer{\gamma}{\gamma'}]
-       {\Gamma \vdash^{\gamma} u:t;~\sigma}
-       {(u:t)^{\gamma'} \in \Gamma
-       }
+  \infer[Constr;~\Gamma \models \longer{\gamma}{\gamma'}]
+  {\Gamma \vdash^{\gamma} u:t;~\sigma}
+  {(u:t)^{\gamma'} \in \Gamma
+  }
 \]
 
 (const)
-
 \[
-\infer[Constr;~\Gamma \models \longer{t}{t^c}]
-       {\Gamma \vdash^{L} c:t;~\sigma}
-       {}
+  \infer[Constr;~\Gamma \models \longer{t}{t^c}]
+  {\Gamma \vdash^{L} c:t;~\sigma}
+  {}
 \]
 
 (app)
-
 \[
-\infer[Constr;~\Gamma \models \longer{t}{t_1}]
-       {\Gamma \vdash^L e_1 \, e_2 : t;~\sigma}
-       {\Gamma \vdash^L e_1 : t_2 \to t_1;~\sigma
-       &\Gamma \vdash^L e_2 : t_2;~\sigma
-       }
+  \infer[Constr;~\Gamma \models \longer{t}{t_1}]
+  {\Gamma \vdash^L e_1 \, e_2 : t;~\sigma}
+  {\Gamma \vdash^L e_1 : t_2 \to t_1;~\sigma
+    &\Gamma \vdash^L e_2 : t_2;~\sigma
+  }
 \]
 
 (lambda0)
-
 \[
-\infer[Constr;~t=\funT{t_1}{t_2}{\sigma'}]
-       {\Gamma \vdash \lambda x.e : t;~\sigma}
-       {\Gamma,~x:t_1 \vdash e : t_2;~\sigma'}
+  \infer[Constr;~t=\funT{t_1}{t_2}{\sigma'}]
+  {\Gamma \vdash \lambda x.e : t;~\sigma}
+  {\Gamma,~x:t_1 \vdash e : t_2;~\sigma'}
 \]
 
 (lambda1)
-
 \[
-\infer[Constr;~t=\funT{t_1}{t_2}{}]
-       {\Gamma \vdash^\gamma \lambda u.e : t;~\sigma}
-       {\Gamma,~(u:t_1)^\gamma \vdash^\gamma e : t_2;~\sigma'}
+  \infer[Constr;~t=\funT{t_1}{t_2}{}]
+  {\Gamma \vdash^\gamma \lambda u.e : t;~\sigma}
+  {\Gamma,~(u:t_1)^\gamma \vdash^\gamma e : t_2;~\sigma'}
 \]
 
 (if)
-
 \[
-\infer[Constr;~(none)]
-       {\Gamma \vdash^L
-         \textbf{if}~e_1 \textbf{then}~e_2 \textbf{else}~e_3 ~:~t; ~ \sigma}
-       {\Gamma \vdash^L e_1 : \Bool;~\sigma
-       &\Gamma \vdash^L e_2 : t;~\sigma
-       &\Gamma \vdash^L e_3 : t;~\sigma
-       }
+  \infer[Constr;~(none)]
+  {\Gamma \vdash^L
+    \textbf{if}~e_1 \textbf{then}~e_2 \textbf{else}~e_3 ~:~t; ~ \sigma}
+  {\Gamma \vdash^L e_1 : \Bool;~\sigma
+    &\Gamma \vdash^L e_2 : t;~\sigma
+    &\Gamma \vdash^L e_3 : t;~\sigma
+  }
 \]
 
 (code-lambda)
-
 \[
-\infer[Constr;~\longer{t}{\codeT{t_1 \to t_2}{\gamma}}]
-       {\Gamma \vdash^L \underline{\lambda}x.e ~:~t;~\sigma}
-       {\Gamma,\longer{\gamma'}{\gamma},x:\codeT{t_1}{\gamma'}
-         \vdash^L e : \codeT{t_2}{\gamma'};~\sigma
-       }
+  \infer[Constr;~\longer{t}{\codeT{t_1 \to t_2}{\gamma}}]
+  {\Gamma \vdash^L \underline{\lambda}x.e ~:~t;~\sigma}
+  {\Gamma,\longer{\gamma'}{\gamma},x:\codeT{t_1}{\gamma'}
+    \vdash^L e : \codeT{t_2}{\gamma'};~\sigma
+  }
 \]
 
-(reset0)
+\oishi{è¿½åŠ \\
+  (code-lambdaæ”¹)
+  \[
+    \infer[Constr;~t=\codeT{t_1 \to t_2}{\gamma}]
+    {\Gamma \vdash^L \underline{\lambda}x.e ~:~t;~\sigma}
+    {\Gamma,\gamma_1 \greaterthan \gamma,x:\codeT{t_1}{\gamma_1}
+      \vdash^L e : \codeT{t_2}{\gamma_1};~\sigma
+    }
+  \]
+}
 
+(reset0)
 \[
-\infer[Constr;~\longer{t}{\codeT{t'}{\gamma}}]
-       {\Gamma \vdash \textbf{reset0}~e ~:~ t; ~\sigma}
-       {\Gamma \vdash e:\codeT{t'}{\gamma};~\codeT{t'}{\gamma},\sigma
-       }
+  \infer[Constr;~\longer{t}{\codeT{t'}{\gamma}}]
+  {\Gamma \vdash \textbf{reset0}~e ~:~ t; ~\sigma}
+  {\Gamma \vdash e:\codeT{t'}{\gamma};~\codeT{t'}{\gamma},\sigma
+  }
 \]
 
 (shift0)
-
 \[
-\infer[Constr;~\longer{t}{\codeT{t_1}{\gamma_1}},~ t_2 =\codeT{t_0}{\gamma_0}]
+  \infer[Constr;~\longer{t}{\codeT{t_1}{\gamma_1}},~ t_2 =\codeT{t_0}{\gamma_0}]
   {\Gamma \vdash \shiftz{k}{e} : t~;~ t_2,\sigma}
   {\Gamma,~k:\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}{\sigma}
-      \vdash e : \codeT{t_0}{\gamma_0} ; \sigma
-      & \Gamma \models \longer{\gamma_1}{\gamma_0}
-    }
+    \vdash e : \codeT{t_0}{\gamma_0} ; \sigma
+    & \Gamma \models \longer{\gamma_1}{\gamma_0}
+  }
 \]
 
 
 (throw0)
-
 \[
-\infer[Constr;~\longer{t}{\codeT{t_0}{\gamma_2}}]
+  \infer[Constr;~\longer{t}{\codeT{t_0}{\gamma_2}}]
   {\Gamma,~k:\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}{\sigma}
-      \vdash \throw{k}{v} : t ; \sigma}
+    \vdash \throw{k}{v} : t ; \sigma}
   {\Gamma
-      \vdash v : \codeT{t_1}{\gamma_1 \cup \gamma_2} ; \sigma
-      & \Gamma \models \gamma_2 \ord \gamma_0
+    \vdash v : \codeT{t_1}{\gamma_1 \cup \gamma_2} ; \sigma
+    & \Gamma \models \gamma_2 \ord \gamma_0
   }
 \]
 
 (code)
-
 \[
-\infer[Constr;~\longer{t}{\codeT{t_1}{\gamma}}]
-       {\Gamma \vdash \code{e} : t;~\sigma}
-       {\Gamma \vdash^\gamma e : t_1;~\sigma}
+  \infer[Constr;~\longer{t}{\codeT{t_1}{\gamma}}]
+  {\Gamma \vdash \code{e} : t;~\sigma}
+  {\Gamma \vdash^\gamma e : t_1;~\sigma}
 \]
 
-
+\subsection{åˆ¶ç´„è§£æ¶ˆ}
 
 \end{document}
+
+%%% Local Variables:
+%%% mode: japanese-latex
+%%% TeX-master: t
+%%% End:
