@@ -11,6 +11,7 @@
 *.vrb
 *.nav
 *.toc
+*.lof
 .#*
 sumiilab-tex/
 _region_.tex
