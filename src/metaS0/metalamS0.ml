@@ -1,38 +1,4 @@
-
-type kvar = string
-
-type var = string
-
-type expr =
-  | Var   of var
-  | Lam   of var * expr
-  | Lam_  of var * expr
-  | App   of expr * expr
-  | S0    of kvar * expr        (* s0 k ->  e とする *)
-  | R0      of expr
-  | T0      of kvar * expr
-  | Code    of expr
-  | Int     of int
-  | Bool    of bool
-  | If      of expr * expr * expr
-  | Eq      of int * int
-  | Add     of expr * expr
-  | PrimOp2 of string * expr * expr
-  | Let     of var * expr * expr
-  | Fix     of var * var * expr (* let rec fix f n = f (fix f) n *)
-type value =                        (* v を value にする *)
-  | VLam  of var * expr * env (* 関数定義の時に生成される closure *)
-  | VRLam of var * var * expr * env (* rec 関数定義の時に生成される closure *)
-  | VCont of kont             (* shift により切り取られる continuation *)
-  | VInt of int
-  | VBool of bool
-  | VCode of expr
-
-and env = (var * value) list
-and kont = Kont of (value -> klist -> value)
-and klist = kont list
-(* and kont = Kont of (v -> klist -> v) *)
-(* and klist = kont list *)
+open Syntax
 
 (* combinator *)
 let cint  n = fun n -> Code n;;
@@ -152,6 +118,9 @@ let _ = eval1 @@ R0(S0("k", Int 1))
 let _ = eval1 @@ R0(S0("k", App(Var "k", Int 1)))
 let _ = eval1 @@ R0(S0("k", App(Var "k", Code (Int 1))))
 let _ = eval1 @@ R0(Add(Int 1, S0("k", App(Var "k", Int 1))))
+let _ = eval1 @@ R0(Add(Int 10, R0(Add(Int 20, S0("k1", S0("k2", App(Var "k2", Int 1)))))))
+let _ = eval1 @@ R0(Add(Int 10, R0(Add(Int 20, S0("k1", S0("k2", App(Var "k1", Int 1)))))))
+let _ = eval1 @@ R0(Add(Int 10, R0(Add(Int 20, S0("k1", S0("k2", App(Var "k1", App(Var "k2", Int 1))))))))
 let _ = eval1 @@ ce1
 let _ = eval1 @@ ce2
 let _ = eval1 @@ PrimOp2("Add", Int 1, Int 2)
@@ -165,4 +134,4 @@ let _ = eval1 @@ Lam_("x", Lam_("x", PrimOp2("Add_", Var "x", Var "x")))
 
 let _ = eval1 @@ Lam("x", Fix("f", "n", If(PrimOp2("Eq", Var "n", Int 0), Int 1, PrimOp2("Mult", Var "x", App(Var "f", PrimOp2("Min", Var "n", Int 1))))))
 let _ = eval1 @@ App(App(Lam("x", Fix("f", "n", If(PrimOp2("Eq", Var "n", Int 0), Int 1, PrimOp2("Mult", Var "x", App(Var "f", PrimOp2("Min", Var "n", Int 1)))))), Int 2), Int 10)
-let _ = eval1 @@ Lam_("x", Fix("f", "n", If(PrimOp2("Eq", Var "n", Int 0), Code(Int 1), PrimOp2("Mult_", Var "x", App(Var "f", PrimOp2("Min", Var "n", Int 1))))))
+(* let _ = eval1 @@ Lam_("x", Fix("f", "n", If(PrimOp2("Eq", Var "n", Int 0), Code(Int 1), PrimOp2("Mult_", Var "x", App(Var "f", PrimOp2("Min", Var "n", Int 1)))))) *)
