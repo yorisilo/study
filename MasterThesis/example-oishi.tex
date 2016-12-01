@@ -17,24 +17,12 @@
 \usepackage{listings,jlisting}
 \usepackage{here}
 
-\newenvironment{vq}
-{%begin
-\VerbatimEnvironment \begin{screen} \begin{quote} \begin{Verbatim}
-}
-{%end
-\end{Verbatim} \end{quote} \end{screen}
-}
 \newtheorem{theorem}{theorem}[section]
 
 \input{newcommand}
 
-\newcommand\smallerscope[2]{#1 \ord #2}
-\newcommand\greaterscope[2]{#2 \ord #1}
 \newcommand\longer[2]{{#1} \ord {#2}}
 %\newcommand*\defeq{\stackrel{\text{def}}{=}}
-\newcommand\Int{\mbox{\texttt{Int}}}
-\newcommand\Bool{\mbox{\texttt{Bool}}}
-
 \newcommand\uni{\cup} % !!! 現在の順序では「∪」
 
 \overfullrule=0pt
@@ -42,131 +30,142 @@
 \begin{document}
 
 \begin{center}
-Oishi Type System に対する型推論アルゴリズム \\
-2016/11/19
+Oishi Example (2016/11/19頃までの型システムでは型付けできない例) \\
+2016/12/1
 \end{center}
 
-\section{型システム}
+普通の多段階let挿入の例
+\begin{align*}
+e &= \Resetz~\cLet~x_1=e_1~\cIn~\Resetz~\cLet~x_2=e_2~\cIn \\
+  &\phantom{=}  \shiftz{k_2}{\shiftz{k_1}{\cLet~y=e_3~\cIn~\throw{k_1}{(\throw{k_2}{e_4})}}}
+\end{align*}
 
-いまのところ、2016/09JSSST大会バージョンものとする。
+\newcommand\tzero{\codeT{t}{\gamma_0}}
+\newcommand\tone{\codeT{t}{\gamma_1}}
+\newcommand\ttwo{\codeT{t}{\gamma_2}}
+\newcommand\tthree{\codeT{t}{\gamma_3}}
+\newcommand\tonethree{\codeT{t}{\gamma_1\uni\gamma_3}}
+\newcommand\tall{\codeT{t}{\gamma_2\uni\gamma_1\uni\gamma_3}}
+\newcommand\Gammaone{
+\longer{\gamma_1}{\gamma_0},~x_1:\tone \vdash 
+       \cLet~x_2=e_2~\cIn~\cdots : \tone;~\tone,\tzero}
+\newcommand\Gammatwo{
+      \Gamma_1,~k_2:\contT{\ttwo}{\tone}{\tzero},
+              ~k_1:\contT{\tone}{\tzero}{\cdot{}}}
 
-\section{型推論アルゴリズム}
-
-概要: 以下の2ステップから構成
-\begin{itemize}
-\item 制約生成:与えられた項にたいして、(型およびクラシファイアに関する)制約を返す。
-\item 制約を解く。
-\end{itemize}
-
-\subsection{制約生成}
-
-これは、もの型システム($T_1$とする)を
-「トップダウンでの制約生成向け型システム($T_2$とする)」に変
-形することであたえる。
-
-$T_2$の設計指針:
-\begin{itemize}
-\item $T_1$と$T_2$は「型付けできる」という関係として等価である。
-\item $T_2$は、term-oriented である。
-(結論側の式のトップレベルの形だけで、どの型付けルールを適用可能か、一意的にわかる。)
-\item $T_2$は、制約生成をする。
-(結論側の式の要素は変数として、
-「それがこういう形でなければいけない」という条件は、制約の形で「生成」する。)
-\end{itemize}
-
-以上をどう満たすか？ ポイントは、subsumption rule の適用タイミング(な
-るべく subsumption rule を適用するのを避けたい)である。
-
-\subsection{型システム$T_2$の導入}
-
-subsumption rule が出現する場所を限定することができる．
- 特に，ルールと，その直後に subsumption がつかわれる場合を考えてみよう．
-以下で，「var1」等といった表記は，
-「もともとあるver1ルールを subsumption規則と組み合わせた形に改訂したも
-  の」である．
-また，横棒の右に書いてあるConstr;... は(ルールを下から上にむけて
-使うとき)，Constr 以下の制約が生成される，という意味である．
-
-また、型$t_1, t_2$に対する$\longer{}{}$の記号は以下の意味であるが、
-とりあえず、(以下の意味にしたがって分解はせずに)
-$\longer{t_1}{t_2}$ の形のまま、制約として生成する。
-\begin{itemize}
-\item $\longer{\codeT{t_1}{\gamma_1}}{\codeT{t_2}{\gamma_2}}$
-は、「$t_1=t_2$ かつ $\longer{\gamma_1}{\gamma_2}$
-\item $\codeT{t}{\gamma}$の形でない$t_1,t_2$に対しては、
-$t_1 = t_2$。
-\end{itemize}
-(型推論のプロセスの最中では、$t_1, t_2$ はメタ型変瑞。洽筅キ、譴此その場合、どちらの形かは決定できないので、$\longer{t_1}{t_2}$を
-上記の意味にしたがって、「ほどく」ことはできない。なので、
-$\longer{t_1}{t_2}$という形のまま制約として生成する。)
-
-(亀山メモ:
-ただ、もしかすると、
-「レベル0の型変数」と「レベル1の型変数」を最初からわけておく方法もある
-かもしれない。そうすると、上記はとける？)
-
-(var1)
-\[
-\infer[Constr;~\Gamma \models \longer{t}{t'}]
-      {\Gamma \vdash x:t;~\sigma}
-      {(x:t') \in \Gamma
+\def\proofone{
+\infer
+{\vdash e:\tzero;~\cdot{}}
+{
+  \infer{\vdash \cLet~x_1=e_1~\cIn~\Resetz~\cLet~x_2=e_2~\cIn~\cdots :
+         \tzero;~\tzero
+        }
+        {\infer{\longer{\gamma_1}{\gamma_0},~x_1:\tone \vdash 
+                \Resetz~\cLet~x_2=e_2~\cIn~\cdots : \tone;~\tzero
+               }
+               {\prooftwo}
+        }
+}
+}
+\def\prooftwo{
+\infer{\longer{\gamma_1}{\gamma_0},~x_1:\tone \vdash 
+       \cLet~x_2=e_2~\cIn~\cdots : \tone;~\tone,\tzero}
+      {\infer{\Gamma_1=\longer{\gamma_2}{\gamma_1},~x_2:\ttwo,~\longer{\gamma_1}{\gamma_0},~x_1:\tone \vdash 
+              \shiftz{k_2}{\shiftz{k_1}{\cdots}} : \ttwo;~\tone,\tzero
+             }
+             {\proofthree}
       }
-\]
+}
 
-(var2)
+\def\proofthree{
+\infer{\Gamma_1,~k_2:\contT{\ttwo}{\tone}{\tzero}
+       \vdash \shiftz{k_1}{\cdots} : \tone;~\tzero
+      }
+      {\infer{\Gamma_2=\Gamma_1,~k_2:\contT{\ttwo}{\tone}{\tzero},
+              ~k_1:\contT{\tone}{\tzero}{\cdot{}},
+              \vdash \cLet~y=e_3~\cIn~\cdots : \tzero;~\cdot{}
+             }
+             {\prooffour}
+      }
+}
 
-\[
-\infer[Constr;~\Gamma \models \longer{\gamma}{\gamma'}]
-       {\Gamma \vdash^{\gamma} u:t;~\sigma}
-       {(u:t)^{\gamma'} \in \Gamma
-       }
-\]
-
-(const)
-
-\[
-\infer[Constr;~\Gamma \models \longer{t}{t^c}]
-       {\Gamma \vdash^{L} c:t;~\sigma}
-       {}
-\]
-
-(app)
-
-\[
-\infer[Constr;~\Gamma \models \longer{t}{t_1}]
-       {\Gamma \vdash^L e_1 \, e_2 : t;~\sigma}
-       {\Gamma \vdash^L e_1 : t_2 \to t_1;~\sigma
-       &\Gamma \vdash^L e_2 : t_2;~\sigma
-       }
-\]
-
-(lambda0)
+\def\prooffour{
+\infer[(*)]{\Gamma_3=\Gamma_2,~\longer{\gamma_3}{\gamma_0},~y:\tthree \vdash \throw{k_1}{(\throw{k_2}{e_4})} : 
+        \tthree;~\cdot{}}
+      {\infer{\Gamma_3 \vdash \throw{k_2}{e_4} : \tonethree;~\tone}
+             { \Gamma_3 \vdash e_4 : \tall;~\cdot
+             & \infer{\Gamma_3 \models \longer{\gamma_1\uni\gamma_3}{\gamma_1}}{}
+             }
+      & \infer{\Gamma_3 \models \longer{\gamma_3}{\gamma_0}}{}
+      }
+}
 
 \[
-\infer[Constr;~t=\funT{t_1}{t_2}{\sigma'}]
-       {\Gamma \vdash \lambda x.e : t;~\sigma}
-       {\Gamma,~x:t_1 \vdash e : t_2;~\sigma'}
+\proofone
 \]
 
-(lambda1)
+これは(*)のところで、$\sigma$-part (effect type)がずれてしまい、型付けできていない。
+
+そこで、以下のように reset0 をいれる。
+\begin{align*}
+e' &= \Resetz~\cLet~x_1=e_1~\cIn~\Resetz~\cLet~x_2=e_2~\cIn \\
+  &\phantom{=}  \shiftz{k_2}{\shiftz{k_1}{\cLet~y=e_3~\cIn~
+                  \throw{k_1}{(\Resetz(\throw{k_2}{e_4}))}}}
+\end{align*}
+
+しかし、これだけではうまくいかない。上記の(*)のすぐ上のところで、
+\[
+\Gamma_3 \vdash \throw{k_2}{e_4} : \tonethree;~\tone
+\]
+となっているので、reset0ルールを適用するためには、これから、
+\[
+\Gamma_3 \vdash \throw{k_2}{e_4} : \tonethree;~\tonethree
+\]
+を導けないといけない。この導出は、意味的には「正しい」のであり、
+subsumptionの一種と見なせる。ただし、$\sigma$-partへのsubsumptionであ
+り、いままでのルールにはなかったので、新たにいれないといけない。
+
+  \[
+    \infer
+    {\Gamma \vdash e : t;~\codeT{t'}{\gamma_2},\sigma}
+    {\Gamma \vdash e : t;~\codeT{t'}{\gamma_1},\sigma
+      & \Gamma \models \gamma_2 \ord \gamma_1
+    }
+  \]
+
+ここでは、$\sigma$-partの最初の要素だけ subsumptionを適用したが実際に
+は2番目以降の要素も適用できるようにするのが自然であろう。
+
+ともかく、このルールがあると、先ほどの項$e'$は以下のように型付けできる。
+
+\def\prooffive{
+\infer[(*)]
+ {\Gamma_3\vdash \throw{k_1}{(\Resetz(\throw{k_2}{e_4}))} : \tthree;~\cdot{}}
+ {\infer
+   {\Gamma_3 \vdash \Resetz(\throw{k_2}{e_4}) : \tonethree; ~\cdot{}}
+   {\infer[(\#)]
+      {\Gamma_3 \vdash \throw{k_2}{e_4} : \tonethree;~\tonethree}
+      {\infer
+        {\Gamma_3 \vdash \throw{k_2}{e_4} : \tonethree;~\tone}
+        {\Gamma_3 \vdash e_4 : 
+                       \codeT{t}{\gamma_2\uni\gamma_1\uni\gamma_3};~\cdot
+        & \infer{\Gamma_3 \models
+                         \longer{\gamma_1\uni\gamma_3}{\gamma_1}}{}
+        }
+      & \infer{\Gamma_3 \models \longer{\gamma_1\uni\gamma_3}{\gamma_1}}{}
+      }
+   }
+  & \infer{\Gamma_3 \models \longer{\gamma_3}{\gamma_0}}{}
+  }
+}
 
 \[
-\infer[Constr;~t=\funT{t_1}{t_2}{}]
-       {\Gamma \vdash^\gamma \lambda u.e : t;~\sigma}
-       {\Gamma,~(u:t_1)^\gamma \vdash^\gamma e : t_2;~\sigma'}
+\prooffive
 \]
 
-(if)
+ここで(\#)のところで、$\sigma$-partへのsubsumptionを適用している。
 
-\[
-\infer[Constr;~(none)]
-       {\Gamma \vdash^L
-         \textbf{if}~e_1 \textbf{then}~e_2 \textbf{else}~e_3 ~:~t; ~ \sigma}
-       {\Gamma \vdash^L e_1 : \Bool;~\sigma
-       &\Gamma \vdash^L e_2 : t;~\sigma
-       &\Gamma \vdash^L e_3 : t;~\sigma
-       }
-\]
+\end{document}
 
 (code-lambda)
 
