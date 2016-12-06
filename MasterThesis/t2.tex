@@ -1,0 +1,429 @@
+%
+% Type inference algorithm draft (for Oishi System)
+%
+\documentclass[dvipdfmx]{jsarticle}
+
+\usepackage[dvipdfmx]{graphicx,color}
+\addtolength{\topmargin}{-2cm}
+\addtolength{\textwidth}{3cm}
+\addtolength{\oddsidemargin}{-1.5cm}
+
+\usepackage{theorem}
+\usepackage{amsmath,amssymb}
+\usepackage{ascmac}
+\usepackage{mathtools}
+\usepackage{proof}
+\usepackage{stmaryrd}
+\usepackage{listings,jlisting}
+\usepackage{here}
+
+\newenvironment{vq}
+{%begin
+  \VerbatimEnvironment \begin{screen} \begin{quote} \begin{Verbatim}
+      }
+      {%end
+      \end{Verbatim} \end{quote} \end{screen}
+}
+\newtheorem{theorem}{theorem}[section]
+
+\input{newcommand}
+
+\newcommand\smallerscope[2]{#1 \ord #2}
+\newcommand\greaterscope[2]{#2 \ord #1}
+\newcommand\longer[2]{{#1} \ord {#2}}
+% \newcommand*\defeq{\stackrel{\text{def}}{=}}
+\newcommand\Int{\mbox{\texttt{Int}}}
+\newcommand\Bool{\mbox{\texttt{Bool}}}
+
+\newcommand\uni{\cup} % !!! 現在の順序では「∪」
+
+\overfullrule=0pt
+
+\begin{document}
+
+\begin{center}
+  Oishi Type System に対する型推論アルゴリズム \\
+  2016/12/06
+\end{center}
+
+\section{型システム}
+
+いまのところ、2016/09JSSST大会バージョンものとする。
+
+\section{型推論アルゴリズム}
+
+概要: 以下の2ステップから構成
+\begin{itemize}
+\item 制約生成:与えられた項にたいして、(型およびクラシファイアに関する)制約を返す。
+\item 制約を解く。
+\end{itemize}
+
+\subsection{制約生成}
+
+これは、もの型システム($T_1$とする)を
+「トップダウンでの制約生成向け型システム($T_2$とする)」に変
+形することであたえる。
+
+$T_2$の設計指針:
+\begin{itemize}
+\item $T_1$と$T_2$は「型付けできる」という関係として等価である。
+\item $T_2$は、term-oriented である。
+  (結論側の式のトップレベルの形だけで、どの型付けルールを適用可能か、一意的にわかる。)
+\item $T_2$は、制約生成をする。
+  (結論側の式の要素は変数として、
+  「それがこういう形でなければいけない」という条件は、制約の形で「生成」する。)
+\end{itemize}
+
+以上をどう満たすか？ ポイントは、subsumption rule の適用タイミング(な
+るべく subsumption rule を適用するのを避けたい)である。
+
+\subsection{型システム$T_2$の導入}
+
+subsumption rule が出現する場所を限定することができる．
+特に，ルールと，その直後に subsumption がつかわれる場合を考えてみよう．
+以下で，「var1」等といった表記は，
+「もともとあるver1ルールを subsumption規則と組み合わせた形に改訂したも
+の」である．
+また，横棒の右に書いてあるConstr;... は(ルールを下から上にむけて
+使うとき)，Constr 以下の制約が生成される，という意味である．
+
+また、型$t_1, t_2$に対する$\longer{}{}$の記号は以下の意味であるが、
+とりあえず、(以下の意味にしたがって分解はせずに)
+$\longer{t_1}{t_2}$ の形のまま、制約として生成する。
+\begin{itemize}
+\item $\longer{\codeT{t_1}{\gamma_1}}{\codeT{t_2}{\gamma_2}}$
+  は、「$t_1=t_2$ かつ $\longer{\gamma_1}{\gamma_2}$
+\item $\codeT{t}{\gamma}$の形でない$t_1,t_2$に対しては、
+  $t_1 = t_2$。
+\end{itemize}
+(型推論のプロセスの最中では、$t_1, t_2$ はメタ型変瑞。洽筅キ、譴此その場合、どちらの形かは決定できないので、$\longer{t_1}{t_2}$を
+上記の意味にしたがって、「ほどく」ことはできない。なので、
+$\longer{t_1}{t_2}$という形のまま制約として生成する。)
+
+(亀山メモ:
+ただ、もしかすると、
+「レベル0の型変数」と「レベル1の型変数」を最初からわけておく方法もある
+かもしれない。そうすると、上記はとける？)
+
+
+\oishi{
+  以下のルールにおいて，Constraint の $\Gamma \models \longer{t}{t'}$ の $\Gamma \models$ はルールを適用した瞬間の $\Gamma$ の情報は制約解消において使わないから必要ない？\\
+  一貫性をもたせるのなら， $t = t'$ の形の Constraint も $\Gamma \models t = t'$ とする必要がある？
+}
+\\
+(var0)
+
+\[
+  \infer[Constr;~\Gamma \models \longer{t}{t'}]
+  {\Gamma \vdash x:t;~\sigma}
+  {(x:t') \in \Gamma
+  }
+\]
+
+(var1)
+
+\[
+  \infer[Constr;~\Gamma \models \longer{\gamma}{\gamma'}]
+  {\Gamma \vdash^{\gamma} u:t;~\sigma}
+  {(u:t)^{\gamma'} \in \Gamma
+  }
+\]
+
+(const)
+
+\[
+  \infer[Constr;~\Gamma \models \longer{t}{t^c}]
+  {\Gamma \vdash^{L} c:t;~\sigma}
+  {}
+\]
+
+(app0)
+
+\[
+  \infer[Constr;~\Gamma \models \longer{t}{t_1}]
+  {\Gamma \vdash^\gamma e_1 \, e_2 : t;~\sigma}
+  {\Gamma \vdash^\gamma e_1 : \funT{t_2}{t_1}{\sigma};~\sigma
+    &\Gamma \vdash^\gamma e_2 : t_2;~\sigma
+  }
+\]
+
+(app1)
+
+\[
+  \infer[Constr;~\Gamma \models \longer{t}{t_1}]
+  {\Gamma \vdash e_1 \, e_2 : t;~\sigma}
+  {\Gamma \vdash e_1 : t_2 \to t_1;~\sigma
+    &\Gamma \vdash e_2 : t_2;~\sigma
+  }
+\]
+
+(lambda0)
+
+\[
+  \infer[Constr;~t=\funT{t_1}{t_2}{\sigma'},~ \Gamma \models \sigma \ord \sigma' ]
+  {\Gamma \vdash \lambda x.e : t;~\sigma}
+  {\Gamma,~x:t_1 \vdash e : t_2;~\sigma'}
+\]
+
+(lambda1) \\
+\oishi{
+  コードの中で，shift0/reset0 は使わないので， $\sigma$ は $\epsilon$ なはず．
+  なので，$\sigma$ は $\epsilon$ としておいてもよい
+}
+
+\[
+  \infer[Constr;~t=\funT{t_1}{t_2}{}]
+  {\Gamma \vdash^\gamma \lambda u.e : t;~\sigma}
+  {\Gamma,~(u:t_1)^\gamma \vdash^\gamma e : t_2;~\sigma}
+\]
+
+(if)
+
+\[
+  \infer[Constr;~(none)]
+  {\Gamma \vdash^L
+    \textbf{if}~e_1 \textbf{then}~e_2 \textbf{else}~e_3 ~:~t; ~ \sigma}
+  {\Gamma \vdash^L e_1 : \Bool;~\sigma
+    &\Gamma \vdash^L e_2 : t;~\sigma
+    &\Gamma \vdash^L e_3 : t;~\sigma
+  }
+\]
+
+(code-lambda)
+
+\[
+  \infer[Constr;~\Gamma \models \longer{t}{\codeT{t_1 \to t_2}{\gamma}}]
+  {\Gamma \vdash^L \underline{\lambda}x.e ~:~t;~\sigma}
+  {\Gamma,\longer{\gamma'}{\gamma},x:\codeT{t_1}{\gamma'}
+    \vdash^L e : \codeT{t_2}{\gamma'};~\sigma
+  }
+\]
+
+(reset0)
+
+\[
+  \infer[Constr;~\Gamma \models \longer{t}{\codeT{t'}{\gamma}}]
+  {\Gamma \vdash \Resetz~e ~:~ t; ~\sigma}
+  {\Gamma \vdash e:\codeT{t'}{\gamma};~\codeT{t'}{\gamma},\sigma
+  }
+\]
+
+(shift0)
+
+\[
+  \infer[Constr;~\Gamma \models \longer{t}{\codeT{t_1}{\gamma_1}},~ t_2 =\codeT{t_0}{\gamma_0},~ \Gamma \models \longer{\gamma_1}{\gamma_0}]
+  {\Gamma \vdash \shiftz{k}{e} : t~;~ t_2,\sigma}
+  {\Gamma,~k:\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}{\sigma}
+    \vdash e : \codeT{t_0}{\gamma_0} ; \sigma
+  }
+\]
+
+
+(throw0)\\
+\oishi{
+  throw0 ルールにのみ $\sigma$ part の subsumption ルールを適用すればおｋ？
+}
+\\
+変更前
+\[
+  \infer[Constr;~ \Gamma \models \longer{t}{\codeT{t_0}{\gamma_2}},~ (\Gamma,~ k:t') \models \gamma_2 \ord \gamma_0,~  t' = \contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}{\sigma}]
+  {\Gamma,~ k:t'
+    \vdash \throw{k}{v} : t ; \sigma}
+  {\Gamma,~ k:t'
+    \vdash v : \codeT{t_1}{\gamma_1 \uni \gamma_2} ; \sigma
+  }
+\]
+
+変更後
+\[
+  \infer[Constr;~ \Gamma \models \longer{t}{\codeT{t_0}{\gamma_2}},~ (\Gamma,~ k:t') \models \gamma_2 \ord \gamma_0,~  t' = \contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}{\sigma},~ \Gamma \models \gamma_1 \uni \gamma_2 \ord \gamma']
+  {\Gamma,~ k:t'
+    \vdash \throw{k}{v} : t ; \sigma}
+  {\Gamma,~ k:t'
+    \vdash v : \codeT{t_1}{\gamma'} ; \sigma
+  }
+\]
+
+(code)
+
+\[
+  \infer[Constr;~\longer{t}{\codeT{t_1}{\gamma}}]
+  {\Gamma \vdash \code{e} : t;~\sigma}
+  {\Gamma \vdash^\gamma e : t_1;~\sigma}
+\]
+
+
+この新しい型システム$T_2$ は(hopefully) $T_1$と同じ型付けをあたえる。
+
+型推論では、与えられた項$e$に対して、
+$T_2$を「下から上」の向きに適用して、Constraintを生成する。
+(もちろん、途中で、つまってしまったら、型推論は失敗する。
+
+下から上に行くときに、「横棒の下には存在しないで、横棒の上、あるいは、
+Constraintの中にのみ存在する」型やclassifier があるときは、
+これらを型変数やclassifier変数として生成する。
+
+なお、code-lambda規則での新しいclassifier は、classfier変数ではなく、
+classifier定数とする。(この段階では、変数も定数も差はないが、
+制約を解消するとき、cassifier定数に対する代入はしない、という違いがある。)
+
+\section{制約の解消}
+
+制約生成が成功したとき(つまり、途中で「つっかかったり」しないとき)、以
+下の性質が成立するはずである。
+
+入力を$\Gamma, L, e, t,\sigma$ として、前章の制約生成アルゴリズムを走
+らせ、それが成功して$C$という制約を生成したとき、
+\begin{itemize}
+\item
+  $\Gamma \vdash^L e: t; ~ \sigma$ が導出可能ならば、
+  $C$ を満たす解が存在し、
+\item
+  $C$ を満たす解が存在すれば、ある代入$\theta$に対して、
+  $\Gamma\theta \vdash^L e\theta: t\theta; ~ \sigma\theta$ が導出可能である。
+\end{itemize}
+という性質が成立することができる。
+(これが成立すれば、もともとの型推論問題を、型制約の解消問題に帰着できたことになる。)
+
+というわけで、制約の解消をはじめよう。制約は以下の文法で与えられたものの有限集合である。
+
+\begin{itemize}
+\item $\Gamma \models \longer{t^0}{t^0}$
+\item $\Gamma \models \longer{c}{c}$
+\item $\Gamma \models \longer{\sigma}{\sigma}$
+\item $t^0=t^0$
+\item $t^1=t^1$
+\end{itemize}
+ただし、ここで $t_0$, $t_1$, $c$, $\sigma$ は以下の文法で定義される。
+
+\begin{align*}
+  t^0      & ::= t^0_x \mid \Int \mid \Bool \mid \funT{t^0}{t^0}{c} \mid \codeT{t^1}{c} \\
+  t^1      & ::= t^1_x \mid \Int \mid \Bool \mid \funT{t^1}{t^1}{} \\
+  c        & ::= \gamma \mid d \mid c \uni c \\
+  \sigma   & ::= \epsilon \mid t^0, \sigma
+\end{align*}
+
+
+$t_0$, $t_1$, $c$, $\sigma$ はそれぞれ、
+レベル0型、
+レベル1型、
+レベル0型の列，
+classifierをあらわす表現(メタ変数)，
+である。また、
+$t^i_x$はそれぞれのレベルの型変数、$\gamma$はclassifier変数である。
+また、$d$は、固有変数条件をもつclassifier変数のことであり、
+型推論のあいだは、これは(実質的に)定数として扱われる(つまり、
+$d$に対しては代入しない。classifier変数$\gamma$に対しては代入する。)
+
+また、$\Gamma$は、一般の型文脈であるが、不要な情報を落として以下の形にしてよい。
+\begin{align*}
+  \Delta & ::= \cdots \mid \Delta,\longer{d}{c}
+\end{align*}
+(左辺は、固有変数なので、classifier定数である。右辺は一般のclassifier
+式がなんでも来る可能性がある。)
+
+制約の解消とは、制約(上記の形の有限集合)が与えられたとき、
+それの「解」となる代入をともとめることである。代入$S$は、
+型変数$\alpha^0, \alpha^1$への型の代入と、
+classifier変数$\gamma$へのclassifierの代入とから構成される。
+この代入は「最も一般的」であるべきである。(定義の詳細はいまは省略)
+
+\subsection{制約の解消アルゴリズム(前半)}
+
+$t^0=s^0$ と $t^1=s^1$ の形の制約は、普通の型推論で解ける。
+それを解いた結果、$\alpha^0$、$\alpha^1$, $\gamma$に対する代入が生じ
+る(か、あるいは、「解なし」という結果になる)。
+
+$\Delta \models \longer{t^0}{s^0}$の形の制約は、両方ともが型変数の場合以外は、
+簡単に解ける。(その結果として、$t^i=s^i$ の型の制約や、$\Delta \models
+\longer{c}{c}$の形の制約を生む可能性があるが、前者は前と同様に解けばよ
+く、前者を解いている間にあらたに$\Delta \models \longer{t^0}{s^0}$の形の制約は生じない。)
+
+ここまでの段階で(代入がいくつか出たほか)、残る制約は、以下のものだけである。
+
+\begin{itemize}
+\item $\Delta \models \longer{\alpha^0}{\beta^0}$
+\item $\Delta \models \longer{c}{c}$
+\end{itemize}
+
+ここまでにでてきた代入はすべて、上記の制約たちに適用済みとする。」
+(つまり、$\alpha:=\Int$という代入がでてきたら、上の式にある$\alpha$は
+すべて$\Int$にしておく。その結果、「代入における左辺にでてくる型変数やclassifier変数」
+は、上記の制約たちには、のこっていない。)
+
+
+\subsection{制約の解消アルゴリズム(後半)}
+
+$\Delta \models \longer{c}{c}$の形の制約を解こう。
+($\Delta \models \longer{\alpha^0}{\beta^0}$については次のsubsectionで
+考えるので、ここでは無私する。)
+
+この形の制約たちを、
+$\Delta_i \models \longer{c_i}{c'_i}$とすると、
+それぞれの $\Delta_i$ はcompatible であるはずなので(ここはあとでチェッ
+クが必要)
+$\Delta = \Delta_1 \cup \cdots \cup \Delta_n$ という風に全部を合体させ
+た上で、$\Delta \models \longer{c_i}{c'_i}$を解けばよい。
+
+(ステップ1: classifier変数の除去)
+使われているclassifier変数の1つに着目する。(どれでもよい。)それを
+$\gamma$とする。
+$\longer{c_i}{\gamma}$ の形の制約 ($i=1,2,\cdots,I$)とを全部あつめる。
+$\longer{\gamma}{c'_j}$ の形の制約 ($j=1,2,\cdots,J$)と、
+これらを消去して、かわりに、以下の制約を、すべての$(i,j)$に対して追加する。
+
+\[
+  \longer{c_i}{c'_j}
+\]
+
+これにより、classifier変数は1つ減る。(制約は一般には増えるかもしれない。)
+ステップ1を繰返すと、classifier変数はなくなる。
+
+(ステップ2) $\longer{c_1 \uni c_2}{c_3}$ を
+$\longer{c_1}{c_3}$ と
+$\longer{c_2}{c_3}$ に変換する。
+
+これにより、不等号の左辺にある$\uni$の個数が1つ減る。
+ステップ2を繰返すと、不等号の左辺にある$\uni$はなくなる。
+
+ステップ2の繰返しがおわると、制約は、
+$\Delta \models \longer{d}{c}$の形になる。
+
+\oishi{ステップ3 は変更する必要あり }\\
+(ステップ3) ここで「$d$は atomic」 という仮定をおく。これについては
+あとで吟味する.
+これは、
+「$\longer{d}{c_1 \uni c_2}$ ならば
+$\longer{d}{c_1}$または、
+$\longer{d}{c_2}$」という内容である。
+これらの逆向きは、いつでも成立するので、結局、ここの「ならば」は「同値」といってもよい。
+
+これをもちいて、$\longer{d}{c}$の右辺も分解できて、
+
+\[
+  \Delta \models \longer{d_1}{d_1'} \vee \cdots \vee \longer{d_n}{d'_n}
+\]
+
+となり、さらに$\Delta$も $\longer{d1}{d2}$の形を「かつ」と「または」で
+つないだ形になるはずである。
+
+これは decidable なので、「解があるかどうか」もdecidableである。
+
+\subsection{制約の解消アルゴリズム(後半のおまけ)}
+
+実は、まだ、
+$\Delta \models \longer{\alpha^0}{\beta^0}$という制約がのこっていた。
+
+これを最後まで残した(解かなかった)のは、以下の2つの可能性があるからで
+ある。これはどうするか？
+
+\begin{itemize}
+\item $\alpha^0 = \beta^0$
+\item
+  $\alpha^0 = \codeT{t}{\gamma1}$,
+  $\beta^0 = \codeT{t}{\gamma2}$,
+  $\Delta \models \longer{\gamma1}{\gamma2}$
+\end{itemize}
+
+
+\end{document}
