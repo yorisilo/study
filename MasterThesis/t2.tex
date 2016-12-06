@@ -193,9 +193,9 @@ $\longer{t_1}{t_2}$という形のまま制約として生成する。)
 
 \[
   \infer[Constr;~\Gamma \models \longer{t}{\codeT{t_1 \to t_2}{\gamma}}]
-  {\Gamma \vdash^L \underline{\lambda}x.e ~:~t;~\sigma}
+  {\Gamma \vdash \underline{\lambda}x.e ~:~t;~\sigma}
   {\Gamma,\longer{\gamma'}{\gamma},x:\codeT{t_1}{\gamma'}
-    \vdash^L e : \codeT{t_2}{\gamma'};~\sigma
+    \vdash e : \codeT{t_2}{\gamma'};~\sigma
   }
 \]
 
