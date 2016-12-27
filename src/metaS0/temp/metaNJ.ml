@@ -510,9 +510,3 @@ module GD4(S:CodeAs) = struct
       lamC {body = fun z zy ->
           complex_exp +% guarded_div locus zy y z}}
 end
-
-;;
-
-
-
-;;

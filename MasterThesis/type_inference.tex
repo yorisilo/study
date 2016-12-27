@@ -1,56 +1,4 @@
-%
-% Type inference algorithm draft (for Oishi System)
-%
-\documentclass[dvipdfmx]{jsarticle}
-
-\usepackage[dvipdfmx]{graphicx,color}
-\addtolength{\topmargin}{-2cm}
-\addtolength{\textwidth}{3cm}
-\addtolength{\oddsidemargin}{-1.5cm}
-
-\usepackage{theorem}
-\usepackage{amsmath,amssymb}
-\usepackage{ascmac}
-\usepackage{mathtools}
-\usepackage{proof}
-\usepackage{stmaryrd}
-\usepackage{listings,jlisting}
-\usepackage{here}
-
-\newenvironment{vq}
-{%begin
-  \VerbatimEnvironment \begin{screen} \begin{quote} \begin{Verbatim}
-      }
-      {%end
-      \end{Verbatim} \end{quote} \end{screen}
-}
-\newtheorem{theorem}{theorem}[section]
-
-\input{newcommand}
-
-\newcommand\smallerscope[2]{#1 \ord #2}
-\newcommand\greaterscope[2]{#2 \ord #1}
-\newcommand\longer[2]{{#1} \ord {#2}}
-% \newcommand*\defeq{\stackrel{\text{def}}{=}}
-\newcommand\Int{\mbox{\texttt{Int}}}
-\newcommand\Bool{\mbox{\texttt{Bool}}}
-
-\newcommand\uni{\cup} % !!! 現在の順序では「∪」
-
-\overfullrule=0pt
-
-\begin{document}
-
-\begin{center}
-  Oishi Type System に対する型推論アルゴリズム \\
-  2016/11/19
-\end{center}
-
-\section{型システム}
-
-いまのところ、2016/09JSSST大会バージョンものとする。
-
-\section{型推論アルゴリズム}
+\chapter{型推論}
 
 概要: 以下の2ステップから構成
 \begin{itemize}
@@ -58,7 +6,7 @@
 \item 制約を解く。
 \end{itemize}
 
-\subsection{制約生成}
+\section{制約生成}
 
 これは、もの型システム($T_1$とする)を
 「トップダウンでの制約生成向け型システム($T_2$とする)」に変
@@ -77,7 +25,7 @@ $T_2$の設計指針:
 以上をどう満たすか？ ポイントは、subsumption rule の適用タイミング(な
 るべく subsumption rule を適用するのを避けたい)である。
 
-\subsection{型システム$T_2$の導入}
+\section{型システム$T_2$の導入}
 
 subsumption rule が出現する場所を限定することができる．
 特に，ルールと，その直後に subsumption がつかわれる場合を考えてみよう．
@@ -107,7 +55,7 @@ $\longer{t_1}{t_2}$という形のまま制約として生成する。)
 
 
 \oishi{
-  以下のルールにおいて，Constraint の $\Gamma \models \longer{t}{t'}$ の $\Gamma \models$ はルールを適用した瞬間の $\Gamma$ の情報は制約解消において使わないから必要ない？ ->
+  以下のルールにおいて，Constraint の $\Gamma \models \longer{t}{t'}$ の $\Gamma \models$ はルールを適用した瞬間の $\Gamma$ の情報は制約解消において使わないから必要ない？\\
   一貫性をもたせるのなら， $t = t'$ の形の Constraint も $\Gamma \models t = t'$ とする必要がある？
 }
 \\
@@ -193,9 +141,9 @@ $\longer{t_1}{t_2}$という形のまま制約として生成する。)
 
 \[
   \infer[Constr;~\Gamma \models \longer{t}{\codeT{t_1 \to t_2}{\gamma}}]
-  {\Gamma \vdash^L \underline{\lambda}x.e ~:~t;~\sigma}
+  {\Gamma \vdash \underline{\lambda}x.e ~:~t;~\sigma}
   {\Gamma,\longer{\gamma'}{\gamma},x:\codeT{t_1}{\gamma'}
-    \vdash^L e : \codeT{t_2}{\gamma'};~\sigma
+    \vdash e : \codeT{t_2}{\gamma'};~\sigma
   }
 \]
 
@@ -219,14 +167,28 @@ $\longer{t_1}{t_2}$という形のまま制約として生成する。)
 \]
 
 
-(throw0)
-
+(throw0)\\
+\oishi{
+  throw0 ルールにのみ $\sigma$ part の subsumption ルールを適用すればおｋ？
+}
+\\
+変更前
 \[
-  \infer[Constr;~\longer{t}{\codeT{t_0}{\gamma_2}},~ (\Gamma,~ k:t') \models \gamma_2 \ord \gamma_0,~  t' = \contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}{\sigma}]
+  \infer[Constr;~ \Gamma \models \longer{t}{\codeT{t_0}{\gamma_2}},~ (\Gamma,~ k:t') \models \gamma_2 \ord \gamma_0,~  t' = \contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}{\sigma}]
   {\Gamma,~ k:t'
     \vdash \throw{k}{v} : t ; \sigma}
   {\Gamma,~ k:t'
     \vdash v : \codeT{t_1}{\gamma_1 \uni \gamma_2} ; \sigma
+  }
+\]
+
+変更後
+\[
+  \infer[Constr;~ \Gamma \models \longer{t}{\codeT{t_0}{\gamma_2}},~ (\Gamma,~ k:t') \models \gamma_2 \ord \gamma_0,~  t' = \contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}{\sigma},~ \Gamma \models \gamma_1 \uni \gamma_2 \ord \gamma']
+  {\Gamma,~ k:t'
+    \vdash \throw{k}{v} : t ; \sigma}
+  {\Gamma,~ k:t'
+    \vdash v : \codeT{t_1}{\gamma'} ; \sigma
   }
 \]
 
@@ -253,7 +215,7 @@ Constraintの中にのみ存在する」型やclassifier があるときは、
 classifier定数とする。(この段階では、変数も定数も差はないが、
 制約を解消するとき、cassifier定数に対する代入はしない、という違いがある。)
 
-\section{制約の解消}
+\chapter{制約の解消}
 
 制約生成が成功したとき(つまり、途中で「つっかかったり」しないとき)、以
 下の性質が成立するはずである。
@@ -286,14 +248,14 @@ classifier定数とする。(この段階では、変数も定数も差はない
   t^0      & ::= t^0_x \mid \Int \mid \Bool \mid \funT{t^0}{t^0}{c} \mid \codeT{t^1}{c} \\
   t^1      & ::= t^1_x \mid \Int \mid \Bool \mid \funT{t^1}{t^1}{} \\
   c        & ::= \gamma \mid d \mid c \uni c \\
-  \sigma   & ::= \epsilon \mid t^i, \sigma
+  \sigma   & ::= \epsilon \mid t^0, \sigma
 \end{align*}
 
 
 $t_0$, $t_1$, $c$, $\sigma$ はそれぞれ、
 レベル0型、
 レベル1型、
-レベル0型，1型を含んだ列，
+レベル0型の列，
 classifierをあらわす表現(メタ変数)，
 である。また、
 $t^i_x$はそれぞれのレベルの型変数、$\gamma$はclassifier変数である。
@@ -314,7 +276,7 @@ $d$に対しては代入しない。classifier変数$\gamma$に対しては代�
 classifier変数$\gamma$へのclassifierの代入とから構成される。
 この代入は「最も一般的」であるべきである。(定義の詳細はいまは省略)
 
-\subsection{制約の解消アルゴリズム(前半)}
+\section{制約の解消アルゴリズム(前半)}
 
 $t^0=s^0$ と $t^1=s^1$ の形の制約は、普通の型推論で解ける。
 それを解いた結果、$\alpha^0$、$\alpha^1$, $\gamma$に対する代入が生じ
@@ -338,10 +300,10 @@ $\Delta \models \longer{t^0}{s^0}$の形の制約は、両方ともが型変数�
 は、上記の制約たちには、のこっていない。)
 
 
-\subsection{制約の解消アルゴリズム(後半)}
+\section{制約の解消アルゴリズム(後半)}
 
 $\Delta \models \longer{c}{c}$の形の制約を解こう。
-($\Delta \models \longer{\alpha^0}{\beta^0}$については次のsubsectionで
+($\Delta \models \longer{\alpha^0}{\beta^0}$については次のsectionで
 考えるので、ここでは無私する。)
 
 この形の制約たちを、
@@ -395,7 +357,7 @@ $\longer{d}{c_2}$」という内容である。
 
 これは decidable なので、「解があるかどうか」もdecidableである。
 
-\subsection{制約の解消アルゴリズム(後半のおまけ)}
+\section{制約の解消アルゴリズム(後半のおまけ)}
 
 実は、まだ、
 $\Delta \models \longer{\alpha^0}{\beta^0}$という制約がのこっていた。
@@ -412,4 +374,7 @@ $\Delta \models \longer{\alpha^0}{\beta^0}$という制約がのこっていた�
 \end{itemize}
 
 
-\end{document}
+%%% Local Variables:
+%%% mode: japanese-latex
+%%% TeX-master: "master_oishi"
+%%% End:

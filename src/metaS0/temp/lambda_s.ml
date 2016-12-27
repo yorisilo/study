@@ -23,14 +23,17 @@ let rec fact_cps n k = match n with
   | n -> fact_cps (n-1) (fun x -> k (n * x))
 
 (* shift/reset の CPS インタプリタ *)
-type t = Var of string
-       | Abs of string * t
+type var = string
+type t = Var of var
+       | Abs of var * t
        | App of t * t
        | Shift of t
        | Reset of t
+       | Int   of int
 
 type v = VAbs of string * t * e
        | VCont of c
+       | VInt of int
 
 and e = (string * v) list
 
@@ -57,20 +60,38 @@ let id a = a
 (* eval : t * string list * v list * c -> v *)
 (* eval : t * e * c -> v *)
 let rec eval (t, e, c) = match t with
+  | Int n -> c (VInt n)
   | Var(x) -> c (get(x, e))
   | Abs(x, t) -> c (VAbs(x, t, e))
-  | App(t0, t1) -> eval (t1, e, (fun v1 ->
-      eval (t0, e, (fun v0 ->
-          (match v0 with
-           | VAbs(x', t', e') -> eval (t', (x', v1) :: e', c)
-           | VCont(c') -> c (c' v1))))))
-  | Shift(t) -> eval (t, e, (fun v ->
-      (match v with
-       | VAbs(x', t', e') -> eval (t', (x', VCont(c)) :: e', id)
-       | VCont(c') -> c' (VCont(c)))
-    ))
+  | App(t0, t1) ->
+    eval (t1, e, (fun v1 ->
+        eval (t0, e, (fun v0 ->
+            (match v0 with
+             | VAbs(x', t', e') -> eval (t', (x', v1) :: e', c)
+             | VCont(c') -> c (c' v1)
+             | _ -> failwith "not apply function"
+            )))))
+  | Shift(t) ->
+    eval (t, e, (fun v ->
+        (match v with
+         | VAbs(x', t', e') -> eval (t', (x', VCont(c)) :: e', id)
+         | VCont(c') -> c' (VCont(c))
+         | _ -> failwith "not apply"
+      )))
   | Reset(t) -> c (eval (t, e, id))
 
 (* eval1 : t -> v *)
 let eval1 t = eval (t, [], id)
-(* let example1 = eval1 @@ App (skk, (Var "x")) *)
+let example1 = eval1 @@ App (skk, (Int 3))
+
+let rec evaluater t =
+  match t with
+  | Var x -> Var x
+  | Abs (x, t) -> Abs (x, t)
+  | App (t1, t2) ->
+    match t1 with
+    | Abs (x, t) ->
+  | Shift
+  | Reset
+  | Int
+  | _ -> failwith "not implemented"

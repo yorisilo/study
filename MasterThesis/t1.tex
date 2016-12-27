@@ -244,7 +244,9 @@ $n=1,\cdots,k$に対して並べた列)で表現している．
   \centering
   \[
     \infer{\Gamma \vdash \resetz{e} : \codeT{t}{\gamma} ~;~ \sigma}
-    {\Gamma \vdash e : \codeT{t}{\gamma} ~;~ \codeT{t}{\gamma}, \sigma}
+    {\Gamma \vdash e : \codeT{t}{\gamma} ~;~ \codeT{t}{\gamma'}, \sigma
+      & \Gamma \models \gamma \ord \gamma'
+    }
   \]
 
   \[
@@ -312,6 +314,7 @@ $n=1,\cdots,k$に対して並べた列)で表現している．
 
 
 \end{document}
+
 %%% Local Variables:
 %%% mode: japanese-latex
 %%% TeX-master: t

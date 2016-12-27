@@ -30,15 +30,34 @@
 \usepackage{listings,jlisting}
 \usepackage{here}
 
+\newenvironment{vq}
+{%begin
+  \VerbatimEnvironment \begin{screen} \begin{quote} \begin{Verbatim}
+      }
+      {%end
+      \end{Verbatim} \end{quote} \end{screen}
+}
+\newtheorem{theorem}{theorem}[section]
+
 \input{newcommand}
 \renewcommand{\topfraction}{.85}
 \renewcommand{\bottomfraction}{.60}
 \renewcommand{\textfraction}{.15}
 \renewcommand{\floatpagefraction}{.6}
 
+\newcommand\smallerscope[2]{#1 \ord #2}
+\newcommand\greaterscope[2]{#2 \ord #1}
+\newcommand\longer[2]{{#1} \ord {#2}}
+% \newcommand*\defeq{\stackrel{\text{def}}{=}}
+\newcommand\Int{\mbox{\texttt{Int}}}
+\newcommand\Bool{\mbox{\texttt{Bool}}}
+
+\newcommand\uni{\cup} % !!! 現在の順序では「∪」
+
 %% タイトル
 %% 【注意】タイトルの最後に\\ を入れるとエラーになります
-\title{多段階 let 挿入を行うコード生成言語の\\型システムの設計}
+\title{安全なコード移動が可能なコード生成言語の\\型システムの設計と実装}
+
 %% 著者
 \author{大石 純平}
 %% 学位 (2012/11 追加)
@@ -91,14 +110,14 @@ forループを飛び越えたコード移動を許す仕組みであり，ル�
 \pagenumbering{arabic} % 1,2,3
 
 \input{intro}
-\input{code_generation}
+\input{background}
 \input{idea}
 \input{target_lang}
 \input{type_system}
+\input{type_inference}
 \input{proof}
-\input{background}
+\input{relevant_study}
 \input{conc}
-
 \chapter*{謝辞}
 \addcontentsline{toc}{chapter}{\numberline{}謝辞}
 ありがとうありがとう

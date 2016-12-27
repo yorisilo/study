@@ -1,4 +1,4 @@
-% 
+%
 % Type inference algorithm draft (for Oishi System)
 %
 \documentclass[dvipdfmx]{jsarticle}
@@ -22,7 +22,7 @@
 \input{newcommand}
 
 \newcommand\longer[2]{{#1} \ord {#2}}
-%\newcommand*\defeq{\stackrel{\text{def}}{=}}
+% \newcommand*\defeq{\stackrel{\text{def}}{=}}
 \newcommand\uni{\cup} % !!! 現在の順序では「∪」
 
 \overfullrule=0pt
@@ -30,14 +30,14 @@
 \begin{document}
 
 \begin{center}
-Oishi Example (2016/11/19頃までの型システムでは型付けできない例) \\
-2016/12/1
+  Oishi Example (2016/11/19頃までの型システムでは型付けできない例) \\
+  2016/12/1
 \end{center}
 
 普通の多段階let挿入の例
 \begin{align*}
-e &= \Resetz~\cLet~x_1=e_1~\cIn~\Resetz~\cLet~x_2=e_2~\cIn \\
-  &\phantom{=}  \shiftz{k_2}{\shiftz{k_1}{\cLet~y=e_3~\cIn~\throw{k_1}{(\throw{k_2}{e_4})}}}
+  e &= \Resetz~\cLet~x_1=e_1~\cIn~\Resetz~\cLet~x_2=e_2~\cIn \\
+    &\phantom{=}  \shiftz{k_2}{\shiftz{k_1}{\cLet~y=e_3~\cIn~\throw{k_1}{(\throw{k_2}{e_4})}}}
 \end{align*}
 
 \newcommand\tzero{\codeT{t}{\gamma_0}}
@@ -47,91 +47,91 @@ e &= \Resetz~\cLet~x_1=e_1~\cIn~\Resetz~\cLet~x_2=e_2~\cIn \\
 \newcommand\tonethree{\codeT{t}{\gamma_1\uni\gamma_3}}
 \newcommand\tall{\codeT{t}{\gamma_2\uni\gamma_1\uni\gamma_3}}
 \newcommand\Gammaone{
-\longer{\gamma_1}{\gamma_0},~x_1:\tone \vdash 
-       \cLet~x_2=e_2~\cIn~\cdots : \tone;~\tone,\tzero}
+  \longer{\gamma_1}{\gamma_0},~x_1:\tone \vdash
+  \cLet~x_2=e_2~\cIn~\cdots : \tone;~\tone,\tzero}
 \newcommand\Gammatwo{
-      \Gamma_1,~k_2:\contT{\ttwo}{\tone}{\tzero},
-              ~k_1:\contT{\tone}{\tzero}{\cdot{}}}
+  \Gamma_1,~k_2:\contT{\ttwo}{\tone}{\tzero},
+  ~k_1:\contT{\tone}{\tzero}{\cdot{}}}
 
 \def\proofone{
-\infer
-{\vdash e:\tzero;~\cdot{}}
-{
-  \infer{\vdash \cLet~x_1=e_1~\cIn~\Resetz~\cLet~x_2=e_2~\cIn~\cdots :
-         \tzero;~\tzero
-        }
-        {\infer{\longer{\gamma_1}{\gamma_0},~x_1:\tone \vdash 
-                \Resetz~\cLet~x_2=e_2~\cIn~\cdots : \tone;~\tzero
-               }
-               {\prooftwo}
-        }
-}
+  \infer
+  {\vdash e:\tzero;~\cdot{}}
+  {
+    \infer{\vdash \cLet~x_1=e_1~\cIn~\Resetz~\cLet~x_2=e_2~\cIn~\cdots :
+      \tzero;~\tzero
+    }
+    {\infer{\longer{\gamma_1}{\gamma_0},~x_1:\tone \vdash
+        \Resetz~\cLet~x_2=e_2~\cIn~\cdots : \tone;~\tzero
+      }
+      {\prooftwo}
+    }
+  }
 }
 \def\prooftwo{
-\infer{\longer{\gamma_1}{\gamma_0},~x_1:\tone \vdash 
-       \cLet~x_2=e_2~\cIn~\cdots : \tone;~\tone,\tzero}
-      {\infer{\Gamma_1=\longer{\gamma_2}{\gamma_1},~x_2:\ttwo,~\longer{\gamma_1}{\gamma_0},~x_1:\tone \vdash 
-              \shiftz{k_2}{\shiftz{k_1}{\cdots}} : \ttwo;~\tone,\tzero
-             }
-             {\proofthree}
-      }
+  \infer{\longer{\gamma_1}{\gamma_0},~x_1:\tone \vdash
+    \cLet~x_2=e_2~\cIn~\cdots : \tone;~\tone,\tzero}
+  {\infer{\Gamma_1=\longer{\gamma_2}{\gamma_1},~x_2:\ttwo,~\longer{\gamma_1}{\gamma_0},~x_1:\tone \vdash
+      \shiftz{k_2}{\shiftz{k_1}{\cdots}} : \ttwo;~\tone,\tzero
+    }
+    {\proofthree}
+  }
 }
 
 \def\proofthree{
-\infer{\Gamma_1,~k_2:\contT{\ttwo}{\tone}{\tzero}
-       \vdash \shiftz{k_1}{\cdots} : \tone;~\tzero
-      }
-      {\infer{\Gamma_2=\Gamma_1,~k_2:\contT{\ttwo}{\tone}{\tzero},
-              ~k_1:\contT{\tone}{\tzero}{\cdot{}},
-              \vdash \cLet~y=e_3~\cIn~\cdots : \tzero;~\cdot{}
-             }
-             {\prooffour}
-      }
+  \infer{\Gamma_1,~k_2:\contT{\ttwo}{\tone}{\tzero}
+    \vdash \shiftz{k_1}{\cdots} : \tone;~\tzero
+  }
+  {\infer{\Gamma_2=\Gamma_1,~k_2:\contT{\ttwo}{\tone}{\tzero},
+      ~k_1:\contT{\tone}{\tzero}{\cdot{}},
+      \vdash \cLet~y=e_3~\cIn~\cdots : \tzero;~\cdot{}
+    }
+    {\prooffour}
+  }
 }
 
 \def\prooffour{
-\infer[(*)]{\Gamma_3=\Gamma_2,~\longer{\gamma_3}{\gamma_0},~y:\tthree \vdash \throw{k_1}{(\throw{k_2}{e_4})} : 
-        \tthree;~\cdot{}}
-      {\infer{\Gamma_3 \vdash \throw{k_2}{e_4} : \tonethree;~\tone}
-             { \Gamma_3 \vdash e_4 : \tall;~\cdot
-             & \infer{\Gamma_3 \models \longer{\gamma_1\uni\gamma_3}{\gamma_1}}{}
-             }
-      & \infer{\Gamma_3 \models \longer{\gamma_3}{\gamma_0}}{}
-      }
+  \infer[(*)]{\Gamma_3=\Gamma_2,~\longer{\gamma_3}{\gamma_0},~y:\tthree \vdash \throw{k_1}{(\throw{k_2}{e_4})} :
+    \tthree;~\cdot{}}
+  {\infer{\Gamma_3 \vdash \throw{k_2}{e_4} : \tonethree;~\tone}
+    { \Gamma_3 \vdash e_4 : \tall;~\cdot
+      & \infer{\Gamma_3 \models \longer{\gamma_1\uni\gamma_3}{\gamma_1}}{}
+    }
+    & \infer{\Gamma_3 \models \longer{\gamma_3}{\gamma_0}}{}
+  }
 }
 
 \[
-\proofone
+  \proofone
 \]
 
 これは(*)のところで、$\sigma$-part (effect type)がずれてしまい、型付けできていない。
 
 そこで、以下のように reset0 をいれる。
 \begin{align*}
-e' &= \Resetz~\cLet~x_1=e_1~\cIn~\Resetz~\cLet~x_2=e_2~\cIn \\
-  &\phantom{=}  \shiftz{k_2}{\shiftz{k_1}{\cLet~y=e_3~\cIn~
-                  \throw{k_1}{(\Resetz(\throw{k_2}{e_4}))}}}
+  e' &= \Resetz~\cLet~x_1=e_1~\cIn~\Resetz~\cLet~x_2=e_2~\cIn \\
+     &\phantom{=}  \shiftz{k_2}{\shiftz{k_1}{\cLet~y=e_3~\cIn~
+       \throw{k_1}{(\Resetz(\throw{k_2}{e_4}))}}}
 \end{align*}
 
 しかし、これだけではうまくいかない。上記の(*)のすぐ上のところで、
 \[
-\Gamma_3 \vdash \throw{k_2}{e_4} : \tonethree;~\tone
+  \Gamma_3 \vdash \throw{k_2}{e_4} : \tonethree;~\tone
 \]
 となっているので、reset0ルールを適用するためには、これから、
 \[
-\Gamma_3 \vdash \throw{k_2}{e_4} : \tonethree;~\tonethree
+  \Gamma_3 \vdash \throw{k_2}{e_4} : \tonethree;~\tonethree
 \]
 を導けないといけない。この導出は、意味的には「正しい」のであり、
 subsumptionの一種と見なせる。ただし、$\sigma$-partへのsubsumptionであ
 り、いままでのルールにはなかったので、新たにいれないといけない。
 
-  \[
-    \infer
-    {\Gamma \vdash e : t;~\codeT{t'}{\gamma_2},\sigma}
-    {\Gamma \vdash e : t;~\codeT{t'}{\gamma_1},\sigma
-      & \Gamma \models \gamma_2 \ord \gamma_1
-    }
-  \]
+\[
+  \infer
+  {\Gamma \vdash e : t;~\codeT{t'}{\gamma_2},\sigma}
+  {\Gamma \vdash e : t;~\codeT{t'}{\gamma_1},\sigma
+    & \Gamma \models \gamma_2 \ord \gamma_1
+  }
+\]
 
 ここでは、$\sigma$-partの最初の要素だけ subsumptionを適用したが実際に
 は2番目以降の要素も適用できるようにするのが自然であろう。
@@ -139,28 +139,28 @@ subsumptionの一種と見なせる。ただし、$\sigma$-partへのsubsumption
 ともかく、このルールがあると、先ほどの項$e'$は以下のように型付けできる。
 
 \def\prooffive{
-\infer[(*)]
- {\Gamma_3\vdash \throw{k_1}{(\Resetz(\throw{k_2}{e_4}))} : \tthree;~\cdot{}}
- {\infer
-   {\Gamma_3 \vdash \Resetz(\throw{k_2}{e_4}) : \tonethree; ~\cdot{}}
-   {\infer[(\#)]
+  \infer[(*)]
+  {\Gamma_3\vdash \throw{k_1}{(\Resetz(\throw{k_2}{e_4}))} : \tthree;~\cdot{}}
+  {\infer
+    {\Gamma_3 \vdash \Resetz(\throw{k_2}{e_4}) : \tonethree; ~\cdot{}}
+    {\infer[(\#)]
       {\Gamma_3 \vdash \throw{k_2}{e_4} : \tonethree;~\tonethree}
       {\infer
         {\Gamma_3 \vdash \throw{k_2}{e_4} : \tonethree;~\tone}
-        {\Gamma_3 \vdash e_4 : 
-                       \codeT{t}{\gamma_2\uni\gamma_1\uni\gamma_3};~\cdot
-        & \infer{\Gamma_3 \models
-                         \longer{\gamma_1\uni\gamma_3}{\gamma_1}}{}
+        {\Gamma_3 \vdash e_4 :
+          \codeT{t}{\gamma_2\uni\gamma_1\uni\gamma_3};~\cdot
+          & \infer{\Gamma_3 \models
+            \longer{\gamma_1\uni\gamma_3}{\gamma_1}}{}
         }
-      & \infer{\Gamma_3 \models \longer{\gamma_1\uni\gamma_3}{\gamma_1}}{}
+        & \infer{\Gamma_3 \models \longer{\gamma_1\uni\gamma_3}{\gamma_1}}{}
       }
-   }
-  & \infer{\Gamma_3 \models \longer{\gamma_3}{\gamma_0}}{}
+    }
+    & \infer{\Gamma_3 \models \longer{\gamma_3}{\gamma_0}}{}
   }
 }
 
 \[
-\prooffive
+  \prooffive
 \]
 
 ここで(\#)のところで、$\sigma$-partへのsubsumptionを適用している。
@@ -170,52 +170,52 @@ subsumptionの一種と見なせる。ただし、$\sigma$-partへのsubsumption
 (code-lambda)
 
 \[
-\infer[Constr;~\Gamma \models \longer{t}{\codeT{t_1 \to t_2}{\gamma}}]
-       {\Gamma \vdash^L \underline{\lambda}x.e ~:~t;~\sigma}
-       {\Gamma,\longer{\gamma'}{\gamma},x:\codeT{t_1}{\gamma'}
-         \vdash^L e : \codeT{t_2}{\gamma'};~\sigma
-       }
+  \infer[Constr;~\Gamma \models \longer{t}{\codeT{t_1 \to t_2}{\gamma}}]
+  {\Gamma \vdash^L \underline{\lambda}x.e ~:~t;~\sigma}
+  {\Gamma,\longer{\gamma'}{\gamma},x:\codeT{t_1}{\gamma'}
+    \vdash^L e : \codeT{t_2}{\gamma'};~\sigma
+  }
 \]
 
 (reset0)
 
 \[
-\infer[Constr;~\Gamma \models \longer{t}{\codeT{t'}{\gamma}}]
-       {\Gamma \vdash \textbf{reset0}~e ~:~ t; ~\sigma}
-       {\Gamma \vdash e:\codeT{t'}{\gamma};~\codeT{t'}{\gamma},\sigma
-       }
+  \infer[Constr;~\Gamma \models \longer{t}{\codeT{t'}{\gamma}}]
+  {\Gamma \vdash \textbf{reset0}~e ~:~ t; ~\sigma}
+  {\Gamma \vdash e:\codeT{t'}{\gamma};~\codeT{t'}{\gamma},\sigma
+  }
 \]
 
 (shift0)
 
 \[
-\infer[Constr;~\Gamma \models \longer{t}{\codeT{t_1}{\gamma_1}},~ t_2 =\codeT{t_0}{\gamma_0}]
+  \infer[Constr;~\Gamma \models \longer{t}{\codeT{t_1}{\gamma_1}},~ t_2 =\codeT{t_0}{\gamma_0}]
   {\Gamma \vdash \shiftz{k}{e} : t~;~ t_2,\sigma}
   {\Gamma,~k:\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}{\sigma}
-      \vdash e : \codeT{t_0}{\gamma_0} ; \sigma
-      & \Gamma \models \longer{\gamma_1}{\gamma_0}
-    }
+    \vdash e : \codeT{t_0}{\gamma_0} ; \sigma
+    & \Gamma \models \longer{\gamma_1}{\gamma_0}
+  }
 \]
 
 
 (throw0)
 
 \[
-\infer[Constr;~\longer{t}{\codeT{t_0}{\gamma_2}}]
+  \infer[Constr;~\longer{t}{\codeT{t_0}{\gamma_2}}]
   {\Gamma,~k:\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}{\sigma}
-      \vdash \throw{k}{v} : t ; \sigma}
+    \vdash \throw{k}{v} : t ; \sigma}
   {\Gamma
-      \vdash v : \codeT{t_1}{\gamma_1 \uni \gamma_2} ; \sigma
-      & \Gamma \models \gamma_2 \ord \gamma_0
+    \vdash v : \codeT{t_1}{\gamma_1 \uni \gamma_2} ; \sigma
+    & \Gamma \models \gamma_2 \ord \gamma_0
   }
 \]
 
 (code)
 
 \[
-\infer[Constr;~\longer{t}{\codeT{t_1}{\gamma}}]
-       {\Gamma \vdash \code{e} : t;~\sigma}
-       {\Gamma \vdash^\gamma e : t_1;~\sigma}
+  \infer[Constr;~\longer{t}{\codeT{t_1}{\gamma}}]
+  {\Gamma \vdash \code{e} : t;~\sigma}
+  {\Gamma \vdash^\gamma e : t_1;~\sigma}
 \]
 
 
@@ -242,11 +242,11 @@ classifier定数とする。(この段階では、変数も定数も差はない
 らせ、それが成功して$C$という制約を生成したとき、
 \begin{itemize}
 \item
-$\Gamma \vdash^L e: t; ~ \sigma$ が導出可能ならば、
-$C$ を満たす解が存在し、
+  $\Gamma \vdash^L e: t; ~ \sigma$ が導出可能ならば、
+  $C$ を満たす解が存在し、
 \item
-$C$ を満たす解が存在すれば、ある代入$\theta$に対して、
-$\Gamma\theta \vdash^L e\theta: t\theta; ~ \sigma\theta$ が導出可能である。
+  $C$ を満たす解が存在すれば、ある代入$\theta$に対して、
+  $\Gamma\theta \vdash^L e\theta: t\theta; ~ \sigma\theta$ が導出可能である。
 \end{itemize}
 という性質が成立することができる。
 (これが成立すれば、もともとの型推論問題を、型制約の解消問題に帰着できたことになる。)
@@ -262,9 +262,9 @@ $\Gamma\theta \vdash^L e\theta: t\theta; ~ \sigma\theta$ が導出可能であ�
 ただし、ここで $t_0$, $t_1$, $c$ は以下の文法で定義される。
 
 \begin{align*}
-t^0 & ::= \alpha^0 \mid \Int \mid \Bool \mid \funT{t^0}{t^0}{c} \mid \codeT{t^1}{c} \\
-t^1 & ::= \alpha^1 \mid \Int \mid \Bool \mid \funT{t^1}{t^1}{} \\
-c   & ::= \gamma \mid d \mid c \uni c 
+  t^0 & ::= \alpha^0 \mid \Int \mid \Bool \mid \funT{t^0}{t^0}{c} \mid \codeT{t^1}{c} \\
+  t^1 & ::= \alpha^1 \mid \Int \mid \Bool \mid \funT{t^1}{t^1}{} \\
+  c   & ::= \gamma \mid d \mid c \uni c
 \end{align*}
 
 $t_0$, $t_1$, $c$はそれぞれ、
@@ -277,7 +277,7 @@ $d$に対しては代入しない。classifier変数$\gamma$に対しては代�
 
 また、$\Gamma$は、一般の型文脈であるが、不要な情報を落として以下の形にしてよい。
 \begin{align*}
-\Delta & ::= \cdots \mid \Delta,\longer{d}{c}
+  \Delta & ::= \cdots \mid \Delta,\longer{d}{c}
 \end{align*}
 (左辺は、固有変数なので、classifier定数である。右辺は一般のclassifier
 式がなんでも来る可能性がある。)
@@ -325,7 +325,7 @@ $\Delta_i \models \longer{c_i}{c'_i}$とすると、
 $\Delta = \Delta_1 \cup \cdots \cup \Delta_n$ という風に全部を合体させ
 た上で、$\Delta \models \longer{c_i}{c'_i}$を解けばよい。
 
-(ステップ1: classifier変数の除去) 
+(ステップ1: classifier変数の除去)
 使われているclassifier変数の1つに着目する。(どれでもよい。)それを
 $\gamma$とする。
 $\longer{c_i}{\gamma}$ の形の制約 ($i=1,2,\cdots,I$)とを全部あつめる。
@@ -333,7 +333,7 @@ $\longer{\gamma}{c'_j}$ の形の制約 ($j=1,2,\cdots,J$)と、
 これらを消去して、かわりに、以下の制約を、すべての$(i,j)$に対して追加する。
 
 \[
-\longer{c_i}{c'_j}
+  \longer{c_i}{c'_j}
 \]
 
 これにより、classifier変数は1つ減る。(制約は一般には増えるかもしれない。)
@@ -352,7 +352,7 @@ $\Delta \models \longer{d}{c}$の形になる。
 (ステップ3) ここで「$d$は atomic」 という仮定をおく。これについては
 あとで吟味する.
 これは、
-「$\longer{d}{c_1 \uni c_2}$ ならば 
+「$\longer{d}{c_1 \uni c_2}$ ならば
 $\longer{d}{c_1}$または、
 $\longer{d}{c_2}$」という内容である。
 これらの逆向きは、いつでも成立するので、結局、ここの「ならば」は「同値」といってもよい。
@@ -360,7 +360,7 @@ $\longer{d}{c_2}$」という内容である。
 これをもちいて、$\longer{d}{c}$の右辺も分解できて、
 
 \[
-\Delta \models \longer{d_1}{d_1'} \vee \cdots \vee \longer{d_n}{d'_n}
+  \Delta \models \longer{d_1}{d_1'} \vee \cdots \vee \longer{d_n}{d'_n}
 \]
 
 となり、さらに$\Delta$も $\longer{d1}{d2}$の形を「かつ」と「または」で
@@ -378,12 +378,16 @@ $\Delta \models \longer{\alpha^0}{\beta^0}$という制約がのこっていた�
 
 \begin{itemize}
 \item $\alpha^0 = \beta^0$
-\item 
-$\alpha^0 = \codeT{t}{\gamma1}$,
-$\beta^0 = \codeT{t}{\gamma2}$, 
-$\Delta \models \longer{\gamma1}{\gamma2}$ 
+\item
+  $\alpha^0 = \codeT{t}{\gamma1}$,
+  $\beta^0 = \codeT{t}{\gamma2}$,
+  $\Delta \models \longer{\gamma1}{\gamma2}$
 \end{itemize}
 
 
 \end{document}
 
+%%% Local Variables:
+%%% mode: japanese-latex
+%%% TeX-master: "master_oishi"
+%%% End:

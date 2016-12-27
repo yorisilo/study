@@ -32,7 +32,7 @@ $L=\gamma$のとき将来ステージの判断となる．
   \begin{align*}
     t^0 & ::= b \mid \funT{t^0}{t^0}{\sigma} \mid \codeT{t^1}{\gamma} \\
     t^1 & ::= b \mid t^1 \to t^1 \\
-    \sigma & ::= \epsilon \mid \sigma,t^0 \\
+    \sigma & ::= \epsilon \mid t^0, \sigma \\
     \kappa^0 & ::= \contT{\codeT{t^1}{\gamma}}{\codeT{t^1}{\gamma}}{\sigma}
   \end{align*}
   \caption{(レベル0の)継続の型の定義}
@@ -151,19 +151,25 @@ $n=1,\cdots,k$に対して並べた列)で表現している．
 
   \[
     \infer
-    {\Gamma \vdash^{L} e_1~ e_2 : t_1 ; \sigma}
-    {\Gamma \vdash^{L} e_1 : t_2 \to t_1 ; \sigma
-      & \Gamma \vdash^{L} e_2 : t_2  ; \sigma
+    {\Gamma \vdash^{\gamma} e_1~ e_2 : t_1 ; \sigma}
+    {\Gamma \vdash^{\gamma} e_1 : \funT{t_2}{t_1}{\sigma};~ \sigma
+      & \Gamma \vdash^{\gamma} e_2 : t_2  ; \sigma
+    }
+    \quad
+    \infer
+    {\Gamma \vdash e_1 \, e_2 : t;~\sigma}
+    {\Gamma \vdash e_1 : t_2 \to t_1;~\sigma
+      &\Gamma \vdash e_2 : t_2;~\sigma
     }
   \]
 
   \[
     \infer
-    {\Gamma \vdash \fun{x}{e} : \funT{t_1}{t_2}{\sigma} ~;~\sigma'}
+    {\Gamma \vdash \fun{x}{e} : \funT{t_1}{t_2}{\sigma} ~;~\sigma}
     {\Gamma,~x : t_1 \vdash e : t_2 ~;~ \sigma}
     \quad
     \infer
-    {\Gamma \vdash^\gamma \fun{x}{e} : \funT{t_1}{t_2}{} ~;~\sigma'}
+    {\Gamma \vdash^\gamma \fun{u}{e} : \funT{t_1}{t_2}{} ~;~\sigma'}
     {\Gamma,~(u : t_1)^\gamma \vdash^\gamma e : t_2 ~;~ \sigma}
   \]
 
@@ -174,7 +180,7 @@ $n=1,\cdots,k$に対して並べた列)で表現している．
       & \Gamma \vdash^{L} e_2 : t ; \sigma
       & \Gamma \vdash^{L} e_3 : t ; \sigma}
   \]
-  \caption{(レベル0の)$\Gamma \vdash^{L} e : t ;~\sigma$ の形に対する型導出規則}
+  \caption{(レベル0，レベル1の)$\Gamma \vdash^{L} e : t ;~\sigma$ の単純な形に対する型導出規則}
   \label{fig:gvs_rule}
 \end{figure}
 
@@ -189,7 +195,7 @@ $n=1,\cdots,k$に対して並べた列)で表現している．
     {\Gamma,~\gamma_1 \ord \gamma,~x:\codeT{t_1}{\gamma_1} \vdash e
       : \codeT{t_2}{\gamma_1}; \sigma}
   \]
-
+  \oishi{\\$\ccfun{}{}$ は必要あるかどうか}
   \[
     \infer
     {\Gamma \vdash \ccfun{u^1}{e} : \codeT{t_1 \to t_2}{\gamma} ; \sigma}
@@ -219,9 +225,9 @@ $n=1,\cdots,k$に対して並べた列)で表現している．
 
   \[
     \infer
-    {\Gamma,~k:\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}{\sigma}
+    {\Gamma,~ k:\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}{\sigma}
       \vdash \throw{k}{v} : \codeT{t_0}{\gamma_2} ; \sigma}
-    {\Gamma
+    {\Gamma,~ k:\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}{\sigma}
       \vdash v : \codeT{t_1}{\gamma_1 \cup \gamma_2} ; \sigma
       & \Gamma \models \gamma_2 \ord \gamma_0
     }
@@ -232,6 +238,8 @@ $n=1,\cdots,k$に対して並べた列)で表現している．
 
 
 コード生成に関する補助的な規則として，Subsumptionに相当する規則等がある．
+
+\oishi{$\ord$ の左右の $\gamma$ は逆？ 一般に項の内部に入るにしたがって，使えるコードレベル変数は増えていくので，逆のような気がする．$ \gamma_1 \ord \gamma_0$ の意味は $\gamma_0$ より $\gamma_1$ のほうが使えるコードレベル変数は多いという意味である}
 
 \begin{figure}[H]
   \centering
@@ -256,6 +264,14 @@ $n=1,\cdots,k$に対して並べた列)で表現している．
     \infer
     {\Gamma \vdash \code{e} : \codeT{t^1}{\gamma} ; \sigma}
     {\Gamma \vdash^{\gamma} e : t^1 ; \sigma}
+  \]
+
+  \[
+    \infer
+    {\Gamma \vdash e : t;~\codeT{t'}{\gamma_2},\sigma}
+    {\Gamma \vdash e : t;~\codeT{t'}{\gamma_1},\sigma
+      & \Gamma \models \gamma_2 \ord \gamma_1
+    }
   \]
 
   \caption{コード生成に関するSubsumptionの型導出規則}

@@ -92,4 +92,33 @@ Answer type modificationはなし
 * 型検査の実装方針の検討
 * 評価器 power関数 gen_power関数動かない
 
-### 11/14-11/20
+### 12/13-
+* typeinf を実装 t0=t0 とか t1=t1 の型制約を解くところ型に関する部分(classifier以外) はunification とかは型推論する
+
+sigma part つまり，shift0 のanswer typeの列の subsumption (小さいから大きいやつへ) を考える必要あり．
+
+特に throw rule の k の sigma が合わない問題に対処する方法が必要
+
+#### 解決法
+* ```... throw k1 reset0 throw k2 reset0 throw k3 ... ```とするようにして(throw の間にreset0を入れる)，
+  * reset0 のtyping rule を変更する(sigma part のところ) <- 今ところこれにしそう
+  * あるいは，sigma part のみにたいする 一般の subsumption ルールを作る
+* `... throw k1 throw k2 throw k3 ... ` 間に reset0 は入れずに
+throw rule を変更する．
+throw rule が適用できない問題は k の型につく sigma と， answer type の sigma が合わないから，
+使うときの k は answer type と同じというのがきつい制限なので，
+それをもう少しゆるめる． 具体的には以下のようにする？
+sub typing rule 使えば，`sigma = sigma'` のときも成り立つので良さそう．
+しかし，sigma' を変数として型推論しないといけないので，実装がつらそう．
+sigma の長さが事前にわかっていればうまくいきそうだけど，
+pure でない任意の関数を kに入れられると，長さが不定なので困る．
+pureな関数しか k には許さないとすればいけそうだが，，，
+
+```
+Γ, g0'>g0, g1'>g1, g2'>g2, k: <t1> = sigma => <t2> |- v : <t1>^g1 ∪ g2 ; sigma'
+-------------------------------------------------------------------
+Γ, g0'>g0, g1'>g1, g2'>g2, k: <t1> = sigma => <t2> |- throw k v : <t0>^g2 ; sigma'
+
+sigma = <t0>^g0, <t1>^g1, <t2>^g2
+sigma' = <t0'>^g0', <t1'>^g1', <t2'>^g2'
+```

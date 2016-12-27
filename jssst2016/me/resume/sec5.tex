@@ -153,7 +153,7 @@ $L=\gamma$のとき将来ステージの判断となる．
 \begin{align*}
   t^0 & ::= b \mid \funT{t^0}{t^0}{\sigma} \mid \codeT{t^1}{\gamma} \\
   t^1 & ::= b \mid t^1 \to t^1 \\
-  \sigma & ::= \epsilon \mid \sigma,t^0 \\
+  \sigma & ::= \epsilon \mid t^0, \sigma \\
   \kappa^0 & ::= \contT{\codeT{t^1}{\gamma}}{\codeT{t^1}{\gamma}}{\sigma}
 \end{align*}
 
@@ -456,3 +456,8 @@ $\vdash e:t~;~\sigma$ かつ $e \lto e'$ であれば，$\vdash e':t~;~\sigma$
 %帰納法の仮定より評価文脈における $\Resetz E$ より簡約が進み，\\
 %$e_1$ が値のとき，$e \lto v$ となるような $v$ が存在する．\\
 %$e_1$ が値でないとき，
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "paper"
+%%% End:

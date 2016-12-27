@@ -1,33 +1,314 @@
-\chapter{関連研究}
-表現力と安全性を兼ね備えたコード生成の体系としては，
-2009年の亀山らの研究\cite{Kameyama2009}が最初である．
-彼らは，MetaOCamlにおいてshift/resetとよばれるコントロールオペレータを
-使うスタイルでのプログラミングを提案するとともに，
-コントロールオペレータの影響が変数スコープを越えることを制限する型シス
-テムを構築し，安全性を厳密に保証した．
-Westbrookら\cite{Westbrook}は同様の研究を Java のサブセットを対象におこなった．
-須藤ら\cite{Sudo2014}は，書換え可能変数を持つコード生成体系に対して，
-部分型付けを導入した型システムを提案して，安全性を保証した．
-これらの体系は，安全性の保証を最優先した結果，表現力の上での制限が強く
-なっている．特に，let挿入とよばれるコード生成技法をシミュレートするた
-めには，shift/reset が必要であるが，複数の場所へのlet挿入を許すために
-は，複数の種類のshift/resetを組み合わせる必要がある．
-この目的のため，階層的shift/resetやマルチプロンプト
-shift/resetといった，shift/reset を複雑にしたコントロールオペレータを
-考えることができるが，その場合の型システムは非常に複雑になることが予想
-され，安全性を保証するための条件も容易には記述できない，等の問題点がある．
+\chapter{背景}
+\oishi{ここでは，コード生成 + s0/r0 で let挿入を用いたコード生成ができるよ．その安全性は，型システムで保証するよ．既存の型システムを参考に s0/r0 を用いるlet挿入が安全に行えるようにしたやつだよ．みたいなことを書く}
 
-本研究では，このような問題点を克服するため，shift/reset の意味論をわず
-かに変更した shift0/reset0 というコントロールオペレータに着目する．
-このコントロールオペレータは，長い間，研究対象となってこなかったが
-2011年以降，Materzok らは，部分型付けに基づく型システムや，
-関数的なCPS変換を与えるなど，簡潔で拡張が容易な理論的基盤をもつことを
-解明した\cite{Materzok2011,materzok2012}．
-特に，shift0/reset0 は shift/reset と同様のコントロールオペレータであ
-りながら，階層的shift/reset を表現することができる，という点で，
-表現力が高い．本研究では，これらの事実に基づき，これまでのshift/reset
-を用いたコード生成体系の知見を，shift0/reset0 を用いたコード生成体系の
-構築に活用するものである．
+\section{コード生成言語}
+本節ではコード生成言語について簡潔に説明する．
+
+コード生成とはプログラムを生成する段階や，生成したプログラムを実行する段階など，
+複数のステージを持つプログラミングの手法である．
+プログラムを計算対象のデータとして扱うことで，プログラムの効率や，保守性，再利用性 の両立が期待できる．
+例えば生成元のプログラムから，何らかの目的に特化したプログラムを生成を行い，保守や改変をしたい時は，生成元のプログラムに対して行えばよいので，生成後のコードについては手を加える必要が無い．
+そのような，コード生成を効果的に行うためには，言語レベルで，プログラムを生成，実行などが行える機構を備えることが望ましい．そのような言語をコード生成言語という．
+
+本節では，コード生成言語の例として MetaOCaml を用いて，コード生成について紹介する
+
+Bracket \lstinline|.<e>.| : コード生成
+\lstinline|.<e>.| をコードと呼び，
+コード化とは， 項 $e$ を Bracket \lstinline|.< >.|で囲むことにより，$e$ の評価を遅らせることである．
+Bracket \lstinline|.< >.| を用いることで，動的にコードを生成する事ができる．
+
+以下で Bracket を用いた MetaOCamlの例を掲載する．
+\begin{lstlisting}
+# let x = .<1 + 2>.;;
+val x : int code = .<1 + 2>.
+\end{lstlisting}
+\lstinline|#| ではじまる行はユーザーの入力であり，そのすぐ下の行はMetaOCamlからの応答である．
+Bracket を用いることで， 項 \lstinline|1+2| は，\lstinline|3| とは評価されず そのまま項 \lstinline|1+2|を表すコード \lstinline|.<1 + 2>.| が結果として返されている．
+\lstinline|val x : int code = .<1 + 2>.| とは，値 \lstinline|x| は，\lstinline|int code| 型であり，その値は \lstinline|.<1 + 2>.| という意味である．
+
+Escape \lstinline|.~e| : コードの埋め込み
+\lstinline|.~e| に対する呼び名は特にないが，
+Escape \lstinline|.~|はコード\lstinline|.<e>.| のブラケットを外す演算子である．
+これにより，コードにコード\lstinline|.<e>.|の $e$ を埋め込むことができる．
+
+以下で Escape を用いた MetaOCamlの例を掲載する．
+\begin{lstlisting}
+# let y = .< .~x * .~x >.;;
+val y : int code = .<(1 + 2) * (1 + 2)>.
+\end{lstlisting}
+ここで，\lstinline|x|は \lstinline|.<1 + 2>.|に束縛されているとする．
+その環境で，\lstinline|let y = .< .~x * .~x >.| を評価すると，
+\lstinline|.~x|に \lstinline|x| の Bracket が外された \lstinline|1+2| が埋め込まれる．
+これにより，コード内の計算を特定の部分すすめることができ，コード内にコードを埋め込むことができる．
+
+\subsection{コード生成の例}
+\oishi{power関数の例でいいのだろうか}
+
+\section{shift0/reset0}
+本節では，限定継続を扱うためのコントロールオペレータ shift0/reset0 について説明する．
+
+継続を扱う命令としてコントロールオペレータというものがある．継続とは，計算のある時点における残りの計算のことである．
+限定継続とは，残りの計算すべてではなく，ある時点の計算から，とある時点の計算までのことである．
+
+本研究では，shift0/reset0というコントロールオペレータを用いる．
+reset0は継続の範囲を限定する命令であり，shift0はその継続を捕獲するための命令である．
+
+shift/reset\cite{Danvy1990}では，複数の計算エフェクトを含んだプログラムは書くことができない．しかし，階層化shift/resetやshift0/reset0はこの欠点を克服している．
+階層化shift/reset\cite{Danvy1990}は，最大レベルの階層を固定する必要があるが，shift0/reset0では，shift0，reset0 というオペレータだけで，階層を表現する事ができるという利点がある．
+また，shift0/reset0は shift/reset よりも単純なCPS変換で意味が与えられていて，純粋なラムダ式で表せるために形式的に扱いやすいという利点がある．
+reset0は $\Resetz~ (M)$というように表し，継続の範囲を$M$に限定するという意味となる．
+shift0は $\Shiftz~ k~ \to M$というように表し，直近のreset0によって限定された継続を $k$ に束縛し，$M$ を実行するという意味となる．
+以下で，shift0/reset0の例を掲載する．
+
+\begin{align*}
+  &\Resetz~ (3 + \Shiftz~ k \to \Let~ x = 5~ \In~ k~ x) \\
+  &\too \Let~ x = 5~ \In~ k~ x ~~~~~\text{where}~k = \Resetz~ (3 + []) \\
+  &\too \Let~ x = 5~ \In~ \Resetz~ (3 + x) \\
+  &\too \Resetz~ (3 + 5) \\
+  &\too 8 \\
+\end{align*}
+
+この例は，let挿入をshift0/reset0により可能にする例である．
+shift0によって，まず$\Let~ x = 5 \In k~ x$が実行される．
+ここで $k$ には，直近のreset0によって限定された継続である $\Resetz~ (3 + [])$が捕獲されている．
+その$k$に$x$を適用させることで，$3+x$が得られる．すると，$\Let x = 5~ \In~ k~ x$ は $\Let~ x = 5~ \In~ 3 + x$に評価される．
+見方を変えると，reset0により限定された継続をshift0内部の $k$に捕獲したというよりは，$\Let~ x = 5~ \In~ 3 + x$ がshift0によるスコープの外部に出てきたとも見える．このように，shift0/reset0を使うことで，let挿入が実現できることが分かる．
+
+
+\section{コード生成とlet挿入}
+前節で見たようなコード生成言語とshift0/reset0 を用いて多段階let 挿入と呼ばれる技法を可能にする．
+本節では，コード生成においてlet挿入可能にするための事柄について述べる．
+
+コード生成，すなわち，プログラムによるプログラム(コード)の生成の手法は，
+対象領域に関する知識，実行環境，利用可能な計算機リソースなどのパラメー
+タに特化した(実行性能の高い)プログラムを生成する目的で広く利用されている．
+生成されるコードを文字列として表現する素朴なコード生成法では，
+構文エラーなどのエラーを含むコードを生成してしまう危険があり，さらに，
+生成されたコードのデバッグが非常に困難であるという問題がある．
+
+これらの問題を解決するため，
+コード生成器(コード生成をするプログラム)を記述するためのプログラム言語
+の研究が行われており，特に静的な型システムのサポートを持つ言語として，
+MetaOCaml, Template Haskell, Scala LMSなどがある．
+
+本研究は，
+MetaOCaml などの値呼び関数型言語に基づいたコード生成言語を対象としているが，
+言語のプレゼンテーションでは，先行研究にならい
+コードコンビネータ(Code Combinator)方式を使う．MetaML/MetaOCamlなどにおける擬似引用
+(Quasi-quotation)方式は，コード生成に関する言語要素として
+「ブラケット(コード生成,quotation)」と
+「エスケープ(コード合成,anti-quotation)」を用いるのに対して，
+コードコンビネータ方式では，
+各演算子に対して，「コード生成版の演算子(コードコンビネータ)」を用意してコード生成器を記述する．
+たとえば，加算$e_1+e_2$に対して，
+コードコンビネータ版は$e_1 \cPlus e_2$というように，
+演算子名に下線をつけてあらわす．
+
+本章では，例に基づいてコード生成器とlet挿入について説明する．
+対象言語の構文・意味論などの形式的体系の説明は後に行う．
+
+\subsection{コードコンビネータ方式のプログラム例}
+
+まず，(完成した)コードは，$\code{3}$や$\code{3+5}$のようにブラケットで囲んで表す．
+次の例は，これらを生成するプログラムである．
+\begin{align*}
+  (\cint~3)   & \too \code{3} \\
+  (\cint~3)~ \cPlus~ (\cint~5) & \too \code{3 + 5}
+\end{align*}
+$\cint$ は整数を整数のコードに変換し，
+$\cPlus$は，整数のコード2つをもらって，それらの加算をおこなうコードを
+生成するコードコンビネータである．
+なお，$\too$は0ステップ以上の簡約を表す．
+
+$\cfun{x}{e}$と$\cat$ はそれぞれラムダ抽象と関数適用のコードを生成する．
+\begin{align*}
+  \cfun{x}{x \cPlus (\cint~3)}   & \too \code{\fun{u}{u+3}} \\
+  (\cfun{x}{x \cPlus (\cint~3)}) \cat (\cint~5) & \too
+                                                  \code{(\fun{u}{u+3})~5}
+\end{align*}
+ラムダ抽象のコードコンビネータにおいて，$x$は「(コードレベルの)変数」その
+ものを表すのではなく，「変数のコード」をあらわす．
+上記の例の計算過程で，$x$は
+$\code{u}$(ここで$u$は新たに作成されたコードレベルの変数)に簡約され，計算が進む．
+
+$\cLet$はlet式のコードを生成する．
+\begin{align*}
+  & \clet{x}{(\cint~3)}{x~ \cPlus~ (\cint~7)} \\
+  & \too \code{\Let~ u = 3~ \In~ u + 7}
+\end{align*}
+実は，$\cLet$は，コードコンビネータとしてのラムダ抽象と適用によりマ
+クロ定義され，上記の式は，以下の式と同じである．
+\begin{align*}
+  & (\cfun{x}{~x~ \cPlus~ (\cint~7)~}) \cat (\cint~3)  \\
+  & \too \code{\Let~ u = 3~ \In~ u + 7}
+\end{align*}
+
+本研究の対象言語は，MetaML や MetaOCaml と同様，静的束縛の言語であり，
+以下の例では，束縛変数の名前が正しく付け換えられる．
+\begin{align*}
+  \cfun{y}{\Let~ x = y~ \In~ \cfun{y}{~x~ \cPlus~ y}{}}{}
+  & \too \code{\fun{u}{\fun{u'}{u~ +~ u'}}}
+\end{align*}
+この例では，2つのラムダ抽象が$y$という変数をもっているが，これらは異な
+る束縛変数であるので，計算の過程で衝突が起きるときは名前換えが発生する．
+
+\subsection{コード生成におけるlet挿入}
+
+$\cFor$はfor式を生成するコードコンビネータである．
+ここで，(コードレベルの)配列$a$の第$n$要素に対する代入を
+$\aryset{a}{n}{e}$と表し，
+$\caryset{a}{e_1}{e_2}$は対応するコードコンビネータであると仮定する．
+また，$a$は適宜$n$次元のものを考えることにする．
+\begin{align*}
+  & \cforin{x=(\cint~3)}{(\cint~7)} \\
+  & \qquad \caryset{\code{a}}{x}{(\cint~0)} \\
+  & \too \code{\forin{i=3}{7}~\aryset{a}{i}{0}}
+\end{align*}
+$\cFor$を入れ子にすると，入れ子のfor式が生成できる．
+\begin{align*}
+  & \cforin{x=(\cint~3)}{(\cint~7)} \\
+  & \cforin{y=(\cint~1)}{(\cint~9)} \\
+  & \qquad \caryset{\code{a}}{(x,y)}{(\cint~0)} \\
+  & \too \codebegin \forin{i=3}{7} \\
+  & \phantom{\too \codebegin} \forin{j=1}{9} \\
+  & \phantom{\too \codebegin} ~~\aryset{a}{i,j}{0} \codeend
+\end{align*}
+
+この二重ループの中で，複雑な計算をするループ不変式があったとする．たと
+えば，配列の初期値として$0$でなく，(何らかの複雑な)計算結果を代入する
+が，その計算にはループ変数$i,j$を使わない場合を考える．
+それを$e$とすると，
+\begin{align*}
+  & \codebegin \forin{i=3}{7} \\
+  & \phantom{\codebegin} \forin{j=1}{9} \\
+  & \phantom{\codebegin} ~~\aryset{a}{i,j}{e} \codeend
+\end{align*}
+というコードの代わりに
+\begin{align*}
+  & \codebegin \Let~z=e~\In \\
+  & \phantom{\codebegin \Let} \forin{i=3}{7} \\
+  & \phantom{\codebegin \Let} \forin{j=1}{9} \\
+  & \phantom{\codebegin \Let} ~~\aryset{a}{i,j}{z} \codeend
+\end{align*}
+というコードの方が実行性能が高くなることが期待できる．
+
+このように，生成するコードの上部(トップレベルに近い方)にlet式を挿
+入することができれば，早い段階で値を計算できたり，また，同一の部分式が
+ある場合は計算結果を再利用できたり，という利点がある%
+\footnote{この変形・最適化は，コードを生成してから行なうのでよければ技術的
+  に難しいものではない．しかし，
+  コード生成においては，生成されるコード量の爆発が問題になることが多く，
+  無駄なコードはできるだけ早い段階で除去したい，すなわち，
+  コードを生成してから最適化するのではなく生成段階でコードを変形・最適化したいという
+  強い要求がある．}．
+
+そこで，コード生成器にlet挿入の機能を組み込もう．
+let挿入は部分計算の分野等で研究されており，
+CPS変換あるいはコントロールオペレータを用いることで実現できることが知られている．
+本研究では，shift0/reset0 というコントロールオペレータを用いてlet挿入を実現する．
+
+上記のコード生成器にコントロールオペレータを組みこんだものが次のプログラムである．
+\begin{align*}
+  &\red{\Resetz} ~~(\cforin{x=(\cint~3)}{(\cint~7)} \\
+  &\phantom{\Resetz} ~~(\cforin{y=(\cint~1)}{(\cint~9)} \\
+  &\phantom{\Resetz} ~~\red{\Shiftz}~\red{k_1}~\to~ \magenta{\cLet~z=e~\cIn} \\
+  &\phantom{\Resetz} ~~\red{\Throw}~\red{k_1}~(\caryset{\code{a}}{(x,y)}{z})))
+\end{align*}
+赤字のreset0,shift0,throwがコントロールオペレータであり，
+それらに対するインフォーマルな\footnote{精密な意味論は後述する．}%
+計算規則は以下の通りである．
+
+\begin{align*}
+  & \Resetz ~v \to v \\
+  & \Resetz ~(E[\Shiftz~~k~\to~\cdots(\Throw~k~v)\cdots]) \\
+  & \to \cdots(\Resetz(E[v]))\cdots
+\end{align*}
+ここで$v$は値，
+$E$は評価文脈である．2行目では，reset0とshift0に挟まれた文脈が切り取られ，
+変数$k$に束縛され，$\Throw~k~e$の形の式の場所で利用される．
+ここで切り取られる文脈には，トップにあった$\Resetz$も含まれているため，
+簡約後のトップから$\Resetz$が消えている．よく知られているshift/resetで
+は，この$\Resetz$が残る点が異なっている．
+
+上記のコード生成器をこの計算規則により計算すると，
+2重のfor式に相当する文脈
+$\cforin{x=\cdots}{\cdots}~\cforin{y=\cdots}{\cdots}~[~]$が切り取られ
+$\Throw$の部分の$k_1$で使われる．結果として，$\cLet~z=e~\cIn$の部分が，
+この文脈の外側に移動する効果が得られ，let挿入が実現できる．
+
+上記の例では，一番外側までlet挿入を行ったが，式$e$が$x$に相当するルー
+プ変数を含むときは，一番外側まで持っていくことはできず，
+2つのfor式の中間地点まで移動することになる．
+このためには，reset0 の設置場所を変更すればよい．
+
+問題は，このようにlet挿入をしたい式が複数ある場合である．「let挿入をす
+る先」にreset0を1つ置くため，いくつかのlet挿入においては直近のreset0
+まで移動するのではなく，2つ以上先の(遠くの)reset0までletを移動したいことがある．
+これは，shift0/reset0 を入れ子にすることにより，以下のように実現できる．
+\begin{align*}
+  &\red{\Resetz} ~~(\cforin{x=(\cint~3)}{(\cint~7)} \\
+  &\blue{\Resetz} ~~(\cforin{y=(\cint~1)}{(\cint~9)} \\
+  &~~\blue{\Shiftz}~\blue{k_2}~\to~ \red{\Shiftz}~\red{k_1}~\to~ \magenta{\cLet~z=e~\cIn} \\
+  &~~~~~~
+    \red{\Throw}~\red{k_1}~(\blue{\Throw}~\blue{k_2}~(\caryset{\code{a}}{(x,y)}{z}))))
+\end{align*}
+青字のコントロールオペレータをいれた場合，let挿入の「目的地」であるトッ
+プの位置(赤字のreset0で指定された位置)は，2つ先のreset0になってしまっ
+たが，これは，shift0とthrow をそれぞれ2回入れ子にすることにより実現できる．
+これが多段階 let 挿入である．
+
+なお，このように直近のreset0を越えた地点までの移動(あるいは文脈の切り
+取り)は，shift/reset では実現できず，その拡張である階層的shift/resetや
+shift0/reset0が必要となる．本研究では，簡潔さのため，
+shift0/reset0を用いることとした．
+
+% $e$ を計算すると，
+% $\blue{\Resetz}$によって，切り取られた継続 $\cLet~x_2=\csp{5}~\cIn$ が，
+% 以下で，我々の言語体系におけるshift0/reset0 による多段階let挿入の例を掲載する．
+%
+% \begin{align*}
+%   e &= \red{\Resetz} ~~\cLet~x_1=\csp{3}~\cIn \\
+%   &\phantom{=}~~ \blue{\Resetz} ~~\cLet~x_2=\csp{5}~\cIn \\
+%   &\phantom{=}~~ \blue{\Shiftz}~\blue{k_2}~\to~ \red{\Shiftz}~\red{k_1}~\to~ \magenta{\cLet~y=t~\cIn} \\
+%   &\phantom{=}~~ \Throw~\red{k_1}~(\Throw~\blue{k_2}~(x_1~\cPlus~x_2~\cPlus~y))
+% \end{align*}
+% とする．
+%
+% $e$ を計算すると，
+% $\blue{\Resetz}$によって，切り取られた継続 $\cLet~x_2=\csp{5}~\cIn$ が，
+% $\blue{\Shiftz}$ によって，$\blue{k_2}$へと捕獲され，
+% 次に，
+% $\red{\Resetz}$によって，切り取られた継続 $\cLet~x_2=\csp{3}~\cIn$ が，
+% $\red{\Shiftz}$ によって，$\red{k_1}$へと捕獲される．
+%
+% わかりやすいところまで計算を進めると以下のようになり，
+% \begin{align*}
+%   e & \too \magenta{\cLet~y=t~\cIn} \\
+%   & \phantom{\too}~~ \Throw~\red{k_1}~(\Throw~\blue{k_2}~(x_1~\cPlus~x_2~\cPlus~y))
+% \end{align*}
+%
+% $\magenta{\cLet~y=t~\cIn}$ がトップに挿入されたことが分かる．
+% $\Throw$ は，切り取られた継続を引数に適用するための演算子である．
+% つまり，
+% \begin{align*}
+%   e & \too \magenta{\cLet~y=t~\cIn} \\
+%   & \cLet~x_1=\csp{3}~\cIn \\
+%   & \cLet~x_2=\csp{5}~\cIn \\
+%   & (x_1~\cPlus~x_2~\cPlus~y)
+% \end{align*}
+%
+% となり，$\magenta{\cLet~y=t~\cIn}$ が 二重の $\cLet$を飛び越えて，挿入された事が分かる．
+% これが多段階 let 挿入である．
+
+さて，以上のようにshift0/reset0を使うことにより多段階let挿入が実現でき
+ることがわかったが，自由な使用を許せば，危ないコード生成器を書けてしま
+う．上記の例では，
+項$e$ がどのループ変数に依存するかによって，
+letをどこまで移動してよいかが変わってきた．
+例えば，トップレベルまで移動するコード生成器の場合，
+$e$ が $\code{7}$ のときは型がつき，
+$x$や$y$ のとき型が付かないようにしたい．
+このような精密な区別を実現する型システムを構築するのが本研究の目的である．
 
 %%% Local Variables:
 %%% mode: japanese-latex
