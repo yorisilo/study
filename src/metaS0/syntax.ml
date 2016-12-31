@@ -1,5 +1,7 @@
 
-(* evaluator *)
+(**
+   evaluator
+*)
 type kvar = string
 
 type var = string
@@ -36,7 +38,9 @@ and klist = kont list
 (* and klist = kont list *)
 
 
-(* type infer *)
+(**
+   type infer
+*)
 type clsfrvar = string
 type clsfrT =
   | CVar  of clsfrvar           (* γ *)
@@ -60,41 +64,15 @@ and
 
 type subtyT = (tyvar * tyT)     (* ex. x := Int *)
 
-(* let sgm_hd sgm = *)
-(*   match sgm with *)
-(*   | SEps -> Eps *)
-(*   | SCons(t, sgm') -> t *)
-(* let sgm_tl sgm = *)
-(*   match sgm with *)
-(*   | SEps -> SEps *)
-(*   | SCons(t, sgm') -> sgm' *)
-
-(* type tykT = *)
-(*   | TKArrow of (tyT * clsfrT) * (tyT * clsfrT) * sigmaT (\* tyT1 * clsfrT := T0Code *\) *)
-
 type lvT =
   | L0
   | L1 of clsfrT
-
-(* type geT = *)
-(* | Get of (tyT * tyT)          (* t > t *) *)
-(* | Gec of (clsfrT * clsfrT)    (* γ > γ *) *)
-
-(* type gtt = (tyT * tyT) *)
-(* type gtc = (clsfrT * clsfrT) *)
-(* type tylv = (tyvar * tyT * lvT) *)
 
 type tycntxtT =                 (* Γ *)
   | Empty
   | Gtt  of (tyT * tyT)         (* t > t *)
   | Gtc  of (clsfrT * clsfrT)   (* γ > γ *)
   | Tylv of var * tyT * lvT     (* x : t or (u : t)^γ *)
-
-(* type tyenvT = (var * tyT * lvT) list *)
-
-(* let tyenv_ex0 : tyenvT = [("x", TVar("x"), L0); ("u", T0Code(TVar("u"), CVar("γ")), L1(CVar("γ")))] *)
-
-(* type genvT = expr * tyT list *)
 
 type constrT =
   | CModelGtt of tycntxtT list * (tyT * tyT)       (* Γ |= t0 > t0 *)
