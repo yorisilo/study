@@ -50,7 +50,7 @@ let rec eval expr env k kl = match expr with
     eval expr1 env (fun v1 -> fun kl1 ->
         eval expr0 env (fun v0 -> fun kl0 ->
             (match v0 with
-             | VLam(x', expr', env') -> eval expr' (extend (x',v1) env') k kl0 (* env に関する cons を用意する *)
+             | VLam(x', expr', env') -> eval expr' (extend (x',v1) env') k kl0
              | VRLam(f, x, e, env') -> eval e (extend (f,v0) (extend (x,v1) env')) k kl0
              | VCont(Kont k') -> k' v1 (add_klist k kl0)
              | _ -> failwith "not apply function"
@@ -135,3 +135,20 @@ let _ = eval1 @@ Lam_("x", Lam_("x", PrimOp2("Add_", Var "x", Var "x")))
 let _ = eval1 @@ Lam("x", Fix("f", "n", If(PrimOp2("Eq", Var "n", Int 0), Int 1, PrimOp2("Mult", Var "x", App(Var "f", PrimOp2("Min", Var "n", Int 1))))))
 let _ = eval1 @@ App(App(Lam("x", Fix("f", "n", If(PrimOp2("Eq", Var "n", Int 0), Int 1, PrimOp2("Mult", Var "x", App(Var "f", PrimOp2("Min", Var "n", Int 1)))))), Int 2), Int 10)
 (* let _ = eval1 @@ Lam_("x", Fix("f", "n", If(PrimOp2("Eq", Var "n", Int 0), Code(Int 1), PrimOp2("Mult_", Var "x", App(Var "f", PrimOp2("Min", Var "n", Int 1)))))) *)
+
+let rec print_expr ppf e =
+  let printf fmt = Format.fprintf ppf fmt in
+  match e with
+  | Int n -> printf "%d" n
+  | Bool b -> Format.print_bool b
+  | Var x -> printf "%s" x
+  | Lam(x, e) ->  printf "@[λ%s." x; printf "%a@]" print_expr e
+  | Lam_(u, e) ->  printf "@[λ_%s." u; printf "%a@]" print_expr e
+  | App(e1, e2) -> printf "@[(%a %a)@]" print_expr e1 print_expr e2
+  | S0(k, e) -> printf "@[(S0 %s ->@ " k; printf "%a)@]" print_expr e
+  | R0 e -> printf "@[R0(%a)@]" print_expr e
+  | Add(e1, e2) -> printf "@[%a +@ %a@]" print_expr e1 print_expr e2
+  | Code e -> printf "@[@,<%a>@,@]" print_expr e
+  | _ -> failwith "not implemented"
+
+let print_expr' e = print_expr Format.std_formatter e

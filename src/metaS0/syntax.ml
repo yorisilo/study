@@ -4,6 +4,8 @@ type kvar = string
 type var = string
 
 type expr =
+  | Int     of int
+  | Bool    of bool
   | Var     of var
   | Lam     of var * expr
   | Lam_    of var * expr
@@ -12,8 +14,6 @@ type expr =
   | R0      of expr
   | T0      of kvar * expr
   | Code    of expr
-  | Int     of int
-  | Bool    of bool
   | If      of expr * expr * expr
   | Eq      of int * int
   | Add     of expr * expr
