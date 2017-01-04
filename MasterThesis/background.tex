@@ -44,6 +44,42 @@ val y : int code = .<(1 + 2) * (1 + 2)>.
 \subsection{コード生成の例}
 \oishi{power関数の例でいいのだろうか}
 
+\begin{lstlisting}
+# let rec power n x =
+    if n = 0 then x
+    else x * power (n-1) x;;
+val power : int -> int -> int = <fun>
+
+# let power5 = fun x -> power 5 x;;
+val power5 : int -> int = <fun>
+\end{lstlisting}
+
+power は$x$の$n$乗を計算する関数である．
+power5 は $x$の5乗を計算する関数である．
+例えば，$7$ に power5 を適用すると，$7$ の $5$ 乗が計算される．
+power5 に $7$ が渡された時点で，計算が進み，power関数が評価され， $5$ の$7$ 乗が求まる．
+
+次にコード生成を用いる例を見る．
+
+\begin{lstlisting}
+# let rec gen_power n x =
+    if n = 0 then .<1>.
+    else .<.~x * .~(gen_power (n-1) x)>.;;
+val gen_power : int -> int code -> int code = <fun>
+
+# let gen_power5 = .<fun x -> .~(gen_power 5 .<x>.)>.;;
+val gen_power5 : (int -> int) code =
+  .<fun x_1  -> x_1 * (x_1 * (x_1 * (x_1 * (x_1 * 1))))>.
+\end{lstlisting}
+
+gen\_power は，$x$の$n$乗を計算する関数のコード生成を行う関数である．
+この関数は，$n$に特化したコードを生成する関数である．
+特化というのは，コード生成前に$n$の値による計算をあらかじめしておくということである．
+それによって，gen\_power5 は $x$ の計算を遅らせることができ，
+gen\_power関数が評価されることによって \lstinline|.<fun x_1  -> x_1 * (x_1 * (x_1 * (x_1 * (x_1 * 1))))>.| というように展開される．
+このように，コード生成法は事前に計算するところ，計算を遅らせておくところを決めることができるので，効率の良いプログラムが作成できる．
+
+
 \section{shift0/reset0}
 本節では，限定継続を扱うためのコントロールオペレータ shift0/reset0 について説明する．
 
@@ -231,7 +267,7 @@ $E$は評価文脈である．2行目では，reset0とshift0に挟まれた文�
 は，この$\Resetz$が残る点が異なっている．
 
 上記のコード生成器をこの計算規則により計算すると，
-2重のfor式に相当する文脈
+2重のfor式に相当する文脈\\
 $\cforin{x=\cdots}{\cdots}~\cforin{y=\cdots}{\cdots}~[~]$が切り取られ
 $\Throw$の部分の$k_1$で使われる．結果として，$\cLet~z=e~\cIn$の部分が，
 この文脈の外側に移動する効果が得られ，let挿入が実現できる．
@@ -309,6 +345,21 @@ letをどこまで移動してよいかが変わってきた．
 $e$ が $\code{7}$ のときは型がつき，
 $x$や$y$ のとき型が付かないようにしたい．
 このような精密な区別を実現する型システムを構築するのが本研究の目的である．
+
+\section{Scope extrusion}
+この節では，Scope extrusion (変数が意図した束縛から抜け出してしまうこと)について例を用いて説明する．
+前述の例では，$e$ が$x$や$y$ のとき，Scope extrusion という問題が発生する．
+
+\begin{align*}
+  &\red{\Resetz} ~~(\cforin{x=(\cint~3)}{(\cint~7)} \\
+  &\blue{\Resetz} ~~(\cforin{y=(\cint~1)}{(\cint~9)} \\
+  &~~\blue{\Shiftz}~\blue{k_2}~\to~ \red{\Shiftz}~\red{k_1}~\to~ \magenta{\cLet~z=x~\cIn} \\
+  &~~~~~~
+    \red{\Throw}~\red{k_1}~(\blue{\Throw}~\blue{k_2}~(\caryset{\code{a}}{(x,y)}{z}))))
+\end{align*}
+
+このプログラムは，$\magenta{\cLet~z=x~\cIn}$がトップレベルまで移動するコード生成器である．
+$x$ は $\cforin{x=(\cint~3)}{(\cint~7)}$ のところで束縛されているが，$x$ を含んだ式がトップレベルまで移動してしまい，$x$は未束縛となり，実行時エラーとなる．
 
 %%% Local Variables:
 %%% mode: japanese-latex
