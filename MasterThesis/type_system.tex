@@ -19,10 +19,10 @@ $\gamma$の定義における$\gamma_x$は環境識別子の変数を表す．
 以下では，メタ変数と変数を区別せず$\gamma_x$を$\gamma$と表記する．
 ここで環境識別子として$\cup$を導入した理由は後述する．
 
-$L ::= \empty \mid \gamma$ は現在ステージと将来ステージをまとめ
+$L ::= \empty \mid \gamma$ は現在ステージ(レベル0)と将来ステージ(レベル1)をまとめ
 て表す記号である．たとえば，$\Gamma \vdash^L
-e:t~;~\sigma$は，$L=\empty$のとき現在ステージの判断で，
-$L=\gamma$のとき将来ステージの判断となる．
+e:t~;~\sigma$は，$L=\empty$のとき現在ステージ(レベル0)の判断で，
+$L=\gamma$のとき将来ステージ(レベル1)の判断となる．
 
 レベル0の型$t^0$，レベル1の型$t^1$，(レベル0の)型の有限列$\sigma$,
 (レベル0の)継続の型$\kappa$を次の通り定義する．
@@ -50,7 +50,7 @@ $L=\gamma$のとき将来ステージの判断となる．
 $n=1,\cdots,k$に対して並べた列)で表現している．
 この型システムの詳細は，Materzokら\cite{Materzok2011}の研究を参照されたい．
 
-本稿の範囲では，コントロールオペレータは現在ステージのみにあらわれ，生
+本稿の範囲では，コントロールオペレータは現在ステージ(レベル0)にのみあらわれ，生
 成されるコードの中にはあらわないため，レベル1の関数型は，エフェクトを
 表す列を持たない．
 また，本項では，shift0/reset0 はコードを操作する目的にのみ使うため，継
@@ -133,6 +133,8 @@ $n=1,\cdots,k$に対して並べた列)で表現している．
 
 \begin{figure}[H]
   \centering
+  \oishi{下の3つの型付け規則は$\Resetz$に対応する $\Shiftz, \Throw$がない場合でも，型が付いてほしいので，お尻に$\sigma$をつけている．つまり，$\Resetz~(\Resetz~ e)$ みたいなものでも型がつく．
+  絶対に$\Resetz, \Shiftz, \Throw$の三位一体を条件として使うのならば，お尻に$\sigma$はいらないはず．($\Resetz$ で付加された answer type は $\Throw$のところで消えるから)}
   \[
     \infer
     {\Gamma, x : t \vdash x : t ~;~ \sigma}
@@ -165,12 +167,12 @@ $n=1,\cdots,k$に対して並べた列)で表現している．
 
   \[
     \infer
-    {\Gamma \vdash \fun{x}{e} : \funT{t_1}{t_2}{\sigma} ~;~\sigma}
+    {\Gamma \vdash \fun{x}{e} : \funT{t_1}{t_2}{\sigma} ~;~\sigma'}
     {\Gamma,~x : t_1 \vdash e : t_2 ~;~ \sigma}
     \quad
     \infer
-    {\Gamma \vdash^\gamma \fun{u}{e} : \funT{t_1}{t_2}{} ~;~\sigma'}
-    {\Gamma,~(u : t_1)^\gamma \vdash^\gamma e : t_2 ~;~ \sigma}
+    {\Gamma \vdash^\gamma \fun{u}{e} : \funT{t_1}{t_2}{} ~;~ }
+    {\Gamma,~(u : t_1)^\gamma \vdash^\gamma e : t_2 ~;~  }
   \]
 
   \[
@@ -195,12 +197,6 @@ $n=1,\cdots,k$に対して並べた列)で表現している．
     {\Gamma,~\gamma_1 \ord \gamma,~x:\codeT{t_1}{\gamma_1} \vdash e
       : \codeT{t_2}{\gamma_1}; \sigma}
   \]
-  \oishi{\\$\ccfun{}{}$ は必要あるかどうか}
-  \[
-    \infer
-    {\Gamma \vdash \ccfun{u^1}{e} : \codeT{t_1 \to t_2}{\gamma} ; \sigma}
-    {\Gamma, \gamma_1 \ord \gamma, x : (u : t_1)^{\gamma_1} \vdash e : \codeT{t_2}{\gamma_1} ; \sigma}
-  \]
   \caption{コードレベルのラムダ抽象の型導出規則}
   \label{fig:code_abs_type_rule}
 \end{figure}
@@ -215,6 +211,7 @@ $n=1,\cdots,k$に対して並べた列)で表現している．
     {\Gamma \vdash e : \codeT{t}{\gamma} ~;~ \codeT{t}{\gamma}, \sigma}
   \]
 
+  % \oishi{$\Throw$ルールの $\sigma$-part がずれる問題は $\Resetz$を $\Throw$の間に入れて対処していたが，$\Shiftz$で，$e$ の$\sigma$-part は先頭要素を減らさず，$\Throw$で減らすようにするのはどうか($\Resetz, \Shiftz, \Throw$は三位一体なので) → だめだった．shift をネストさせると，うまくいかないことがわかった}
   \[
     \infer{\Gamma \vdash \shiftz{k}{e} : \codeT{t_1}{\gamma_1} ~;~ \codeT{t_0}{\gamma_0},\sigma}
     {\Gamma,~k:\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}{\sigma}
@@ -223,6 +220,8 @@ $n=1,\cdots,k$に対して並べた列)で表現している．
     }
   \]
 
+  % \oishi{$\Shiftz$ルールでなく，$\Throw$ルールで対応するanswer type($\sigma$の先頭要素$\codeT{t'}{\gamma'}$)を減らす．→ だめだった．shift をネストさせると，うまくいかないことがわかった(多分減らさなくても型は付くと思うけど)}
+  \oishi{複数の$\Throw$を使う場合，$\sigma$-partのsub sumptionを使えば良い}
   \[
     \infer
     {\Gamma,~ k:\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}{\sigma}
@@ -239,7 +238,7 @@ $n=1,\cdots,k$に対して並べた列)で表現している．
 
 コード生成に関する補助的な規則として，Subsumptionに相当する規則等がある．
 
-\oishi{$\ord$ の左右の $\gamma$ は逆？ 一般に項の内部に入るにしたがって，使えるコードレベル変数は増えていくので，逆のような気がする．$ \gamma_1 \ord \gamma_0$ の意味は $\gamma_0$ より $\gamma_1$ のほうが使えるコードレベル変数は多いという意味である}
+% \oishi{$\ord$ の左右の $\gamma$ は逆？ 一般に項の内部に入るにしたがって，使えるコードレベル変数は増えていくので，逆のような気がする．$ \gamma_1 \ord \gamma_0$ の意味は $\gamma_0$ より $\gamma_1$ のほうが使えるコードレベル変数は多いという意味である}
 
 \begin{figure}[H]
   \centering
@@ -278,33 +277,212 @@ $n=1,\cdots,k$に対して並べた列)で表現している．
   \label{fig:code_gen_subs_type_rule}
 \end{figure}
 
+\Shiftz の Answer type の列($\sigma$)に関するSubsumptionに相当する規則がある．
+
+\begin{figure}[H]
+  \centering
+  \[
+    \infer
+    {\Gamma \vdash e : t;~\codeT{t'}{\gamma_2},\sigma}
+    {\Gamma \vdash e : t;~\codeT{t'}{\gamma_1},\sigma
+      & \Gamma \models \gamma_2 \ord \gamma_1
+    }
+  \]
+  \caption{$\sigma$-partに関するSubsumptionの型導出規則}
+  \label{fig:sigma_subs_type_rule}
+\end{figure}
+
 \section{型付け例}
 
 上記の型システムのもとで，いくつかの項の型付けについて述べる．
 
+\subsection{let挿入の例}
+
 \begin{align*}
-  e_1 & = \Resetz ~~\cLet~x_1=\csp{3}~\cIn \\
-      & \phantom{=}~~ \Resetz ~~\cLet~x_2=\csp{5}~\cIn \\
+  e_1 & = \Resetz ~~\cLet~x_1= e_1 ~\cIn \\
+      & \phantom{=}~~ \Resetz ~~\cLet~x_2= e_2~\cIn \\
       & \phantom{=}~~ \Shiftz~k~\to~\cLet~y=t~\cIn \\
-      & \phantom{=}~~ \Throw~k~(x_1~\cPlus~x_2~\cPlus~y)
+      & \phantom{=}~~ \Throw~ k~ y
 \end{align*}
 
-この式$e_1$に対して，もし，$t=\csp{7}$ あるいは $t=x_1$であれば，
+式$e_1$に対して，$t=\cint~ 7$ あるいは $t=x_1$であれば，
 $e_1$ は型付け可能である．
 一方，$t=x_2$ であれば，$e_1$ は型付けできない．
 
+\newcommand\tzero{\codeT{t}{\gamma_0}}
+\newcommand\tone{\codeT{t}{\gamma_1}}
+\newcommand\ttwo{\codeT{t}{\gamma_2}}
+\newcommand\tthree{\codeT{t}{\gamma_3}}
+\newcommand\tonethree{\codeT{t}{\gamma_1\uni\gamma_3}}
+\newcommand\tall{\codeT{t}{\gamma_2\uni\gamma_1\uni\gamma_3}}
+\newcommand\Gammaone{
+  \longer{\gamma_1}{\gamma_0},~x_1:\tone \vdash
+  \cLet~x_2=e_2~\cIn~\cdots : \tone;~\tone,\tzero}
+\newcommand\Gammatwo{
+  \Gamma_1,~k_2:\contT{\ttwo}{\tone}{\tzero},
+  ~k_1:\contT{\tone}{\tzero}{\cdot{}}}
+
+\def\proofone{
+  \infer
+  {\vdash e_1:\tzero;~\cdot{}}
+  {
+    \infer{\vdash \cLet~x_1=e_1~\cIn~\Resetz~\cLet~x_2=e_2~\cIn~\cdots :
+      \tzero;~\tzero
+    }
+    {\infer{\longer{\gamma_1}{\gamma_0},~x_1:\tone \vdash
+        \Resetz~\cLet~x_2=e_2~\cIn~\cdots : \tone;~\tzero
+      }
+      {\prooftwo}
+    }
+  }
+}
+\def\prooftwo{
+  \infer{\longer{\gamma_1}{\gamma_0},~x_1:\tone \vdash
+    \cLet~x_2=e_2~\cIn~\cdots : \tone;~\tone,\tzero}
+  {\infer{\Gamma_1=\longer{\gamma_2}{\gamma_1},~x_2:\ttwo,~\longer{\gamma_1}{\gamma_0},~x_1:\tone \vdash
+      \shiftz{k}{\cdots} : \ttwo;~\tone,\tzero
+    }
+    {\proofthree}
+  }
+}
+
+\def\proofthree{
+  {\infer{\Gamma_2=\Gamma_1,~k:\contT{\ttwo}{\tone}{\tzero}
+      \vdash \cLet~y=t~\cIn~\cdots : \tone;~\tzero
+    }
+    {\prooffour}
+  }
+}
+
+\def\prooffour{
+  \infer{\Gamma_3=\Gamma_2,~\longer{\gamma_3}{\gamma_1},~y:\tthree \vdash \throw{k}{(\Resetz~ y)} :
+    \tthree;~\tzero}
+  {\infer{\Gamma_3 \vdash y : \tall;~\cdot}{\vdots}
+    & \infer{\Gamma_3 \models \longer{\gamma_1\uni\gamma_3}{\gamma_1}}{}
+  }
+  & \infer[(*)]{\Gamma_2 \vdash t : \tone;~ \tzero}{\vdots}
+}
+
+\[
+  \proofone
+\]
+
+$t$ が $x_1, \cint 7, x_2$ の場合に$\Gamma_2 \vdash t : \tone;~ \tzero$が成り立つかを見ていく．\\
+$(*)$ のところに着目すると，
+$\Gamma_2 = \longer{\gamma_2}{\gamma_1},~x_2:\ttwo,~\longer{\gamma_1}{\gamma_0},~x_1:\tone,~k:\contT{\ttwo}{\tone}{\tzero}$
+より，
+\begin{description}
+\item[$t=x_1$の時]\mbox{}\\
+  $x_1:\tone \vdash x_1:\tone$ が成り立ち，型が付く
+\item[$t= \cint 7$の時]\mbox{}\\
+  $\cint 7$ は定数であるので，どの Classifier $\gamma_i$ においても型が付く．
+\item[$t=x_2$の時]\mbox{}\\
+  $\longer{\gamma_2}{\gamma_1},~\longer{\gamma_1}{\gamma_0},~x_2:\ttwo$ より，
+  $x_2$ のスコープは$\gamma_2$ であり，
+  $\gamma_2$スコープのコード変数は，$\gamma_1$スコープでは一般に使用できないので
+  $\longer{\gamma_2}{\gamma_1},~\longer{\gamma_1}{\gamma_0},~x_2:\ttwo \vdash x_2:\tone$ は成り立たず，型がつかない
+\end{description}
+
+\subsection{多段階let挿入の例}
+
 \begin{align*}
-  e_2 & = \Resetz ~~\cLet~x_1=\csp{3}~\cIn \\
-      & \phantom{=}~~ \Resetz ~~\cLet~x_2=\csp{5}~\cIn \\
+  e_2 & = \Resetz ~~\cLet~x_1= e_1~\cIn \\
+      & \phantom{=}~~ \Resetz ~~\cLet~x_2=e_2~\cIn \\
       & \phantom{=}~~ \Shiftz~k_2~\to~ \Shiftz~k_1~\to~ \cLet~y=t~\cIn \\
-      & \phantom{=}~~ \Throw~k_1~(\Throw~k_2~(x_1~\cPlus~x_2~\cPlus~y))
+      & \phantom{=}~~ \Throw~k_1~ (\Resetz~ (\Throw~k_2~ y))
 \end{align*}
 
-この式$e_2$に対して，もし$t=\csp{7}$であれば$e_1$は型付け可能である．
+式$e_2$に対して，$t=\cint7$であれば$e_1$は型付け可能である．
 一方，$t=x_2$ あるいは $t=x_1$であれば，$e_1$は型付けできない．
 
-このように，(少なくとも)上記の例については安全な式と危険な式を正しく峻
-別できていることがわかった．
+\def\proofone{
+  \infer
+  {\vdash e:\tzero;~\cdot{}}
+  {
+    \infer{\vdash \cLet~x_1=e_1~\cIn~\Resetz~\cLet~x_2=e_2~\cIn~\cdots :
+      \tzero;~\tzero
+    }
+    {\infer{\longer{\gamma_1}{\gamma_0},~x_1:\tone \vdash
+        \Resetz~\cLet~x_2=e_2~\cIn~\cdots : \tone;~\tzero
+      }
+      {\prooftwo}
+    }
+  }
+}
+\def\prooftwo{
+  \infer{\longer{\gamma_1}{\gamma_0},~x_1:\tone \vdash
+    \cLet~x_2=e_2~\cIn~\cdots : \tone;~\tone,\tzero}
+  {\infer{\Gamma_1=\longer{\gamma_2}{\gamma_1},~x_2:\ttwo,~\longer{\gamma_1}{\gamma_0},~x_1:\tone \vdash
+      \shiftz{k_2}{\shiftz{k_1}{\cdots}} : \ttwo;~\tone,\tzero
+    }
+    {\proofthree}
+  }
+}
+
+\def\proofthree{
+  \infer{\Gamma_1,~k_2:\contT{\ttwo}{\tone}{\tzero}
+    \vdash \shiftz{k_1}{\cdots} : \tone;~ \tzero
+  }
+  {\infer{\Gamma_2=\Gamma_1,~k_2:\contT{\ttwo}{\tone}{\tzero},
+      ~k_1:\contT{\tone}{\tzero}{\cdot{}}
+      \vdash \cLet~ y=t~ \cIn~\cdots : \tzero;~\cdot{}
+    }
+    {\prooffour}
+  }
+}
+
+\def\prooffour{
+  \infer{\Gamma_3=\Gamma_2,~\longer{\gamma_3}{\gamma_0},~y:\tthree \vdash \throw{k_1}{(\Resetz(\throw{k_2}{y}))} : \tthree;~\cdot{}}
+  {\prooffive}
+  & \infer[(*)]{\Gamma_2 \vdash t : \tzero;~ \cdot}{\vdots}
+}
+
+\def\prooffive{
+  \infer
+  {\Gamma_3 \vdash \Resetz(\throw{k_2}{y}) : \tonethree; ~\cdot{}}
+  {\infer[(\#)]
+    {\Gamma_3 \vdash \throw{k_2}{y} : \tonethree;~\tonethree}
+    {\infer
+      {\Gamma_3 \vdash \throw{k_2}{y} : \tonethree;~\tzero}
+      {\Gamma_3 \vdash y :
+        \codeT{t}{\gamma_2\uni\gamma_1\uni\gamma_3};~\cdot
+        & \infer{\Gamma_3 \models
+          \longer{\gamma_1\uni\gamma_3}{\gamma_0}}{}
+      }
+      & \infer{\Gamma_3 \models \longer{\gamma_1\uni\gamma_3}{\gamma_0}}{}
+    }
+  }
+  & \infer{\Gamma_3 \models \longer{\gamma_3}{\gamma_0}}{}
+}
+
+\[
+  \proofone
+\]
+
+この型付けで注意するところは，複数回の$\Throw$ を使うときは その間に $\Resetz$ を入れなければいけないところである．
+$\Resetz$ を入れることで，$\sigma$-part のずれを防ぎ，$\Throw$ 規則を適用できる準備ができる．\\
+$(\#)$のところに着目すると，$k_2$ の型は $k_2:\contT{\ttwo}{\tone}{\tzero}$ となっているので，$\Throw$規則を適用するには，$\sigma$-part の subsumption 規則を適用して $\tonethree$ から $\tzero$ が導ければ良い．
+
+次に，$t$ が $x_1, x_2, \cint 7$ の場合に$\Gamma_2 \vdash t : \tzero;~ \cdot$が成り立つかを見ていく．\\
+$(*)$ のところに着目すると，
+$\Gamma_2 = \longer{\gamma_2}{\gamma_1},~x_2:\ttwo,~\longer{\gamma_1}{\gamma_0},~x_1:\tone,k_2:\contT{\ttwo}{\tone}{\tzero},~k_1:\contT{\tone}{\tzero}{\cdot{}}$
+より，
+\begin{description}
+\item[$t=x_1$の時]\mbox{}\\
+  $~\longer{\gamma_1}{\gamma_0},~x_1:\tone$ より，
+  $x_1$ のスコープは$\gamma_1$ であり，
+  $\gamma_1$スコープのコード変数は，$\gamma_0$スコープでは一般に使用できないので
+  $~\longer{\gamma_1}{\gamma_0},~x_1:\tone \vdash x_2:\tzero$ は成り立たず，型がつかない
+\item[$t=x_2$の時]\mbox{}\\
+  $\longer{\gamma_2}{\gamma_1},~\longer{\gamma_1}{\gamma_0},~x_2:\ttwo$ より，
+  $x_2$ のスコープは$\gamma_2$ であり，
+  $\gamma_2$スコープのコード変数は，$\gamma_0$スコープでは一般に使用できないので
+  $\longer{\gamma_2}{\gamma_1},~\longer{\gamma_1}{\gamma_0},~x_2:\ttwo \vdash x_2:\tzero$ は成り立たず，型がつかない
+\item[$t= \cint 7$の時]\mbox{}\\
+  $\cint 7$ は定数であるので，どの Classifier $\gamma_i$ においても型が付く．
+\end{description}
+
+このように，(少なくとも)上記の例については安全な式と危険な式(Scope extrusionが起こる式)を正しく選別できていることがわかった．
 
 \section{型安全性について}
 
