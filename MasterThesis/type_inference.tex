@@ -54,11 +54,11 @@ $\longer{t_1}{t_2}$という形のまま制約として生成する。)
 かもしれない。そうすると、上記はとける？)
 
 
-\oishi{
-  以下のルールにおいて，Constraint の $\Gamma \models \longer{t}{t'}$ の $\Gamma \models$ はルールを適用した瞬間の $\Gamma$ の情報は制約解消において使わないから必要ない？\\
-  一貫性をもたせるのなら， $t = t'$ の形の Constraint も $\Gamma \models t = t'$ とする必要がある？
-}
-\\
+% \oishi{
+%   以下のルールにおいて，Constraint の $\Gamma \models \longer{t}{t'}$ の $\Gamma \models$ はルールを適用した瞬間の $\Gamma$ の情報は制約解消において使わないから必要ない？\\
+%   一貫性をもたせるのなら， $t = t'$ の形の Constraint も $\Gamma \models t = t'$ とする必要がある？
+% }
+% \\
 (var0)
 
 \[
@@ -147,6 +147,16 @@ $\longer{t_1}{t_2}$という形のまま制約として生成する。)
   }
 \]
 
+(code-let)
+
+\[
+  \infer[Constr;~\Gamma \models \longer{t}{\codeT{t'}{\gamma_0}}]
+  {\Gamma \vdash \cLet~ x = e_0~ \cIn~ e_1 : t ; \sigma}
+  { \Gamma \vdash e_0 : \codeT{t'}{\gamma_0} ; \sigma
+    &\Gamma, \longer{\gamma_1}{\gamma_0}, x: \codeT{t'}{\gamma_1} \vdash e_1 : \codeT{t'}{\gamma_1} ; \sigma
+  }
+\]
+
 (reset0)
 
 \[
@@ -172,17 +182,7 @@ $\longer{t_1}{t_2}$という形のまま制約として生成する。)
   throw0 ルールにのみ $\sigma$ part の subsumption ルールを適用すればおｋ？
 }
 \\
-変更前
-\[
-  \infer[Constr;~ \Gamma \models \longer{t}{\codeT{t_0}{\gamma_2}},~ (\Gamma,~ k:t') \models \gamma_2 \ord \gamma_0,~  t' = \contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}{\sigma}]
-  {\Gamma,~ k:t'
-    \vdash \throw{k}{v} : t ; \sigma}
-  {\Gamma,~ k:t'
-    \vdash v : \codeT{t_1}{\gamma_1 \uni \gamma_2} ; \sigma
-  }
-\]
 
-変更後
 \[
   \infer[Constr;~ \Gamma \models \longer{t}{\codeT{t_0}{\gamma_2}},~ (\Gamma,~ k:t') \models \gamma_2 \ord \gamma_0,~  t' = \contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}{\sigma},~ \Gamma \models \gamma_1 \uni \gamma_2 \ord \gamma']
   {\Gamma,~ k:t'

@@ -106,11 +106,11 @@ $\longer{t_1}{t_2}$という形のまま制約として生成する。)
 かもしれない。そうすると、上記はとける？)
 
 
-\oishi{
-  以下のルールにおいて，Constraint の $\Gamma \models \longer{t}{t'}$ の $\Gamma \models$ はルールを適用した瞬間の $\Gamma$ の情報は制約解消において使わないから必要ない？ ->
-  一貫性をもたせるのなら， $t = t'$ の形の Constraint も $\Gamma \models t = t'$ とする必要がある？
-}
-\\
+% \oishi{
+%   以下のルールにおいて，Constraint の $\Gamma \models \longer{t}{t'}$ の $\Gamma \models$ はルールを適用した瞬間の $\Gamma$ の情報は制約解消において使わないから必要ない？ ->
+%   一貫性をもたせるのなら， $t = t'$ の形の Constraint も $\Gamma \models t = t'$ とする必要がある？
+% }
+% \\
 (var0)
 
 \[
@@ -251,7 +251,7 @@ Constraintの中にのみ存在する」型やclassifier があるときは、
 
 なお、code-lambda規則での新しいclassifier は、classfier変数ではなく、
 classifier定数とする。(この段階では、変数も定数も差はないが、
-制約を解消するとき、cassifier定数に対する代入はしない、という違いがある。)
+制約を解消するとき、cassifier定数に対する代入はしない、という違いがある。))
 
 \section{制約の解消}
 
@@ -413,3 +413,8 @@ $\Delta \models \longer{\alpha^0}{\beta^0}$という制約がのこっていた�
 
 
 \end{document}
+
+%%% Local Variables:
+%%% mode: japanese-latex
+%%% TeX-master: t
+%%% End:
