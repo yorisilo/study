@@ -15,7 +15,7 @@ Tahaら\cite{Taha:2003:EC:604131.604134}は，純粋な(副作用のない)コ�
 
 \begin{figure}[ht]
   \centering
-  \includegraphics[clip,width=5cm]{./img/sudo_ref.png}
+  \includegraphics[clip,width=10cm]{./img/sudo_ref.png}
   \caption{危険な例}
   \label{fig:sudo_ref}
 \end{figure}
@@ -47,7 +47,7 @@ forやletなどコードレベルの束縛子があるたびに，新しいス�
 
 \begin{figure}[ht]
   \centering
-  \includegraphics[clip,height=4cm]{./img/ec_for.png}
+  \includegraphics[clip,height=8cm]{./img/ec_for.png}
   \caption{型によるコードレベル変数のスコープ表現}
   \label{fig:ec_for}
 \end{figure}
@@ -71,16 +71,14 @@ forやletなどコードレベルの束縛子があるたびに，新しいス�
 
 このため，前述の2重のforループ生成において，その中間にlet挿入をするプログラムに
 ついて考察する．その概形は下記の1つ目の図である．
+
 \begin{figure}[ht]
   \centering
-  \includegraphics[clip,height=8cm]{./img/ecex_for_non_gamma.png}
+  \includegraphics[clip,height=12cm]{./img/ecex_for_non_gamma.png}
   \caption{コード生成によるlet挿入}
   \label{fig:ecex_for_non_gamma}
 \end{figure}
 
-\begin{center}
-
-\end{center}
 上の方の図で，使えるコードレベル変数が異なる場所ごとに，
 $\gamma_0,\gamma_1,\gamma_2,\gamma_3$と名付けた．
 須藤らの体系通りであれば，これらの環境識別子の間の順序は，スコープの包
