@@ -69,10 +69,10 @@ let rec eval expr env k kl = match expr with
             | (VInt n, VInt m) -> k (VInt (n + m)) kl1
             | _ -> failwith "not Integer in Add")
           kl0) kl
-  | PrimOp2(x, e0, e1) ->
+  | PrimOp2(op, e0, e1) ->
     eval e0 env (fun v0 -> fun kl0 ->
         eval e1 env (fun v1 -> fun kl1 ->
-            match (x, v0, v1) with
+            match (op, v0, v1) with
             | ("Add", VInt n, VInt m) -> k (VInt (n + m)) kl1
             | ("Add_", VCode e0, VCode e1) -> k (VCode (PrimOp2 ("Add", e0, e1))) kl1
             | ("Min", VInt n, VInt m) -> k (VInt (n - m)) kl1
@@ -97,6 +97,9 @@ let rec eval expr env k kl = match expr with
   | Let(x, e0, e1) ->
     eval e0 env (fun v0 -> fun kl0 ->
         eval e1 (extend (x, v0) env) k kl0) kl
+  | Let_(x, e0, e1) ->
+    eval e0 env (fun v0 -> fun kl0 ->
+        eval e1 (extend (x, v0) env) k kl0) kl
   | Code(e) -> k (VCode e) kl
   | _ -> failwith "unknown expression"
 
@@ -116,10 +119,29 @@ let rec print_expr ppf e =
   | R0 e -> printf "@[R0(%a)@]" print_expr e
   | T0(k, e) -> printf "@[(T0 " ;printf "%a)@]" print_expr e
   | Add(e1, e2) -> printf "@[%a +@ %a@]" print_expr e1 print_expr e2
+  | PrimOp2("Add", e1, e2)  -> printf "@[%a +@ %a@]" print_expr e1 print_expr e2
+  | PrimOp2("Add_", e1, e2) -> printf "@[%a +_@ %a@]" print_expr e1 print_expr e2
+  | PrimOp2("Min", e1, e2)  -> printf "@[%a -@ %a@]" print_expr e1 print_expr e2
+  | PrimOp2("Min_", e1, e2) -> printf "@[%a -_@ %a@]" print_expr e1 print_expr e2
+  | PrimOp2("Mult", e1, e2) -> printf "@[%a x@ %a@]" print_expr e1 print_expr e2
+  | PrimOp2("Mult_", e1, e2) -> printf "@[%a x_@ %a@]" print_expr e1 print_expr e2
+  | PrimOp2("Eq", e1, e2) -> printf "@[%a =@ %a@]" print_expr e1 print_expr e2
+  | Let(x, e0, e1) -> printf "@[let %s = " x; printf "%a in %a@]" print_expr e0 print_expr e1
+  | Let_(x, e0, e1) -> printf "@[let_ %s = " x; printf "%a in_ %a@]" print_expr e0 print_expr e1
   | Code e -> printf "@[@,<%a>@,@]" print_expr e
   | _ -> failwith "not implemented"
 
 let print_expr' e = print_expr Format.std_formatter e
+
+let rec print_value ppf v =
+  let printf fmt = Format.fprintf ppf fmt in
+  match v with
+  | VInt n -> printf "%d" n
+  | VBool b -> Format.print_bool b
+  | VCode e -> printf "@[@,<%a>@,@]" print_expr e
+  | _ -> failwith "not implemented"
+
+let print_value' v = print_value Format.std_formatter v
 
 let i = Lam ("x", Var "x")
 
@@ -131,6 +153,8 @@ let skk = App (App (s,k),k)
 
 let ce1 = Code(Int 1)
 let ce2 = Code(Int 2)
+let ce10 = Code(Int 10)
+let ce20 = Code(Int 20)
 let _ = eval1 @@ App (skk, (Int 1))
 let _ = eval1 @@ R0(Int 1)
 let _ = eval1 @@ R0(S0("k", Int 1))
@@ -142,6 +166,7 @@ let _ = eval1 @@ R0(Add(Int 1, S0("k", App(Var "k", Int 1))))
 let _ = eval1 @@ R0(Add(Int 10, R0(Add(Int 20, S0("k1", S0("k2", App(Var "k2", Int 1)))))))
 let _ = eval1 @@ R0(Add(Int 10, R0(Add(Int 20, S0("k1", S0("k2", App(Var "k1", Int 1)))))))
 let _ = eval1 @@ R0(Add(Int 10, R0(Add(Int 20, S0("k1", S0("k2", App(Var "k1", App(Var "k2", Int 1))))))))
+let _ = print_value' @@ eval1 @@ R0(PrimOp2("Add_", ce10, R0(PrimOp2("Add_", ce20, S0("k1", S0("k2", App(Var "k1", App(Var "k2", ce1))))))))
 let _ = eval1 @@ R0(Add(Int 10, R0(Add(Int 20, S0("k1", S0("k2", T0("k1", App(Var "k1", R0(T0("k2", App(Var "k2", Int 1)))))))))))
 let _ = eval1 @@ ce1
 let _ = eval1 @@ ce2

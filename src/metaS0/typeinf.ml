@@ -151,8 +151,19 @@ let rec gen_constr (tyct: tycntxtT list) (lv: lvT) (e: expr) (t: tyT) (sgm: sgmT
     gen_constr tyct lv e3 t     sgm cnstl
   (* | Eq *)
   (* | Add *)
-  (* | PrimOp2 *)
-  (* | Let *)
+  (* | PrimOp2("Add", e1, e2) -> *)
+  (* | PrimOp2("Add_", e1, e2) -> *)
+  | Let_ (x, e0, e1), lv ->
+    let t' = gen_tyvar () in
+    let cf0 = gen_clsfr () in
+    let cf1 = gen_clsfr () in
+    let t0 = T0Code(t', cf0) in
+    let t1 = T0Code(t', cf1) in
+    let new_tyct = Gtc(cf1, cf0) :: Tylv(x, t', L1 cf1) :: tyct in
+    let c1 = CModelGtt(tyct, (t, (T0Code(t', cf0)))) in
+    let new_cnstl = c1 :: cnstl in
+    gen_constr tyct lv e0 t0 sgm new_cnstl @
+    gen_constr new_tyct lv e1 t1 sgm new_cnstl
   (* | Fix *)
   | _ -> failwith "not implemented"
 
@@ -176,7 +187,7 @@ and
   | TInt -> printf "Int"
   | TBool -> printf "Bool"
   | T0Arrow(t1,t2,sgm) -> printf "@[%a -(%a)-> %a@]" print_ty t1 print_sgm sgm print_ty t2
-  | T0Code(t, cf) -> printf "@[@,<%a>^(%a)@,@]" print_ty t print_clsfr cf
+  | T0Code(t, cf) -> printf "@[@,<%a>^(%a)@]" print_ty t print_clsfr cf
   | T1Arrow(t1, t2) -> printf "@[%a -> %a@]" print_ty t1 print_ty t2
   | TKArrow((t1,cf1), (t2,cf2), sgm) -> printf "@[@,<%a>^(%a) = %a => <%a>^(%a)@]" print_ty t1 print_clsfr cf1 print_sgm sgm print_ty t2 print_clsfr cf2
 
@@ -193,30 +204,31 @@ let rec print_lv ppf lv =
 let rec print_tycntxt ppf tyc =
   let printf fmt = Format.fprintf ppf fmt in
   match tyc with
-  | Empty -> printf ""
-  | Gtt(t1, t2) -> printf "@[%a > %a@]" print_ty t1 print_ty t2
-  | Gtc(cf1, cf2) -> printf "@[%a > %a@]" print_clsfr cf1 print_clsfr cf2
-  | Tylv(x, t, l) -> printf "@[%s : " x; printf "%a^(%a)@]" print_ty t print_lv l
+  | Empty -> ()
+  | Gtt(t1, t2) -> printf "@[%a@,>@,%a@]" print_ty t1 print_ty t2
+  | Gtc(cf1, cf2) -> printf "@[%a@,>@,%a@]" print_clsfr cf1 print_clsfr cf2
+  | Tylv(x, t, l) -> printf "@[%s@,: " x; printf "(%a)^(%a)@]" print_ty t print_lv l
 
 let rec print_tycntxtl ppf tycl =
   let printf fmt = Format.fprintf ppf fmt in
   match tycl with
   | [] -> ()
-  | tyc :: l -> printf "%a, %a" print_tycntxt tyc print_tycntxtl l
+  | tyc :: l -> printf "@[%a,@,%a@]" print_tycntxt tyc print_tycntxtl l
 
 let print_cnstr ppf c =
   let printf fmt = Format.fprintf ppf fmt in
   match c with
-  | CModelGtt(tyctl, (t1, t2)) -> printf "@[%a |= %a > %a@]" print_tycntxtl tyctl print_ty t1 print_ty t2
-  | CModelGtc(tyctl, (cf1, cf2)) -> printf "@[%a |= %a > %a@]" print_tycntxtl tyctl print_clsfr cf1 print_clsfr cf2
-  | CModelGts(tyctl, (sgm1, sgm2)) -> printf "@[%a |= %a > %a@]" print_tycntxtl tyctl print_sgm sgm1 print_sgm sgm2
-  | _ -> failwith "not implemented"
+  | CModelGtt(tyctl, (t1, t2)) -> printf "@[%a @,|=@, %a @,>@, %a@]" print_tycntxtl tyctl print_ty t1 print_ty t2
+  | CModelGtc(tyctl, (cf1, cf2)) -> printf "@[%a @,|=@, %a @,>@, %a@]" print_tycntxtl tyctl print_clsfr cf1 print_clsfr cf2
+  | CModelGts(tyctl, (sgm1, sgm2)) -> printf "@[%a @,|=@, %a @,>@, %a@]" print_tycntxtl tyctl print_sgm sgm1 print_sgm sgm2
+  | CT0eq(t1, t2) -> printf "@[%a @,=@, %a@]" print_ty t1 print_ty t2
+  | CT1eq(t1, t2) -> printf "@[%a @,=@, %a@]" print_ty t1 print_ty t2
 
 let rec print_cnstrl ppf cl =
   let printf fmt = Format.fprintf ppf fmt in
   match cl with
   | [] -> ()
-  | c :: l -> printf "@[%a,\n %a@]" print_cnstr c print_cnstrl l
+  | c :: l -> printf "@[%a,\n@,%a@]" print_cnstr c print_cnstrl l
 
 let print_cnstrl' cl = print_cnstrl Format.std_formatter cl
 
@@ -224,13 +236,18 @@ let print_cnstrl' cl = print_cnstrl Format.std_formatter cl
 
 let cnstrl e = gen_constr [] L0 e (gen_tyvar ()) SNil []
 let cnstrl_withtyct e tyct = gen_constr tyct L0 e (gen_tyvar ()) SNil []
-let _ = cnstrl @@ Int 3
-let _ = cnstrl_withtyct (Var "x") [Tylv("x", gen_tyvar (), L0)]
-let _ = cnstrl @@ R0(Code(Int 1))
-let _ = cnstrl @@ R0(S0("k", Code (Int 1)))
-let _ = cnstrl @@ R0(S0("k", App(Var "k", Code (Int 1))))
-let _ = cnstrl @@ Lam("x", Var "x")
-let _ = print_cnstrl' @@ cnstrl @@ Lam_("x", Var "x")
+
+let pp_cnstrl e = print_cnstrl' @@ cnstrl e
+let pp_cnstrl_withtyct e tyct = print_cnstrl' @@ gen_constr tyct L0 e (gen_tyvar ()) SNil []
+
+let _ = pp_cnstrl @@ Int 3
+let _ = pp_cnstrl_withtyct (Var "x") [Tylv("x", gen_tyvar (), L0)]
+let _ = pp_cnstrl @@ R0(Code(Int 1))
+let _ = pp_cnstrl @@ R0(S0("k", T0("k", Code (Int 1))))
+let _ = pp_cnstrl @@ R0(S0("k", T0("k", App(Var "k", Code (Int 1)))))
+let _ = pp_cnstrl @@ Lam("x", Var "x")
+let _ = pp_cnstrl @@ Lam_("x", Var "x")
+let _ = cnstrl @@ R0(Let_("x", Code(Int 1), R0(Let_("y", Code(Int 2), S0("k", Let_("z", Var "x", T0("k", App(Var "k", Var "z"))))))))
 
 let rec occurs tx t = (* t の中に tx が含まれるか *)
   if tx = t
