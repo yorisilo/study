@@ -29,6 +29,7 @@
 \usepackage{stmaryrd}
 \usepackage{listings,jlisting}
 \usepackage{here}
+\usepackage{verbatim}
 
 \newenvironment{vq}
 {%begin
@@ -115,7 +116,8 @@ forループを飛び越えたコード移動を許す仕組みであり，ル�
 \input{target_lang}
 \input{type_system}
 \input{type_inference}
-\input{proof}
+\input{impl}
+% \input{proof}
 \input{relevant_study}
 \input{conc}
 \chapter*{謝辞}
@@ -127,6 +129,9 @@ forループを飛び越えたコード移動を許す仕組みであり，ル�
 \renewcommand{\bibname}{参考文献}
 \bibliographystyle{junsrt}
 \bibliography {bibfile}
+
+\appendix
+\input{my_src}
 
 \end{document}
 

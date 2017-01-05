@@ -215,7 +215,8 @@ Constraintの中にのみ存在する」型やclassifier があるときは、
 classifier定数とする。(この段階では、変数も定数も差はないが、
 制約を解消するとき、cassifier定数に対する代入はしない、という違いがある。)
 
-\chapter{制約の解消}
+\section{制約の解消}
+\oishi{この節をどうするか}
 
 制約生成が成功したとき(つまり、途中で「つっかかったり」しないとき)、以
 下の性質が成立するはずである。
@@ -276,7 +277,7 @@ $d$に対しては代入しない。classifier変数$\gamma$に対しては代�
 classifier変数$\gamma$へのclassifierの代入とから構成される。
 この代入は「最も一般的」であるべきである。(定義の詳細はいまは省略)
 
-\section{制約の解消アルゴリズム(前半)}
+\subsection{制約の解消アルゴリズム(前半)}
 
 $t^0=s^0$ と $t^1=s^1$ の形の制約は、普通の型推論で解ける。
 それを解いた結果、$\alpha^0$、$\alpha^1$, $\gamma$に対する代入が生じ
@@ -300,7 +301,7 @@ $\Delta \models \longer{t^0}{s^0}$の形の制約は、両方ともが型変数�
 は、上記の制約たちには、のこっていない。)
 
 
-\section{制約の解消アルゴリズム(後半)}
+\subsection{制約の解消アルゴリズム(後半)}
 
 $\Delta \models \longer{c}{c}$の形の制約を解こう。
 ($\Delta \models \longer{\alpha^0}{\beta^0}$については次のsectionで
@@ -357,7 +358,7 @@ $\longer{d}{c_2}$」という内容である。
 
 これは decidable なので、「解があるかどうか」もdecidableである。
 
-\section{制約の解消アルゴリズム(後半のおまけ)}
+\subsection{制約の解消アルゴリズム(後半のおまけ)}
 
 実は、まだ、
 $\Delta \models \longer{\alpha^0}{\beta^0}$という制約がのこっていた。
