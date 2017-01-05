@@ -1,13 +1,63 @@
 \chapter{実装}
 この章では，コード生成言語にshift0/reset0 を導入した言語の評価器と
-その言語で記述したプログラムに対して，安全なコードであれば型が付き，安全でないコードであれば，
+その言語で記述した項に対して，型推論を行い，自動的に型を付けるために必要な制約を生成する制約生成器の実装を見ていく．なお，実際のプログラムソースは付録に掲載している．
+それらの実装は OCaml を用いて実装を行っている．
 
 \section{評価器}
+\begin{itemize}
+\item 評価器 \lstinline|eval1|は，項$e$を受け取り，値$v$を返す関数である．
+\item プリティプリンタ \lstinline|print_expr'| は，項$e$ を受け取り，項$e$のASTを整形する関数である.
+\item プリティプリンタ \lstinline|print_value'| は，値$v$ を受け取り，値$v$のASTを整形する関数である.
+\end{itemize}
 
-\section{型推論器}
+以下で，いくつか具体例を見ていく
 
+\begin{lstlisting}
+ let e1 =
+  R0
+   (PrimOp2 ("Add_", Code (Int 10),
+     R0
+      (PrimOp2 ("Add_", Code (Int 20),
+        S0 ("k1",
+         S0 ("k2",
+          App (Var "k1", App (Var "k2", Code (Int 1)))))))));;
 
+# print_expr' e1
+R0(<10> +_ R0(<20> +_ (S0 k1 -> (S0 k2 -> (k1 (k2 <1>))))))- : unit = ()
 
+#  print_value' (eval1 e1)
+<20 + 10 + 1>- : unit = ()
+
+\end{lstlisting}
+
+\section{制約生成器}
+\begin{itemize}
+\item 制約生成器 \lstinline|pp_cnstrl|は，項$e$を受け取り，制約を整形した結果を返す関数である．
+\item プリティプリンタ \lstinline|print_cnstr'| は，制約を受け取り，そのASTを整形する関数である.
+\end{itemize}
+
+\ref{subsec:exam-let} のlet挿入の例に対して，どのような制約が現れるか以下に実行例を記す
+
+\begin{lstlisting}
+# let e2 = R0(Let_("x", Code(Int 1),
+R0(Let_("y", Code(Int 2),
+S0("k", Let_("z", Var "x", T0("k", App(Var "k", Var "z"))))))));;
+val e2 : Syntax.expr =
+  R0
+   (Let_ ("x", Code (Int 1),
+     R0
+      (Let_ ("y", Code (Int 2),
+        S0 ("k", Let_ ("z", Var "x", T0 ("k", App (Var "k", Var "z"))))))))
+
+# print_expr' e2;;
+R0(let_ x = <1> in_ R0(let_ y = <2> in_ (S0 k -> let_ z = x in_ (T0 (k z)))))
+- : unit = ()
+
+# pp_cnstrl e2;;
+...
+\end{lstlisting}
+
+\oishi{let挿入の例の制約は出したいが，バグってて動かない．．．あと，制約がすごく多く出てしまうはずで，どのように記せばよいのか...，}
 
 %%% Local Variables:
 %%% mode: japanese-latex
