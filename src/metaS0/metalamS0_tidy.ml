@@ -56,10 +56,10 @@ let rec eval expr env k kl = match expr with
             | (VInt n, VInt m) -> k (VInt (n + m)) kl1
             | _ -> failwith "not Integer in Add")
           kl0) kl
-  | PrimOp2(x, e0, e1) ->
+  | PrimOp2(op, e0, e1) ->
     eval e0 env (fun v0 -> fun kl0 ->
         eval e1 env (fun v1 -> fun kl1 ->
-            match (x, v0, v1) with
+            match (op, v0, v1) with
             | ("Add", VInt n, VInt m) -> k (VInt (n + m)) kl1
             | ("Add_", VCode e0, VCode e1) -> k (VCode (PrimOp2 ("Add", e0, e1))) kl1
             | ("Min", VInt n, VInt m) -> k (VInt (n - m)) kl1
@@ -82,6 +82,9 @@ let rec eval expr env k kl = match expr with
         | _ -> failwith "not boolean in if"
       ) kl
   | Let(x, e0, e1) ->
+    eval e0 env (fun v0 -> fun kl0 ->
+        eval e1 (extend (x, v0) env) k kl0) kl
+  | Let_(x, e0, e1) ->
     eval e0 env (fun v0 -> fun kl0 ->
         eval e1 (extend (x, v0) env) k kl0) kl
   | Code(e) -> k (VCode e) kl

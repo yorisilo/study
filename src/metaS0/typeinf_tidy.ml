@@ -151,74 +151,21 @@ let rec gen_constr (tyct: tycntxtT list) (lv: lvT) (e: expr) (t: tyT) (sgm: sgmT
     gen_constr tyct lv e3 t     sgm cnstl
   (* | Eq *)
   (* | Add *)
-  (* | PrimOp2 *)
-  (* | Let *)
+  (* | PrimOp2("Add", e1, e2) -> *)
+  (* | PrimOp2("Add_", e1, e2) -> *)
+  | Let_ (x, e0, e1), lv ->
+    let t' = gen_tyvar () in
+    let cf0 = gen_clsfr () in
+    let cf1 = gen_clsfr () in
+    let t0 = T0Code(t', cf0) in
+    let t1 = T0Code(t', cf1) in
+    let new_tyct = Gtc(cf1, cf0) :: Tylv(x, t', L1 cf1) :: tyct in
+    let c1 = CModelGtt(tyct, (t, (T0Code(t', cf0)))) in
+    let new_cnstl = c1 :: cnstl in
+    gen_constr tyct lv e0 t0 sgm new_cnstl @
+    gen_constr new_tyct lv e1 t1 sgm new_cnstl
   (* | Fix *)
   | _ -> failwith "not implemented"
 
-(* 制約の生成 *)
 let cnstrl e = gen_constr [] L0 e (gen_tyvar ()) SNil []
-
-let rec occurs tx t = (* t の中に tx が含まれるか *)
-  if tx = t
-  then true
-  else match t with
-    | T0Arrow(t1, t2, sgm) -> (occurs tx t1) || (occurs tx t2)
-    | T1Arrow(t1, t2) -> (occurs tx t1) || (occurs tx t2)
-    | _ -> false
-
-(* ex. [x = bool; x -> y = z; y = bool] [] -> [x := bool; y := bool; z := bool -> bool] *)
-let rec infer_type (cnstrl: constrT list) (theta: subtyT list) : constrT list * subtyT list =
-  let rec unify t1 t2 theta : subtyT list =
-    if t1 = t2 then theta
-    else
-      match t1, t2 with
-      | T0Arrow(t01, t02, sgm1), T0Arrow(t03, t04, sgm2) ->
-        let s1 = unify t01 t03 theta in
-        let s2 = unify t02 t04 s1 in
-        let s3 = unifysgm sgm1 sgm2 s2 in
-        s3
-      | T1Arrow(t11, t12), T1Arrow(t13, t14) ->
-        let s1 = unify t11 t13 theta in
-        let s2 = unify t12 t14 s1 in
-        s2
-      | T0Code(t01, cf1), T0Code(t02, cf2) ->
-        let s1 = unify t01 t02 theta in
-        let s2 = unifycf cf1 cf2 s1 in
-        s2
-      | (TVar(s), _) ->
-        begin
-          match lookup_subtyl s theta with
-          | None ->
-            let t2' = apply_subtyl t2 theta in
-            if (occurs t1 t2')
-            then failwith "unification failed"
-            else extend_subtyl s t2' theta
-          | Some t1a -> unify t1a t2 theta
-        end
-      | (_, TVar(s)) -> unify t2 t1 theta
-      | _ -> failwith "not implemented"
-  and
-    unifysgm sgm1 sgm2 theta =
-    match sgm1, sgm2 with
-    | SNil, SNil -> theta
-    (* | SVar s, *)
-    (*   | SCons(ty1, sgm1'), SCons(ty2, sgm2') ->
-         let theta' = unify ty1 ty2 theta in
-         unifysgm sgm1' sgm2' theta' *)
-    | _  -> failwith "not implemented"
-  and
-    unifycf cf1 cf2 theta =
-    match cf1, cf2 with
-    | _ -> failwith "not implemented"
-  in
-  match cnstrl with
-  | [] -> (cnstrl, theta)
-  | cnstr :: l ->
-    let s1 =
-      match cnstr with
-      | CT0eq(t1, t2) -> unify t1 t2 theta
-      | CT1eq(t1, t2) -> unify t1 t2 theta
-      | _ -> failwith "not implemented"
-    in
-    infer_type l s1
+let cnstrl_withtyct e tyct = gen_constr tyct L0 e (gen_tyvar ()) SNil []

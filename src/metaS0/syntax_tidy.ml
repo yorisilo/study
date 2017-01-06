@@ -1,3 +1,4 @@
+
 (**
    evaluator
 *)
@@ -20,12 +21,13 @@ type expr =
   | Eq      of int * int
   | Add     of expr * expr
   | PrimOp2 of string * expr * expr
-  | Let     of var * expr * expr
-  | Fix     of var * var * expr (* let rec fix f n = f (fix f) n *)
-type value =                        (* v を value にする *)
-  | VLam  of var * expr * env (* 関数定義の時に生成される closure *)
+  | Let     of var * expr * expr (* let x = e1 in e2 *)
+  | Let_    of var * expr * expr (* let_ x = e1 in_ e2 *)
+  | Fix     of var * var * expr  (* let rec fix f n = f (fix f) n *)
+type value =                     (* v を value にする *)
+  | VLam  of var * expr * env   (* 関数定義の時に生成される closure *)
   | VRLam of var * var * expr * env (* rec 関数定義の時に生成される closure *)
-  | VCont of kont             (* shift により切り取られる continuation *)
+  | VCont of kont          (* shift により切り取られる continuation *)
   | VInt of int
   | VBool of bool
   | VCode of expr
