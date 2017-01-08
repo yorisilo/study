@@ -6,7 +6,7 @@
 以下の節では，コード生成体系にshift0/reset0 を導入した我々の体系に対して，安全なプログラムに対しては型が付き，それ以外の安全でないプログラムには型が付かないような型システム構築のアイデアを記す．
 
 \section{先行研究のアイディア}
-表現力と安全性を兼ね備えたコード生成の体系としては，2009年の亀山らの研究\cite{Kameyama2009}が最初である．彼ら は，MetaOCaml において shift/reset とよばれるコントロールオペレータを使うスタイルでのプログラミング を提案するとともに，コントロールオペレータの影響が変数スコープを越えることを制限する型システムを構築し，安全性を厳密に保証した.
+表現力と安全性を兼ね備えたコード生成の体系としては，2009年のKameyamaらの研究\cite{Kameyama2009}が最初である．彼ら は，MetaOCaml において shift/reset とよばれるコントロールオペレータを使うスタイルでのプログラミング を提案するとともに，コントロールオペレータの影響が変数スコープを越えることを制限する型システムを構築し，安全性を厳密に保証した.
 
 Tahaら\cite{Taha:2003:EC:604131.604134}は，純粋な(副作用のない)コード生成の言語の型安全性を保証するため，
 環境識別子(Environment Classifier)を導入した．
@@ -75,37 +75,37 @@ forやletなどコードレベルの束縛子があるたびに，新しいス�
 いて述べる．
 
 このため，前述の2重のforループ生成において，その中間にlet挿入をするプログラムに
-ついて考察する．その概形は下記の1つ目の図である．
+ついて考察する．その概形は\ref{fig:ecex_for_non_gamma}図の上図である．
 
-\begin{figure}[ht]
+\begin{figure}[H]
   \centering
   \includegraphics[clip,height=12cm]{./img/ecex_for_non_gamma.png}
   \caption{コード生成によるlet挿入}
   \label{fig:ecex_for_non_gamma}
 \end{figure}
 
-上の方の図で，使えるコードレベル変数が異なる場所ごとに，
+\ref{fig:ecex_for_non_gamma}図で，使えるコードレベル変数が異なる場所ごとに，
 $\gamma_0,\gamma_1,\gamma_2,\gamma_3$と名付けた．
 須藤らの体系通りであれば，これらの環境識別子の間の順序は，スコープの包
 含関係通りであるので，
 
-\begin{figure}[ht]
+\begin{figure}[H]
   \centering
   \includegraphics[clip,width=4cm]{./img/gamma_normal.png}
   \caption{誤った環境識別子の順序}
   \label{fig:gamma_normal}
 \end{figure}
 
-という順序がつくはずである．
-しかし，計算を進めて得られたコードを見ると(上記の下の図はコードの中身を示している)，
+\ref{fig:gamma_normal}図のような順序がつくはずである．
+しかし，計算を進めて得られたコード(\ref{fig:ecex_for_non_gamma}図の下図)を見ると，
 $\gamma_1$(緑色)と$\gamma_2$(黄色)の位置関係が入れ代わっている．
 結果のコードの型が整合する(束縛変数が自由になることはない等)ために
 は，$\gamma_2$において$\gamma_1$で使える変数を使ってはいけないことがわかる．
 一方で，赤字で示された$\gamma_3$においては，$\gamma_1$の変数も
 $\gamma_2$の変数も使って構わない．
-これらを考慮すると，環境識別子の間の順序は以下の図となる．
+これらを考慮すると，環境識別子の間の順序は\ref{fig:gamma}図となる．
 
-\begin{figure}[ht]
+\begin{figure}[H]
   \centering
   \includegraphics[clip,width=7cm]{./img/gamma.png}
   \caption{正しい環境識別子の順序}

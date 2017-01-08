@@ -44,10 +44,9 @@ $\cPlus$ や $\cIf$のように下線を引いて表す．
 変数は，ラムダ抽象(下線なし，下線つき，二重下線つき)および shift0 により束縛され，
 $\alpha$同値な項は同一視する．
 $\letin{x}{e_1}{e_2}$および$\clet{x}{e_1}{e_2}$は，
-それぞれ，$(\fun{x}{e_2})e_1$
-$(\cfun{x}{e_2})\cat e_1$の省略形である．
+それぞれ，$(\fun{x}{e_2})e_1$ および $(\cfun{x}{e_2})\cat e_1$の省略形である．
 前述の例でのべた$\cFor$は，
-コード構築定数とコードレベル適用$\cap$を用いて導入することとし，
+コード構築定数とコードレベル適用を用いて導入することとし，
 (この導入にあたっての型システムの拡張は容易なので)ここでは省略する．
 
 \section{操作的意味論}
@@ -56,7 +55,7 @@ $(\cfun{x}{e_2})\cat e_1$の省略形である．
 ここでは評価文脈に基づく定義を与える．
 
 評価文脈を以下のように定義する．
-\begin{figure}[!ht]
+\begin{figure}[H]
   \centering
   \begin{align*}
     E & ::= [~] \mid E~ e^0 \mid v~ E \\
@@ -68,12 +67,12 @@ $(\cfun{x}{e_2})\cat e_1$の省略形である．
 コード生成言語で特徴的なことは，
 コードレベルのラムダ抽象の内部で評価が進行する点である．実際，
 上記の定義には，$\ccfun{u}{E}$が含まれている．
-たとえば，$\ccfun{u}{u \cPlus [~]}$ は評価文脈である．
+たとえば，$\ccfun{u}{\code{u} \cPlus [~]}$ は評価文脈である．
 
 この評価文脈$E$と次に述べる計算規則$r \to l$ により，
-評価関係$e \lto e'$ を次のように定義する．
+評価関係$e \lto e'$ を図\ref{fig:etoe}のように定義する．
 
-\begin{figure}[!ht]
+\begin{figure}[H]
   \centering
   \[
     \infer{E[r] \lto E[l]}{r \to l}
@@ -83,8 +82,8 @@ $(\cfun{x}{e_2})\cat e_1$の省略形である．
 \end{figure}
 
 
-計算規則は以下の通り定義する．
-\begin{figure}[!ht]
+計算規則は図\ref{fig:calc_rule}の通り定義する．
+\begin{figure}[H]
   \centering
   \begin{align*}
     (\fun{x}{e})~v &\to e\{ x := v \} \\
@@ -107,9 +106,9 @@ reset0 が1つはずれるため，shift0 をN個入れ子にすることによ�
 N個分外側のreset0 までアクセスすることができ，多段階let挿入を実現でき
 るようになる．
 
-上記における継続変数に対する代入$e\ksubst{k}{E}$は次の通り定義する．
+上記における継続変数に対する代入$e\ksubst{k}{E}$は図\ref{fig:k_subst}の通り定義する．
 
-\begin{figure}[!ht]
+\begin{figure}[H]
   \centering
   \begin{align*}
     (\throw{k}{v})\ksubst{k}{E} &\equiv \Resetz (E[v]) \\
@@ -127,9 +126,9 @@ N個分外側のreset0 までアクセスすることができ，多段階let挿
 control/promptに類似した control0/prompt0)の振舞いとなる．
 
 コードコンビネータ定数の振舞い(ラムダ計算における$\delta$規則に相当)は
-以下のように定義する．
+図\ref{fig:comb-rule}のように定義する．
 
-\begin{figure}[!ht]
+\begin{figure}[H]
   \centering
   \begin{align*}
     \cint~ n &\to \code{n} \\
