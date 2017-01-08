@@ -1,65 +1,69 @@
 \chapter{型推論}
-\oishi{ここは大幅に変更しなければならない}
+この章では本体系の言語によって書かれたプログラムの型を推論するための型推論アルゴリズムを述べる．
 
-概要: 以下の2ステップから構成
+本研究の型推論アルゴリズムは
+$\Gamma,~ L,~ \sigma,~ e$ が与えられたとき，$\Gamma \vdash^{L} e : t ;~\sigma$ が成立するような $t$ があるかどうか判定し，その型$t$ を返すようなものである．
+
+型推論アルゴリズムは主に以下の2ステップから構成する
 \begin{itemize}
-\item 制約生成:与えられた項にたいして、(型およびクラシファイアに関する)制約を返す。
-\item 制約を解く。
+\item 制約生成:与えられた項に対して，(型および classifier に関する)制約を返す
+\item 制約解消:その得られた制約を解消し，その制約を満たす代入$\Theta$ を返す
 \end{itemize}
 
-\section{制約生成}
-
-これは、もの型システム($T_1$とする)を
-「トップダウンでの制約生成向け型システム($T_2$とする)」に変
-形することであたえる。
+\section{型システム$T_2$の導入}
+これは，もとの型システム($T_1$とする)を
+「トップダウンでの制約生成向け型システム($T_2$とする)」に変形することであたえる．
 
 $T_2$の設計指針:
 \begin{itemize}
-\item $T_1$と$T_2$は「型付けできる」という関係として等価である。
-\item $T_2$は、term-oriented である。
-  (結論側の式のトップレベルの形だけで、どの型付けルールを適用可能か、一意的にわかる。)
-\item $T_2$は、制約生成をする。
-  (結論側の式の要素は変数として、
-  「それがこういう形でなければいけない」という条件は、制約の形で「生成」する。)
+\item $T_1$と$T_2$は「型付けできる」という関係として等価である．
+\item $T_2$は結論側の式のトップレベルの形だけで，どの型付け規則を適用可能か，一意的にわかる．
+  % この性質をterm-orientedと呼ぶ
+\item $T_2$は，制約生成をする．
+  % (結論側の式の要素は変数として、
+  % 「それがこういう形でなければいけない」という条件は、制約の形で「生成」する。)
 \end{itemize}
 
-以上をどう満たすか？ ポイントは、subsumption rule の適用タイミング(な
-るべく subsumption rule を適用するのを避けたい)である。
+subsumption 規則 は，どのような項に対しても適用ができるので，
+型付け規則と subsumption 規則 を組み合わせることで，
+subsumption 規則 が出現する場所を限定することができる．
 
-\section{型システム$T_2$の導入}
-
-subsumption rule が出現する場所を限定することができる．
-特に，ルールと，その直後に subsumption がつかわれる場合を考えてみよう．
 以下で，「var1」等といった表記は，
-「もともとあるver1ルールを subsumption規則と組み合わせた形に改訂したも
-の」である．
-また，横棒の右に書いてあるConstr;... は(ルールを下から上にむけて
+「型システム$T_1$ の var1規則を subsumption 規則と組み合わせた形に改訂し制約を生成する規則」であるということを表す．
+また，型付け規則の右側に記述したConstr;... は(型付け規則を下から上にむけて
 使うとき)，Constr 以下の制約が生成される，という意味である．
 
-また、型$t_1, t_2$に対する$\longer{}{}$の記号は以下の意味であるが、
-とりあえず、(以下の意味にしたがって分解はせずに)
-$\longer{t_1}{t_2}$ の形のまま、制約として生成する。
-\begin{itemize}
-\item $\longer{\codeT{t_1}{\gamma_1}}{\codeT{t_2}{\gamma_2}}$
-  は、「$t_1=t_2$ かつ $\longer{\gamma_1}{\gamma_2}$
-\item $\codeT{t}{\gamma}$の形でない$t_1,t_2$に対しては、
-  $t_1 = t_2$。
-\end{itemize}
-(型推論のプロセスの最中では、$t_1, t_2$ はメタ型変瑞。洽筅キ、譴此その場合、どちらの形かは決定できないので、$\longer{t_1}{t_2}$を
-上記の意味にしたがって、「ほどく」ことはできない。なので、
-$\longer{t_1}{t_2}$という形のまま制約として生成する。)
+また，型$t_1, t_2$に対する$\longer{}{}$の記号は以下の意味である．
 
-(亀山メモ:
-ただ、もしかすると、
-「レベル0の型変数」と「レベル1の型変数」を最初からわけておく方法もある
-かもしれない。そうすると、上記はとける？)
+\begin{figure}[H]
+  \centering
+  \begin{itemize}
+  \item $\longer{\codeT{t_1}{\gamma_1}}{\codeT{t_2}{\gamma_2}}$
+    は、「$t_1=t_2$ かつ $\longer{\gamma_1}{\gamma_2}$
+  \item $\codeT{t}{\gamma}$の形でない$t_1,t_2$に対しては、
+    $t_1 = t_2$。
+  \end{itemize}
+
+  \caption{制約生成における $\longer{}{}$ の意味の定義}
+  \label{fig:typeinf_longer_def}
+\end{figure}
+
+型システム$T_2$は $\longer{t_1}{t_2}$ の形のまま，制約として生成する
+\footnote{型推論のプロセスの最中では、$t_1, t_2$ はメタ型変数であり，レベル0の型変数，レベル1の型変数どちらの形かは決定できないので、$\longer{t_1}{t_2}$を上記の意味にしたがって、「ほどく」ことはできない．なので，$\longer{t_1}{t_2}$という形のまま制約として生成する。}．
+
+
+% (亀山メモ:
+% ただ、もしかすると、
+% 「レベル0の型変数」と「レベル1の型変数」を最初からわけておく方法もある
+% かもしれない。そうすると、上記はとける？)
 
 
 % \oishi{
-%   以下のルールにおいて，Constraint の $\Gamma \models \longer{t}{t'}$ の $\Gamma \models$ はルールを適用した瞬間の $\Gamma$ の情報は制約解消において使わないから必要ない？\\
-%   一貫性をもたせるのなら， $t = t'$ の形の Constraint も $\Gamma \models t = t'$ とする必要がある？
+% 以下の規則において，Constraint の $\Gamma \models \longer{t}{t'}$ の $\Gamma \models$ は規則を適用した瞬間の $\Gamma$ の情報は制約解消において使わないから必要ない？\\
+% 一貫性をもたせるのなら， $t = t'$ の形の Constraint も $\Gamma \models t = t'$ とする必要がある？
 % }
-% \\
+%   \\
+
 (var0)
 
 \[
@@ -114,11 +118,11 @@ $\longer{t_1}{t_2}$という形のまま制約として生成する。)
   {\Gamma,~x:t_1 \vdash e : t_2;~\sigma'}
 \]
 
-(lambda1) \\
-\oishi{
-  コードの中で，shift0/reset0 は使わないので， $\sigma$ は $\epsilon$ なはず．
-  なので，$\sigma$ は $\epsilon$ としておいてもよい
-}
+(lambda1)
+% \oishi{
+% コードの中で，shift0/reset0 は使わないので， $\sigma$ は $\epsilon$ なはず．
+% なので，$\sigma$ は $\epsilon$ としておいてもよい
+% }
 
 \[
   \infer[Constr;~t=\funT{t_1}{t_2}{}]
@@ -178,14 +182,14 @@ $\longer{t_1}{t_2}$という形のまま制約として生成する。)
 \]
 
 
-(throw0)\\
-\oishi{
-  throw0 ルールにのみ $\sigma$ part の subsumption ルールを適用すればおｋ？
-}
-\\
+(throw0)
+% \oishi{
+%   throw0 規則にのみ $\sigma$ part の subsumption 規則を適用すればおｋ？
+% }
+% \\
 
 \[
-  \infer[Constr;~ \Gamma \models \longer{t}{\codeT{t_0}{\gamma_2}},~ (\Gamma,~ k:t') \models \gamma_2 \ord \gamma_0,~  t' = \contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}{\sigma},~ \Gamma \models \gamma_1 \uni \gamma_2 \ord \gamma']
+  \infer[Constr;~ {\scriptstyle \Gamma \models \longer{t}{\codeT{t_0}{\gamma_2}},~ (\Gamma,~ k:~t') \models \gamma_2 \ord \gamma_0,~  t' = \contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}{\sigma},~ \Gamma \models \gamma_1 \uni \gamma_2 \ord \gamma'}]
   {\Gamma,~ k:t'
     \vdash \throw{k}{v} : t ; \sigma}
   {\Gamma,~ k:t'
@@ -202,170 +206,322 @@ $\longer{t_1}{t_2}$という形のまま制約として生成する。)
 \]
 
 
-この新しい型システム$T_2$ は(hopefully) $T_1$と同じ型付けをあたえる。
+この新しい型システム$T_2$ は$T_1$と同じ型付けをあたえる
 
-型推論では、与えられた項$e$に対して、
-$T_2$を「下から上」の向きに適用して、Constraintを生成する。
-(もちろん、途中で、つまってしまったら、型推論は失敗する。
+\section{制約生成}
 
-下から上に行くときに、「横棒の下には存在しないで、横棒の上、あるいは、
-Constraintの中にのみ存在する」型やclassifier があるときは、
-これらを型変数やclassifier変数として生成する。
+制約生成では，与えられた項$e$に対して，
+$T_2$を型付け規則を「下から上」の向きに適用することで，制約を生成する．
+生成する制約は，それぞれの型付け規則の右側に$Constr;~ ...$ と書いてあるものである．
+それらの制約を，型付けに従って生成していくことで，制約の集合が生成される
+% (もちろん、途中で、つまってしまったら、型推論は失敗する。)
 
-なお、code-lambda規則での新しいclassifier は、classfier変数ではなく、
-classifier定数とする。(この段階では、変数も定数も差はないが、
-制約を解消するとき、cassifier定数に対する代入はしない、という違いがある。)
+$T_2$の型付け規則を適用する時，型付け規則の下の型判断に存在せず，上の型判断，あるいはConstraint中にのみ存在する型やclassifierがあるときは，これらを新しい型変数やclassifier変数として生成する．
+なお，code-lambda規則での新しいclassifier は，classfier変数ではなく，classifier定数とする\footnote{制約生成のでは，変数と定数に違いはないが，制約を解消するとき，cassifier定数に対する代入はしない．という違いがある}．
+
+\begin{framed}
+  制約生成アルゴリズム:
+  \begin{itemize}
+    \setlength{\itemsep}{-5pt}
+  \item $\Gamma$ : 型文脈
+  \item $e$ : 項
+  \item $t$ : 型
+  \item $\sigma$ : answer type の列
+  \item $L$ : レベル(現在レベル 0, or コードレベル 1)
+  \item $C$ : constraint(制約):
+  \end{itemize}
+
+  \begin{description}
+  \item[入力] $\Gamma,~ e,~ t,~ \sigma,~ L$
+  \item[出力] $C$
+  \end{description}
+
+  \begin{enumerate}
+  \item $T_2$を「下から上」の向きに適用して制約$C$を生成する．
+  \end{enumerate}
+\end{framed}
+
+% \begin{algorithm}
+%   \caption{Euclid’s algorithm}
+%   \label{euclid}
+%   \begin{algorithmic}[1] % The number tells where the line numbering should start
+%     \Procedure{Euclid}{$a,b$} \Comment{The g.c.d. of a and b}
+%     \State $r \gets a \bmod b$
+%     \While{$r\not=0$} \Comment{We have the answer if r is 0}
+%     \State $a \gets b$
+%     \State $b \gets r$
+%     \State $r \gets a \bmod b$
+%     \EndWhile\label{euclidendwhile}
+%     \State \textbf{return} $b$\Comment{The gcd is b}
+%     \EndProcedure
+%   \end{algorithmic}
+% \end{algorithm}
 
 \section{制約の解消}
-\oishi{この節をどうするか}
+% 制約生成が成功したとき，以下の性質が成立するはずである．
 
-制約生成が成功したとき(つまり、途中で「つっかかったり」しないとき)、以
-下の性質が成立するはずである。
-
-入力を$\Gamma, L, e, t,\sigma$ として、前章の制約生成アルゴリズムを走
-らせ、それが成功して$C$という制約を生成したとき、
+入力を$\Gamma, L, e, t,\sigma$ として，前章の制約生成アルゴリズムを走
+らせ，それが成功して$C$という制約を生成したとき，
 \begin{itemize}
 \item
-  $\Gamma \vdash^L e: t; ~ \sigma$ が導出可能ならば、
-  $C$ を満たす解が存在し、
+  $\Gamma \vdash^L e: t; ~ \sigma$ が導出可能ならば，
+  $C$ を満たす解が存在し，
 \item
-  $C$ を満たす解が存在すれば、ある代入$\theta$に対して、
-  $\Gamma\theta \vdash^L e\theta: t\theta; ~ \sigma\theta$ が導出可能である。
+  $C$ を満たす解が存在すれば、ある代入$\Theta$に対して，
+  $\Theta(\Gamma) \vdash^L \Theta(e): \Theta(t) ;~ \Theta(\sigma)$ が導出可能である．
 \end{itemize}
-という性質が成立することができる。
-(これが成立すれば、もともとの型推論問題を、型制約の解消問題に帰着できたことになる。)
+という性質が成立する．
 
-というわけで、制約の解消をはじめよう。制約は以下の文法で与えられたものの有限集合である。
+つまり，型推論問題を得られた制約を成立するような代入$\Theta$が存在するかどうかという問題に帰着できる．
+% (これが成立すれば、もともとの型推論問題を、型制約の解消問題に帰着できたことになる。)
 
-\begin{itemize}
-\item $\Gamma \models \longer{t^0}{t^0}$
-\item $\Gamma \models \longer{c}{c}$
-\item $\Gamma \models \longer{\sigma}{\sigma}$
-\item $t^0=t^0$
-\item $t^1=t^1$
-\end{itemize}
-ただし、ここで $t_0$, $t_1$, $c$, $\sigma$ は以下の文法で定義される。
+% というわけで、制約の解消をはじめよう。
+制約は以下の文法で与えられたものの有限集合である．
 
-\begin{align*}
-  t^0      & ::= t^0_x \mid \Int \mid \Bool \mid \funT{t^0}{t^0}{c} \mid \codeT{t^1}{c} \\
-  t^1      & ::= t^1_x \mid \Int \mid \Bool \mid \funT{t^1}{t^1}{} \\
-  c        & ::= \gamma \mid d \mid c \uni c \\
-  \sigma   & ::= \epsilon \mid t^0, \sigma
-\end{align*}
+\begin{figure}[H]
+  \centering
+  \begin{align*}
+    \Gamma &\models \longer{t^0}{t^0} \\
+    \Gamma &\models \longer{c}{c} \\
+    \Gamma &\models \longer{\sigma}{\sigma} \\
+    t^0 &= t^0 \\
+    t^1 &= t^1
+  \end{align*}
 
+  ただし、ここで $t_0$, $t_1$, $c$, $\sigma$ は以下の文法で定義される。
+
+  \begin{align*}
+    t^0      & ::= \alpha^0 \mid \Int \mid \Bool \mid \funT{t^0}{t^0}{c} \mid \codeT{t^1}{c} \\
+    t^1      & ::= \alpha^1 \mid \Int \mid \Bool \mid \funT{t^1}{t^1}{} \\
+    c        & ::= \gamma \mid d \mid c \uni c \\
+    \sigma   & ::= \sigma_x \mid \epsilon \mid t^0, \sigma
+  \end{align*}
+
+  \caption{制約の定義}
+  \label{fig:constr_def}
+\end{figure}
 
 $t_0$, $t_1$, $c$, $\sigma$ はそれぞれ、
-レベル0型、
-レベル1型、
+レベル0型，
+レベル1型，
 レベル0型の列，
 classifierをあらわす表現(メタ変数)，
-である。また、
-$t^i_x$はそれぞれのレベルの型変数、$\gamma$はclassifier変数である。
-また、$d$は、固有変数条件をもつclassifier変数のことであり、
-型推論のあいだは、これは(実質的に)定数として扱われる(つまり、
-$d$に対しては代入しない。classifier変数$\gamma$に対しては代入する。)
+answer type の列
+である．また，
+$\alpha^i$はそれぞれのレベルの型変数，$\gamma$はclassifier変数，$\sigma_x$は$\sigma$変数である．
+また，$d$は，固有変数条件をもつclassifier変数のことであり，
+型推論のあいだは，これは実質的に定数として扱われる\footnote{つまり，classifier変数$\gamma$に対しては代入するが，$d$に対しては代入しない}．
 
-また、$\Gamma$は、一般の型文脈であるが、不要な情報を落として以下の形にしてよい。
+また，$\Gamma$は，一般の型文脈であるが，不要な情報を落として以下の形にする．
 \begin{align*}
-  \Delta & ::= \cdots \mid \Delta,\longer{d}{c}
+  \Delta ::= \emptyset
+  \mid \Delta, (\longer{d}{c})
+  \mid \Delta, (x : t)
+  \mid \Delta, (u : t)^{\Delta}
 \end{align*}
-(左辺は、固有変数なので、classifier定数である。右辺は一般のclassifier
-式がなんでも来る可能性がある。)
 
-制約の解消とは、制約(上記の形の有限集合)が与えられたとき、
-それの「解」となる代入をともとめることである。代入$S$は、
-型変数$\alpha^0, \alpha^1$への型の代入と、
-classifier変数$\gamma$へのclassifierの代入とから構成される。
-この代入は「最も一般的」であるべきである。(定義の詳細はいまは省略)
+% (左辺は、固有変数なので、classifier定数である。右辺は一般のclassifier
+% 式がなんでも来る可能性がある。)
 
-\subsection{制約の解消アルゴリズム(前半)}
+制約の解消とは，制約が与えられたとき，その「解」となる代入$\Theta$を求めることである．
+代入$\Theta$は、型変数$\alpha^0,~ \alpha^1$への型の代入と，
+classifier変数$\gamma$へのclassifierの代入とから構成される．
 
-$t^0=s^0$ と $t^1=s^1$ の形の制約は、普通の型推論で解ける。
-それを解いた結果、$\alpha^0$、$\alpha^1$, $\gamma$に対する代入が生じ
-る(か、あるいは、「解なし」という結果になる)。
+% $\sigma$変数 $\sigma_x$ へ answer type の列の代入もあるはず．$\sigma_x$への代入についてよくわかってない
 
-$\Delta \models \longer{t^0}{s^0}$の形の制約は、両方ともが型変数の場合以外は、
-簡単に解ける。(その結果として、$t^i=s^i$ の型の制約や、$\Delta \models
-\longer{c}{c}$の形の制約を生む可能性があるが、前者は前と同様に解けばよ
-く、前者を解いている間にあらたに$\Delta \models \longer{t^0}{s^0}$の形の制約は生じない。)
+% この代入は「最も一般的」であるべきである。(定義の詳細はいまは省略)
+% principal type
 
-ここまでの段階で(代入がいくつか出たほか)、残る制約は、以下のものだけである。
+\subsection{単一化アルゴリズム}
+\begin{oframed}
+  単一化アルゴリズム unify
+  \begin{itemize}
+    \setlength{\itemsep}{-5pt}
+  \item $C$ : constraint(制約)
+  \item $\Theta$ : 代入
+  \end{itemize}
+
+  \begin{description}
+  \item[入力] $C$ $\Theta$
+  \item[出力] $\Theta$
+  \end{description}
+
+  \begin{description}
+  \item[0] typeinf1($C, []$) を呼び出す
+  \item[1] $C$の中に$t^0=s^0$ と $t^1=s^1$の形の制約がなければ，代入$\Theta$ を返す．
+  \item[2] $C$から$t^0=s^0$ か $t^1=s^1$の形の制約を選び，それを$A = B$とする．$C_1 = C - \{A = B\}$ とする．
+    \begin{description}
+    \item[2-1] $A = B$ のとき，unify($C_1, \Theta$)を呼び出す．
+    \item[2-2] $A \neq B$ で $A$ が型変数のとき，
+      \begin{description}
+      \item[2-2-1] 型 $B$ に $A$ が現れるなら，「解なし」を返す．
+      \item[2-2-2] 型 $B$ に $A$ が現れないなら，$\Theta_1 = [A := B]$とし，unify($\Theta_1(C_1), \Theta_1(\Theta)$を呼び出す．
+      \end{description}
+    \item[2-3] $A \neq B$ で $B$ が型変数のとき，$A$ と $B$ を入れ替えて，2-2へ
+    \item[2-4] $A \neq B$ で $A = \funT{A_1}{A_2}{}$，$B = \funT{B_1}{B_2}{}$ のとき， $E_2 = \cup \{A_1 = B_1, A_2 = B_2\}$ とし， unify($E_2, \Theta$)を呼び出す
+    % \item[2-5] $A \neq B$ で $A = \codeT{A_1}{c} , B = \codeT{B_1}{c}$ のとき，
+    \item[2-5] $A \neq B$ で $A = \funT{A_1}{A_2}{c}$，$B = \funT{B_1}{B_2}{c}$ のとき， $E_2 = \cup \{A_1 = B_1, A_2 = B_2\}$ とし， unify($E_2, \Theta$)を呼び出す
+    \item[2-6] 上記のいずれでもないとき「解なし」を返す．
+    \end{description}
+  \end{description}
+\end{oframed}
+
+\subsection{typeinf1: 制約の解消アルゴリズム(前半)}
+$t^0=s^0$ と $t^1=s^1$ の形の制約は，単一化アルゴリズムによって解くことができる．
+% 単一化アルゴリズムについての説明が必要っぽい
+それを解いた結果，$\alpha^0$，$\alpha^1$, $\gamma$に対する代入が生じる．
+もしくは「解なし」という結果となる．
+
+$\Delta \models \longer{t^0}{s^0}$の形の制約は，両方ともが型変数の場合以外は，
+簡単に解ける．(その結果として、$t^i=s^i$ の型の制約や，$\Delta \models
+\longer{c}{c}$の形の制約を生む可能性があるが，前者は前と同様に解けばよ
+く，前者を解いている間にあらたに$\Delta \models \longer{t^0}{s^0}$の形の制約は生じない．)
+
+ここまでの段階で残る制約は，以下のものだけである．
 
 \begin{itemize}
 \item $\Delta \models \longer{\alpha^0}{\beta^0}$
 \item $\Delta \models \longer{c}{c}$
 \end{itemize}
 
-ここまでにでてきた代入はすべて、上記の制約たちに適用済みとする。」
-(つまり、$\alpha:=\Int$という代入がでてきたら、上の式にある$\alpha$は
-すべて$\Int$にしておく。その結果、「代入における左辺にでてくる型変数やclassifier変数」
-は、上記の制約たちには、のこっていない。)
+ここまでに出てきた代入はすべて，上記の制約に適用済みとする．
+つまり，$\alpha:=\Int$という代入がでてきたら，制約中の$\alpha$はすべて$\Int$にしておく．
+その結果，「代入における左辺にでてくる型変数やclassifier変数」は，上記の制約には，残っていない．
+
+\begin{oframed}
+  制約解消アルゴリズム(前半) typeinf1
+  \begin{itemize}
+    \setlength{\itemsep}{-5pt}
+  \item $C$ : constraint(制約)
+  \item $\Theta$ : 代入
+  \end{itemize}
+
+  \begin{description}
+  \item[入力] $C$ $\Theta$
+  \item[出力] $C$ $\Theta$
+  \end{description}
+
+  \begin{description}
+  \item[0] typeinf1($C, []$) を呼び出す
+  \item[1] $C$から任意の制約$c$を選び， $C_1 = C - \{c\}$ とする．
+    \begin{description}
+    \item[1-1] $c$ が $t^0=s^0$ の形のとき，
+      $\Theta$ に unify($t^0, s^0$)を加える (unify によって$\alpha^0,~ \alpha^1,~ \gamma$ に対する代入が生じる);
+      typeinf1($C_1, \Theta$) を呼び出す
+    \item[1-2] $c$ が $t^1=s^1$ の形のとき，
+      $\Theta$ に unify($t^1, s^1$)を加える (unify によって$\alpha^0,~ \alpha^1,~ \gamma$ に対する代入が生じる);
+      typeinf1($C_1, \Theta$) を呼び出す
+    \item[1-3] $c$ が $\Delta \models \longer{t^0}{s^0}$ の形のとき，
+      \begin{description}
+      \item[1-3-1] $t^0,s^0$のどちらかが型変数でないとき，詳細は省くが，制約$\theta$ が生成され，それを$\Theta$ に加える;
+        typeinf1($C_1, \Theta$)を呼び出す
+      \item[1-3-2] $t^0,s^0$がともに型変数のときつまり，$c$ が $\Delta \models \longer{\alpha^0}{\beta^0}$のとき，typeinf2($\Theta, C$)を呼び出す
+      \end{description}
+    \item[1-4] $c$ が $\Delta \models \longer{c}{c}$ の形のとき，typeinf2($\Theta, C$)を呼び出す
+    \end{description}
+  \end{description}
+\end{oframed}
+
+% \begin{algorithm}
+%   \caption{制約解消アルゴリズム(前半)}
+
+%   \begin{algorithmic}[1] % The number tells where the line numbering should start
+%     \Procedure{infertype1}{$C, \Theta = []$}
+%     \ForEach{$c \in C$}
+%     \State $C_1 \gets C - \{c\}$
+%     \If{$c$ が $t^0=s^0$ の形}
+%     \State $\Theta$ に unify($t^0, s^0$)を加える \Comment{unify によって$\alpha^0,~ \alpha^1,~ \gamma$ に対する代入が生じる}
+%     \State infertype1($C_1, \Theta$)
+%     \ElsIf{$c$ が $t^1=s^1$の形}
+%     \State $\Theta$ に unify($t^1, s^1$)を加える \Comment{unify によって$\alpha^0,~ \alpha^1,~ \gamma$ に対する代入が生じる}
+%     \State infertype1($C_1, \Theta$)
+%     \ElsIf{$c$ が $ \Delta \models \longer{t^0}{s^0}$ の形}
+%     \If{$t^0$と$s^0$ が型変数でない}
+%     \State
+%     \Else
+%     \State typeinfer2($C, \Theta$) \Comment{$c$が$\longer{\alpha^0}{\beta^0}$の形}
+%     \EndIf
+%     \Else
+%     \State typeinfer2($C, \Theta$) \Comment{$c$が$\longer{c}{c}$の形}
+%     \EndIf
+%     \EndFor
+%     \EndProcedure
+%   \end{algorithmic}
+% \end{algorithm}
+
+\subsection{typeinf2: 制約の解消アルゴリズム(後半)}
+ここまでの段階で残る制約は，以下のものだけである．
+\begin{itemize}
+\item $\Delta \models \longer{\alpha^0}{\beta^0}$
+\item $\Delta \models \longer{c}{c}$
+\end{itemize}
+
+まず，$\Delta \models \longer{c}{c}$の形の制約の解消について述べる
+
+この形の制約たちを，
+$\Delta_i \models \longer{c_i}{c'_i}$とすると，
+それぞれの$\Delta_i$ は両立的であるので，
+$\Delta = \Delta_1 \cup \cdots \cup \Delta_n$として，
+$\Delta \models \longer{c_i}{c'_i}$を解けばよい．
+% それぞれの $\Delta_i$ はcompatible であるはずなので(ここはあとでチェッ
+% クが必要)
+% $\Delta = \Delta_1 \cup \cdots \cup \Delta_n$ という風に全部を合体させ
+% た上で、$\Delta \models \longer{c_i}{c'_i}$を解けばよい。
+
+\begin{description}
+\item[(ステップ1: classifier変数の除去)]\mbox{}\\
+  制約中のclassifier変数の1つに着目し，それを$\gamma$とする．
+  $\longer{c_i}{\gamma}$ の形の制約 ($i=1,2,\cdots,I$)と
+  $\longer{\gamma}{c'_j}$ の形の制約 ($j=1,2,\cdots,J$)をすべて消去し，
+  以下の制約を，すべての$(i,j)$に対して追加する．
+
+  \[
+    \longer{c_i}{c'_j}
+  \]
+
+  これにより，classifier変数は1つ減る．% (制約は一般には増えるかもしれない。)
+  したがって，ステップ1を繰り返すと，classifier変数はなくなる．
+
+\item[(ステップ2: 左辺の$\uni$の除去)]\mbox{}\\
+  $\longer{c_1 \uni c_2}{c_3}$ を
+  $\longer{c_1}{c_3}$ と
+  $\longer{c_2}{c_3}$ に変換する．
+
+  これにより，不等号の左辺にある$\uni$の個数が1つ減る．
+  したがって，ステップ2を繰り返すと，不等号の左辺にある$\uni$はなくなる．
+
+  ステップ2の繰り返しがおわると，制約は，
+  $\Delta \models \longer{d}{c}$の形になる．
 
 
-\subsection{制約の解消アルゴリズム(後半)}
+  % \oishi{ステップ3 は変更する必要あり ここで「$d$は atomic」 という仮定をおく。これについてはあとで吟味する.}\\
+\item[(ステップ3: 右辺の分解)] \mbox{}\\
+  「$d$は atomic」 とする．
+  「$\longer{d}{c_1 \uni c_2}$ ならば
+  $\longer{d}{c_1}$または，
+  $\longer{d}{c_2}$」ということである．
+  これらの逆向きは，いつでも成立することから，
 
-$\Delta \models \longer{c}{c}$の形の制約を解こう。
-($\Delta \models \longer{\alpha^0}{\beta^0}$については次のsectionで
-考えるので、ここでは無私する。)
+  $\longer{d}{c_1 \uni c_2}$ $\iff$
+  $\longer{d}{c_1}$または，
+  $\longer{d}{c_2}$
+  と言える．
 
-この形の制約たちを、
-$\Delta_i \models \longer{c_i}{c'_i}$とすると、
-それぞれの $\Delta_i$ はcompatible であるはずなので(ここはあとでチェッ
-クが必要)
-$\Delta = \Delta_1 \cup \cdots \cup \Delta_n$ という風に全部を合体させ
-た上で、$\Delta \models \longer{c_i}{c'_i}$を解けばよい。
+  これを用いて、$\longer{d}{c}$の右辺を分解することができ，
 
-(ステップ1: classifier変数の除去)
-使われているclassifier変数の1つに着目する。(どれでもよい。)それを
-$\gamma$とする。
-$\longer{c_i}{\gamma}$ の形の制約 ($i=1,2,\cdots,I$)とを全部あつめる。
-$\longer{\gamma}{c'_j}$ の形の制約 ($j=1,2,\cdots,J$)と、
-これらを消去して、かわりに、以下の制約を、すべての$(i,j)$に対して追加する。
+  \[
+    \Delta \models \longer{d_1}{d_1'} \vee \cdots \vee \longer{d_n}{d'_n}
+  \]
 
-\[
-  \longer{c_i}{c'_j}
-\]
+  となる．
+  さらに$\Delta$も $\longer{d1}{d2}$の形を「かつ」と「または」で
+  つないだ形になる．
 
-これにより、classifier変数は1つ減る。(制約は一般には増えるかもしれない。)
-ステップ1を繰返すと、classifier変数はなくなる。
+  % これは decidable なので、「解があるかどうか」もdecidableである。
+\end{description}
 
-(ステップ2) $\longer{c_1 \uni c_2}{c_3}$ を
-$\longer{c_1}{c_3}$ と
-$\longer{c_2}{c_3}$ に変換する。
-
-これにより、不等号の左辺にある$\uni$の個数が1つ減る。
-ステップ2を繰返すと、不等号の左辺にある$\uni$はなくなる。
-
-ステップ2の繰返しがおわると、制約は、
-$\Delta \models \longer{d}{c}$の形になる。
-
-\oishi{ステップ3 は変更する必要あり }\\
-(ステップ3) ここで「$d$は atomic」 という仮定をおく。これについては
-あとで吟味する.
-これは、
-「$\longer{d}{c_1 \uni c_2}$ ならば
-$\longer{d}{c_1}$または、
-$\longer{d}{c_2}$」という内容である。
-これらの逆向きは、いつでも成立するので、結局、ここの「ならば」は「同値」といってもよい。
-
-これをもちいて、$\longer{d}{c}$の右辺も分解できて、
-
-\[
-  \Delta \models \longer{d_1}{d_1'} \vee \cdots \vee \longer{d_n}{d'_n}
-\]
-
-となり、さらに$\Delta$も $\longer{d1}{d2}$の形を「かつ」と「または」で
-つないだ形になるはずである。
-
-これは decidable なので、「解があるかどうか」もdecidableである。
-
-\subsection{制約の解消アルゴリズム(後半のおまけ)}
-
-実は、まだ、
-$\Delta \models \longer{\alpha^0}{\beta^0}$という制約がのこっていた。
-
-これを最後まで残した(解かなかった)のは、以下の2つの可能性があるからで
-ある。これはどうするか？
+次に$\Delta \models \longer{\alpha^0}{\beta^0}$の形の制約の解消について述べる．
+この制約は以下の２つの可能性がある．
 
 \begin{itemize}
 \item $\alpha^0 = \beta^0$
@@ -375,6 +531,61 @@ $\Delta \models \longer{\alpha^0}{\beta^0}$という制約がのこっていた�
   $\Delta \models \longer{\gamma1}{\gamma2}$
 \end{itemize}
 
+\begin{oframed}
+  制約解消アルゴリズム(後半) typeinf2
+  \begin{itemize}
+    \setlength{\itemsep}{-5pt}
+  \item $C$ : constraint(制約)
+  \item $\Theta$ : 代入
+  \end{itemize}
+
+  \begin{description}
+  \item[入力] $C$ $\Theta$ ($\Theta$ には $\Delta \models \longer{\alpha^0}{\beta^0}$, $\Delta \models \longer{c}{c}$ の形の制約のみがある)
+  \item[出力] $C$ $\Theta$
+  \end{description}
+
+  \begin{description}
+  \item[0] typeinf2($C, []$) を呼び出す
+  \item[1] $C$から任意の制約$c$を選び， $C' = C - \{c\}$ とする．
+    \begin{description}
+    \item[1-1] $c$ が $\Delta \models \longer{c}{c}$の形のとき，
+      \begin{description}
+        \item[1-1-1: ステップ1] classifier 変数 $\gamma$ を選び，$\longer{c_i}{\gamma}$ と$\longer{\gamma}{c'_j}$ をすべて消去し，制約に$\longer{c_i}{c'_j}$ を加える．すべての classifier 変数がなくなるまでステップ1を繰り返し，ステップ2へ
+        \item[1-1-2: ステップ2] $\longer{c_1 \uni c_2}{c_3}$ を$\longer{c_1}{c_3}$ と $\longer{c_2}{c_3}$ に変換する．左辺に$\uni$ がなくなるまで，ステップ2を繰り返すことによって，制約は， $\longer{d}{c}$となる．ステップ3へ
+        \item[1-1-3: ステップ3] $\longer{d}{c_1 \uni c_2}$ を $\longer{d}{c_1} \vee \longer{d}{c_2}$ に変換する．その制約を$\Theta$に加え，typeinf2($C', \Theta$)を呼び出す
+      \end{description}
+    \item[1-2] $c$ が $\Delta \models \longer{\alpha^0}{\beta^0}$の形のとき，
+      $C'_1$($C'$ に$\alpha^0 = \beta^0$を加えたもの)，\\
+      $C'_2$($C'$ に$\alpha^0 = \codeT{t}{\gamma1},~ \beta^0 = \codeT{t}{\gamma2},~ \Delta \models \longer{\gamma1}{\gamma2}$を加えたもの)とする．\\
+      typeinf2($C'_1, \Theta_1$)とtypeinf2($C'_2, \Theta_2$)とを呼び出す．
+    \end{description}
+    \item[1-3] 解として，$C, \Theta$を返す．
+  \end{description}
+\end{oframed}
+
+% \subsection{制約の解消アルゴリズム(全体)}
+
+% \begin{framed}
+%   制約解消アルゴリズム(全体) typeinf
+%   \begin{itemize}
+%     \setlength{\itemsep}{-5pt}
+%   \item $C$ : constraint(制約)
+%   \item $\Theta$ : 代入
+%   \end{itemize}
+
+%   \begin{description}
+%   \item[入力] $\Gamma,~ e,~ t,~ \sigma,~ L$
+%   \item[出力] $C$
+%   \end{description}
+
+%   \begin{enumerate}
+%   \item $T_2$を「下から上」の向きに適用して制約$C$を生成する．
+%   \end{enumerate}
+% \end{framed}
+
+% 以上によって，制約を解消することで，$\Gamma,~ L,~ \sigma,~ e$ が与えられたとき，$\Gamma \vdash^{L} e : t ;~\sigma$ が成立するような $t$ があるかどうか判定し，その型$t$ のprincipal type が分かる
+
+% \section{型推論アルゴリズム}
 
 %%% Local Variables:
 %%% mode: japanese-latex
