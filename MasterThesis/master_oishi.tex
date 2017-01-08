@@ -30,6 +30,16 @@
 \usepackage{listings,jlisting}
 \usepackage{here}
 \usepackage{verbatim}
+\usepackage{framed}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+
+\lstset{
+  basicstyle=\ttfamily,
+  columns=fullflexible,
+  keepspaces=true,
+}
 
 \newenvironment{vq}
 {%begin
@@ -116,18 +126,22 @@ forループを飛び越えたコード移動を許す仕組みであり，ル�
 \input{target_lang}
 \input{type_system}
 \input{type_inference}
-\input{impl}
+% \input{impl}
 % \input{proof}
 \input{relevant_study}
 \input{conc}
 \chapter*{謝辞}
 \addcontentsline{toc}{chapter}{\numberline{}謝辞}
-ありがとうありがとう
+本研究に関して，終始ご指導ご鞭撻を頂きました亀山幸義先生に深く感謝いたします．
+また，研究に対しての発表の仕方など有益な助言を下さった海野広志先生に感謝いたします．
+最後に，研究に関して様々な議論をして下さった薄井千春君に，
+日頃研究を様々な形でサポートして頂きましたプログラム論理研究室の皆様に感謝いたします．
 \newpage
 
 \addcontentsline{toc}{chapter}{\numberline{}参考文献}
 \renewcommand{\bibname}{参考文献}
 \bibliographystyle{junsrt}
+\nocite{*}
 \bibliography {bibfile}
 
 \appendix
