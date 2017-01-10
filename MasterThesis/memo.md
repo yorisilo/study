@@ -5,52 +5,37 @@
 ### 安全なコード移動が可能なコード生成言語の型システムの設計と実装
 
 ```
-{第1章}はじめに}{1}
-
-{第2章}背景}{3}
-{2.1}コード生成言語}{3}
- {2.1.1}コード生成の例}{4}
-{2.2}shift0/reset0}{5}
-{2.3}コード生成とlet挿入}{6}
- {2.3.1}コードコンビネータ方式のプログラム例}{6}
- {2.3.2}コード生成におけるlet挿入}{7}
-{2.4}Scope extrusion}{10}
-
-{第3章}環境識別子による型システムの構築}{11}
-{3.1}先行研究のアイディア}{11}
-{3.2}本研究: 環境識別子の拡張}{13}
-{3.3}本研究: 型システムの構築}{13}
-
-{第4章}対象言語: 構文と意味論}{16}
-{4.1}構文の定義}{16}
-{4.2}操作的意味論}{17}
-
-{第5章}型システム}{19}
-{5.1}型付け例}{24}
-{5.1.1}let挿入の例}{24}
-{5.1.2}多段階let挿入の例}{25}
-{5.2}型安全性について}{26}
-
-{第6章}型推論}{27}
-{6.1}制約生成}{27}
-{6.2}型システム$T_2$の導入}{27}
-{6.3}制約の解消}{30}
-{6.3.1}制約の解消アルゴリズム(前半)}{31}
-{6.3.2}制約の解消アルゴリズム(後半)}{32}
-{6.3.3}制約の解消アルゴリズム(後半のおまけ)}{32}
-
-{第7章}実装}{34}
-{7.1}評価器}{34}
-{7.2}制約生成器}{35}
-
-{第8章}関連研究}{36}
-
-{第9章}まとめと今後の課題}{37}
-{\hfil }謝辞}{38}
-{\hfil }参考文献}{39}
-{付 録A }シンタックス}{40}
-{付 録B }評価器}{43}
-{付 録C }型推論器}{46}
+\contentsline {chapter}{\numberline {第1章}はじめに}{1}
+\contentsline {chapter}{\numberline {第2章}背景}{3}
+\contentsline {section}{\numberline {2.1}コード生成言語}{3}
+\contentsline {subsection}{\numberline {2.1.1}コード生成の例}{4}
+\contentsline {section}{\numberline {2.2}shift0/reset0}{5}
+\contentsline {section}{\numberline {2.3}コード生成とlet挿入}{6}
+\contentsline {subsection}{\numberline {2.3.1}コードコンビネータ方式のプログラム例}{6}
+\contentsline {subsection}{\numberline {2.3.2}コード生成におけるlet挿入}{7}
+\contentsline {section}{\numberline {2.4}Scope extrusion}{10}
+\contentsline {chapter}{\numberline {第3章}環境識別子による型システムの構築}{11}
+\contentsline {section}{\numberline {3.1}先行研究のアイディア}{11}
+\contentsline {section}{\numberline {3.2}本研究: 環境識別子の拡張}{13}
+\contentsline {section}{\numberline {3.3}本研究: 型システムの構築}{14}
+\contentsline {chapter}{\numberline {第4章}対象言語: 構文と意味論}{16}
+\contentsline {section}{\numberline {4.1}構文の定義}{16}
+\contentsline {section}{\numberline {4.2}操作的意味論}{17}
+\contentsline {chapter}{\numberline {第5章}型システム}{20}
+\contentsline {section}{\numberline {5.1}型付け例}{25}
+\contentsline {subsection}{\numberline {5.1.1}let挿入の例}{25}
+\contentsline {subsection}{\numberline {5.1.2}多段階let挿入の例}{26}
+\contentsline {section}{\numberline {5.2}型安全性について}{27}
+\contentsline {chapter}{\numberline {第6章}型推論}{28}
+\contentsline {section}{\numberline {6.1}型システム$T_2$の導入}{28}
+\contentsline {section}{\numberline {6.2}制約生成}{30}
+\contentsline {section}{\numberline {6.3}制約の解消}{31}
+\contentsline {subsection}{\numberline {6.3.1}typeinf1: 制約の解消アルゴリズム(前半)}{32}
+\contentsline {subsection}{\numberline {6.3.2}typeinf2: 制約の解消アルゴリズム(後半)}{34}
+\contentsline {chapter}{\numberline {第7章}関連研究}{36}
+\contentsline {chapter}{\numberline {第8章}まとめと今後の課題}{37}
+\contentsline {chapter}{\hbox to\@lnumwidth {\hfil }謝辞}{38}
+\contentsline {chapter}{\hbox to\@lnumwidth {\hfil }参考文献}{39}
 ```
 
 ##### 型システム
@@ -181,6 +166,7 @@ reset0 の直前直後に sigma part の subsumption を付ける？
 ### 優先度付きTODO: 修士論文
 1. 1/8(日)までに 6章 型推論アルゴリズム のところを論文にする
    * 制約生成，制約解消 をアルゴリズムの形としてスッキリ見やすくさせる．
+1. 型推論アルゴリズムのところを整理する．ちゃんと動く形のアルゴリズムにする
 1. 型システムの健全性の証明 (subject reductionが成り立てば，scope extrusionが起きない)
 1. 制約生成アルゴリズムの実装(型推論アルゴリズム)
 1. 制約解消アルゴリズムの実装(型推論アルゴリズム)
