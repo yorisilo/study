@@ -329,7 +329,7 @@ $e$ は型付け可能である．
 
 \def\proofone{
   \infer
-  {\vdash e_1:\tzero;~\cdot{}}
+  {\vdash e:\tzero;~\cdot{}}
   {
     \infer{\vdash \cLet~x_1=e_1~\cIn~\Resetz~\cLet~x_2=e_2~\cIn~\cdots :
       \tzero;~\tzero
@@ -402,7 +402,7 @@ $\Gamma_2 = \longer{\gamma_2}{\gamma_1},~x_2:\ttwo,~\longer{\gamma_1}{\gamma_0},
 
 \def\proofone{
   \infer
-  {\vdash e:\tzero;~\cdot{}}
+  {\vdash e':\tzero;~\cdot{}}
   {
     \infer{\vdash \cLet~x_1=e_1~\cIn~\Resetz~\cLet~x_2=e_2~\cIn~\cdots :
       \tzero;~\tzero
