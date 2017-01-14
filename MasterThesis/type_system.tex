@@ -47,7 +47,7 @@ $\sigma$ の$\epsilon$は空の列を表す．
 を引数に適用したときに生じる計算エフェクトであり，具体的には，
 \Shiftz の answer type の列である．前述したようにshift0 は多段
 階の reset0 にアクセスできるため，$n$個先のreset0 の answer typeまで記
-憶するため，このように型の列$\sigma$で表現している．
+憶するため，このように型の列$\sigma$で表現している．この$\sigma$ を $\sigma$-partと呼ぶ．
 ただし，本研究の範囲では，answer type modification に対応する必要はな
 いので，エフェクトはシンプルに型の列($n$個先の reset0 のanswer type を
 $n=1,\cdots,k$に対して並べた列)で表現している．
@@ -87,6 +87,7 @@ $n=1,\cdots,k$に対して並べた列)で表現している．
   \label{fig:type_context_def}
 \end{figure}
 
+\hrulefill
 
 型判断の導出規則を与える．まず，$\Gamma \models \gamma \ord \gamma$の
 形に対する規則である．
@@ -128,8 +129,7 @@ $n=1,\cdots,k$に対して並べた列)で表現している．
   \caption{$\Gamma \models \gamma \ord \gamma$の形に対する型導出規則}
   \label{fig:gmg_rule}
 \end{figure}
-
-
+\hrulefill
 
 次に，$\Gamma \vdash^{L} e : t ;~\sigma$ の形に対する型導出規則を与える．
 まずは，レベル0における単純な規則である．
@@ -188,7 +188,7 @@ $n=1,\cdots,k$に対して並べた列)で表現している．
   \caption{(レベル0，レベル1の)$\Gamma \vdash^{L} e : t ;~\sigma$ の単純な形に対する型導出規則}
   \label{fig:gvs_rule}
 \end{figure}
-
+\hrulefill
 
 次にコードレベル変数に関するラムダ抽象の規則である．
 
@@ -203,7 +203,7 @@ $n=1,\cdots,k$に対して並べた列)で表現している．
   \caption{コードレベルのラムダ抽象の型導出規則}
   \label{fig:code_abs_type_rule}
 \end{figure}
-
+\hrulefill
 
 コントロールオペレータに対する型導出規則である．
 
@@ -237,7 +237,7 @@ $n=1,\cdots,k$に対して並べた列)で表現している．
   \caption{コントロールオペレータに対する型導出規則}
   \label{fig:controlop_type_rule}
 \end{figure}
-
+\hrulefill
 
 コード生成に関する補助的な規則として，Subsumptionに相当する規則等がある．
 
@@ -279,6 +279,7 @@ $n=1,\cdots,k$に対して並べた列)で表現している．
   \caption{コード生成に関するSubsumptionの型導出規則}
   \label{fig:code_gen_subs_type_rule}
 \end{figure}
+\hrulefill
 
 \Shiftz の Answer type の列($\sigma$)に関するSubsumptionに相当する規則がある．
 
@@ -294,7 +295,7 @@ $n=1,\cdots,k$に対して並べた列)で表現している．
   \caption{$\sigma$-part(Anser typeの列)に関するSubsumptionの型導出規則}
   \label{fig:sigma_subs_type_rule}
 \end{figure}
-
+\hrulefill
 \section{型付け例}
 
 上記の型システムのもとで，いくつかの項の型付けについて述べる．
