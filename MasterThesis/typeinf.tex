@@ -230,7 +230,8 @@
 実装は ``study/src/metaS0/typeinf.ml'' にあります．
 
 \begin{lstlisting}
-let rec gen_constr (tyct: tycntxtT list) (lv: lvT) (e: expr) (t: tyT) (sgm: sgmT) (cnstl: constrT list) : constrT list =
+let rec gen_constr (tyct: tycntxtT list) (lv: lvT) (e: expr) (t: tyT)
+                   (sgm: sgmT) (cnstl: constrT list) : constrT list =
   match e,lv with
   | (Var x), L0 ->
     let (t', L0) = lookup_tycntxt x tyct in
