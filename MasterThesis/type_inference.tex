@@ -121,7 +121,7 @@ $T_2$の設計にあたって解決すべき問題は subsumption規則である
 (lambda0)
 
 \[
-  \infer[Constr;~t=\funT{t_1}{t_2}{\sigma'},~ \Gamma \models \sigma \ord \sigma' ]
+  \infer[Constr;~t=\funT{t_1}{t_2}{\sigma'}]
   {\Gamma \vdash \lambda x.e : t;~\sigma}
   {\Gamma,~x:t_1 \vdash e : t_2;~\sigma'}
 \]
@@ -181,18 +181,26 @@ $T_2$の設計にあたって解決すべき問題は subsumption規則である
 
 (shift0)
 
+% \[
+%   \infer[Constr;~\Gamma \models \longer{t}{\codeT{t_1}{\gamma_1}},~ t_2 =\codeT{t_0}{\gamma_0},~ \Gamma \models \longer{\gamma_1}{\gamma_0}]
+%   {\Gamma \vdash \shiftz{k}{e} : t~;~ t_2,\sigma}
+%   {\Gamma,~k:\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}{\sigma}
+%     \vdash e : \codeT{t_0}{\gamma_0} ; \sigma
+%   }
+% \]
+
 \[
-  \infer[Constr;~\Gamma \models \longer{t}{\codeT{t_1}{\gamma_1}},~ t_2 =\codeT{t_0}{\gamma_0},~ \Gamma \models \longer{\gamma_1}{\gamma_0}]
-  {\Gamma \vdash \shiftz{k}{e} : t~;~ t_2,\sigma}
+  \infer[Constr;~\Gamma \models \longer{t}{\codeT{t_1}{\gamma_1}},~ \Gamma \models \longer{\gamma_1}{\gamma_0},~ \sigma_x = \codeT{t_0}{\gamma_0}, \sigma]
+  {\Gamma \vdash \shiftz{k}{e} : t~;~ \sigma_x}
   {\Gamma,~k:\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}{\sigma}
     \vdash e : \codeT{t_0}{\gamma_0} ; \sigma
   }
 \]
 
-
 (throw)
 % \oishi{
-%   throw0 規則にのみ $\sigma$ part の subsumption 規則を適用すればおｋ
+% throw0 規則にのみ $\sigma$ part の subsumption 規則を適用すればおｋ
+% throw0 は今後一考する必要あり
 % }
 % \\
 
@@ -586,6 +594,8 @@ $\Delta \models \longer{\alpha^0}{\beta^0}$の形の制約は残す．
     \item[1-2] 解として，$C, \Theta$と $\Delta \models \longer{\alpha^0}{\beta^0}$の形の制約を返す．
   \end{description}
 \end{oframed}
+
+% \oishi{ 固有変数d の条件のチェックが必要． Γの中の d たちの順序 と 制約で出てきた順序についてのチェック }
 
 % \subsection{制約の解消アルゴリズム(全体)}
 
