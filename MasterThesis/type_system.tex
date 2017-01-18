@@ -227,11 +227,12 @@ $n=1,\cdots,k$に対して並べた列)で表現している．
   % \oishi{複数の$\Throw$を使う場合，$\sigma$-partのsub sumptionを使えば良い}
   \[
     \infer
-    {\Gamma,~ k:\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}{\sigma}
-      \vdash \throw{k}{v} : \codeT{t_0}{\gamma_2} ; \sigma}
-    {\Gamma,~ k:\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}{\sigma}
-      \vdash v : \codeT{t_1}{\gamma_1 \cup \gamma_2} ; \sigma
+    {\Gamma,~ k:\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}{\codeT{t'}{\gamma'},\sigma}
+      \vdash \throw{k}{v} : \codeT{t_0}{\gamma_2} ; \codeT{t''}{\gamma''},\sigma}
+    {\Gamma,~ k:\contT{\codeT{t_1}{\gamma_1}}{\codeT{t_0}{\gamma_0}}{\codeT{t'}{\gamma'},\sigma}
+      \vdash v : \codeT{t_1}{\gamma_1 \cup \gamma_2} ; \codeT{t''}{\gamma''},\sigma
       & \Gamma \models \gamma_2 \ord \gamma_0
+      & \Gamma \models \gamma'' \ord \gamma'
     }
   \]
   \caption{コントロールオペレータに対する型導出規則}
@@ -281,21 +282,21 @@ $n=1,\cdots,k$に対して並べた列)で表現している．
 \end{figure}
 \hrulefill
 
-\Shiftz の Answer type の列($\sigma$)に関するSubsumptionに相当する規則がある．
+% \Shiftz の Answer type の列($\sigma$)に関するSubsumptionに相当する規則がある．
 
-\begin{figure}[H]
-  \centering
-  \[
-    \infer
-    {\Gamma \vdash e : t;~\codeT{t'}{\gamma_2},\sigma}
-    {\Gamma \vdash e : t;~\codeT{t'}{\gamma_1},\sigma
-      & \Gamma \models \gamma_2 \ord \gamma_1
-    }
-  \]
-  \caption{$\sigma$-part(Anser typeの列)に関するSubsumptionの型導出規則}
-  \label{fig:sigma_subs_type_rule}
-\end{figure}
-\hrulefill
+% \begin{figure}[H]
+%   \centering
+%   \[
+%     \infer
+%     {\Gamma \vdash e : t;~\codeT{t'}{\gamma_2},\sigma}
+%     {\Gamma \vdash e : t;~\codeT{t'}{\gamma_1},\sigma
+%       & \Gamma \models \gamma_2 \ord \gamma_1
+%     }
+%   \]
+%   \caption{$\sigma$-part(Anser typeの列)に関するSubsumptionの型導出規則}
+%   \label{fig:sigma_subs_type_rule}
+% \end{figure}
+% \hrulefill
 \section{型付け例}
 
 上記の型システムのもとで，いくつかの項の型付けについて述べる．
@@ -443,22 +444,34 @@ $\Gamma_2 = \longer{\gamma_2}{\gamma_1},~x_2:\ttwo,~\longer{\gamma_1}{\gamma_0},
   & \infer[(*)]{\Gamma_2 \vdash \Box : \tzero;~ \cdot}{\vdots}
 }
 
+% \def\prooffive{
+%   \infer
+%   {\Gamma_3 \vdash \Resetz(\throw{k_2}{y}) : \tonethree; ~\cdot{}}
+%   {\infer[(\#)]
+%     {\Gamma_3 \vdash \throw{k_2}{y} : \tonethree;~\tonethree}
+%     {\infer
+%       {\Gamma_3 \vdash \throw{k_2}{y} : \tonethree;~\tzero}
+%       {\Gamma_3 \vdash y :
+%         \codeT{t}{\gamma_2\uni\gamma_1\uni\gamma_3};~\cdot
+%         & \infer{\Gamma_3 \models
+%           \longer{\gamma_1\uni\gamma_3}{\gamma_0}}{}
+%       }
+%       & \infer{\Gamma_3 \models \longer{\gamma_1\uni\gamma_3}{\gamma_0}}{}
+%     }
+%   }
+%   & \infer{\Gamma_3 \models \longer{\gamma_3}{\gamma_0}}{}
+% }
+
 \def\prooffive{
   \infer
   {\Gamma_3 \vdash \Resetz(\throw{k_2}{y}) : \tonethree; ~\cdot{}}
   {\infer[(\#)]
     {\Gamma_3 \vdash \throw{k_2}{y} : \tonethree;~\tonethree}
-    {\infer
-      {\Gamma_3 \vdash \throw{k_2}{y} : \tonethree;~\tzero}
-      {\Gamma_3 \vdash y :
-        \codeT{t}{\gamma_2\uni\gamma_1\uni\gamma_3};~\cdot
-        & \infer{\Gamma_3 \models
-          \longer{\gamma_1\uni\gamma_3}{\gamma_0}}{}
-      }
+    {\infer{\Gamma_3 \vdash y :
+      \codeT{t}{\gamma_2\uni\gamma_1\uni\gamma_3};~\cdot}{\vdots}
       & \infer{\Gamma_3 \models \longer{\gamma_1\uni\gamma_3}{\gamma_0}}{}
     }
   }
-  & \infer{\Gamma_3 \models \longer{\gamma_3}{\gamma_0}}{}
 }
 
 \[
@@ -466,8 +479,8 @@ $\Gamma_2 = \longer{\gamma_2}{\gamma_1},~x_2:\ttwo,~\longer{\gamma_1}{\gamma_0},
 \]
 
 この型付けで注意するところは，複数回の$\Throw$ を使うときは その間に $\Resetz$ を入れなければいけないところである．
-$\Resetz$ を入れることで，$\sigma$-part のずれを防ぎ，$\Throw$ 規則を適用できる準備ができる．\\
-$(\#)$のところに着目すると，$k_2$ の型は $k_2:\contT{\ttwo}{\tone}{\tzero}$ となっているので，$\Throw$規則を適用するには，$\sigma$-part の subsumption 規則を適用して $\tonethree$ から $\tzero$ が導ければ良い．
+$\Resetz$ を入れることで，$\sigma$-part のずれを防ぎ，$\Throw$ 規則を適用する準備ができる．\\
+$(\#)$のところに着目すると，$k_2$ の型は $k_2:\contT{\ttwo}{\tone}{\tzero}$ となっており，式全体の$\sigma$-part は$\tonethree$なので，$\Throw$規則を適用すると，$\Gamma_3 \models \longer{\gamma_1\uni\gamma_3}{\gamma_0}$が導ける．
 
 次に，$\Box$ が $x_1, x_2, \cint 7$ の場合に$\Gamma_2 \vdash \Box : \tzero;~ \cdot$が成り立つかを見ていく．\\
 $(*)$ のところに着目すると，
