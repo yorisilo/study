@@ -27,7 +27,8 @@ let rec lookup x tyenv =
   | (x', t, lv) :: tyenv' -> if x = x' then (t, lv) else lookup x tyenv'
 
 (* Γ L e t σ -> constr *)
-let rec gen_constr (tyct: tycntxtT list) (lv: lvT) (e: expr) (t: tyT) (sgm: sgmT) (cnstl: constrT list) : constrT list =
+let rec gen_constr (tyct: tycntxtT list) (lv: lvT) (e: expr) (t: tyT) (sgm: sgmT)
+    (cnstl: constrT list) : constrT list =
   match e,lv with
   | (Var x), L0 ->
     let (t', L0) = lookup_tycntxt x tyct in (* I guess l is L0. but can't working *)
