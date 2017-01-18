@@ -34,8 +34,6 @@ let new_var x =
   counter := !counter + 1;
   "_" ^ x ^ (string_of_int !counter)
 
-(* eval : expr * (var * v) list * k -> v *)
-(* eval : expr * env * kont * kont list -> v *)
 let rec eval expr env k kl = match expr with
   | Var(x) -> k (get x env) kl
   | Lam(x, expr) -> k (VLam(x, expr, env)) kl

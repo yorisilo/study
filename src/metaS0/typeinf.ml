@@ -51,7 +51,7 @@ let rec apply_subtyl ty subtyl : tyT =
   (* | T0Arrow *)
   (* | T0Code *)
   (* | T1Arrow *)
-(* | TKArrow *)
+  (* | TKArrow *)
 
 let rec print_clsfr ppf cf =
   let printf fmt = Format.fprintf ppf fmt in
@@ -65,8 +65,7 @@ let rec print_sgm ppf sgm =
   | SNil   -> printf "ε"
   | SVar s -> printf "%s" s
   | SCons(t,s)  -> printf "@[%a,%a @]" print_ty t print_sgm s
-and
-  print_ty ppf ty =
+and print_ty ppf ty =
   let printf fmt = Format.fprintf ppf fmt in
   match ty with
   | TVar tv -> printf "%s" tv
@@ -127,7 +126,7 @@ let print_cnstrl' cl = print_cnstrl Format.std_formatter cl
 let rec gen_constr (tyct: tycntxtT list) (lv: lvT) (e: expr) (t: tyT) (sgm: sgmT) (cnstl: constrT list) : constrT list =
   match e,lv with
   | (Var x), L0 ->
-    let (t', l) = lookup_tycntxt x tyct in
+    let (t', L0) = lookup_tycntxt x tyct in (* I guess l is L0. but can't working *)
     (* print_ty' t'; print_lv' l; *)
     let c1 = CModelGtt(tyct, (t, t')) in
     let new_cnstl = c1 :: cnstl in
@@ -239,8 +238,8 @@ let rec gen_constr (tyct: tycntxtT list) (lv: lvT) (e: expr) (t: tyT) (sgm: sgmT
     let cf1 = gen_clsfr () in
     let t0 = T0Code(t', cf0) in
     let t1 = T0Code(t', cf1) in
-    let new_tyct = Gtc(cf1, cf0) :: Tylv(x, t', L1 cf1) :: tyct in
-    let c1 = CModelGtt(tyct, (t, (T0Code(t', cf0)))) in
+    let new_tyct = Gtc(cf1, cf0) :: Tylv(x, t1, L0) :: tyct in
+    let c1 = CModelGtt(tyct, (t, t0)) in
     let new_cnstl = c1 :: cnstl in
     gen_constr tyct lv e0 t0 sgm new_cnstl @
     gen_constr new_tyct lv e1 t1 sgm new_cnstl
@@ -306,8 +305,7 @@ let rec infer_type (cnstrl: constrT list) (theta: subtyT list) : constrT list * 
         end
       | (_, TVar(s)) -> unify t2 t1 theta
       | _ -> failwith "not implemented"
-  and
-    unifysgm sgm1 sgm2 theta =
+  and unifysgm sgm1 sgm2 theta =
     match sgm1, sgm2 with
     | SNil, SNil -> theta
     (* | SVar s, *)
@@ -315,8 +313,7 @@ let rec infer_type (cnstrl: constrT list) (theta: subtyT list) : constrT list * 
          let theta' = unify ty1 ty2 theta in
          unifysgm sgm1' sgm2' theta' *)
     | _  -> failwith "not implemented"
-  and
-    unifycf cf1 cf2 theta =
+  and unifycf cf1 cf2 theta =
     match cf1, cf2 with
     | _ -> failwith "not implemented"
   in

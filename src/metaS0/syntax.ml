@@ -57,8 +57,7 @@ type tyT =
   | T0Code of tyT * clsfrT        (* <t1>^γ *)
   | T1Arrow of tyT * tyT          (* t1 -> t1 *)
   | TKArrow of (tyT * clsfrT) * (tyT * clsfrT) * sgmT (* <t1>^γ = σ => <t1>^γ *)
-and
-  sgmT =
+and sgmT =
   | SNil
   | SVar  of sgmvar
   | SCons of tyT * sgmT
