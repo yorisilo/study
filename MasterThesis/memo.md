@@ -32,10 +32,16 @@
 \contentsline {section}{\numberline {6.3}制約の解消}{31}
 \contentsline {subsection}{\numberline {6.3.1}typeinf1: 制約の解消アルゴリズム(前半)}{32}
 \contentsline {subsection}{\numberline {6.3.2}typeinf2: 制約の解消アルゴリズム(後半)}{34}
-\contentsline {chapter}{\numberline {第7章}関連研究}{36}
-\contentsline {chapter}{\numberline {第8章}まとめと今後の課題}{37}
-\contentsline {chapter}{\hbox to\@lnumwidth {\hfil }謝辞}{38}
-\contentsline {chapter}{\hbox to\@lnumwidth {\hfil }参考文献}{39}
+\contentsline {chapter}{\numberline {第7章}実装}{37}
+\contentsline {section}{\numberline {7.1}評価器}{37}
+\contentsline {section}{\numberline {7.2}制約生成器}{38}
+\contentsline {chapter}{\numberline {第8章}関連研究}{40}
+\contentsline {chapter}{\numberline {第9章}まとめと今後の課題}{41}
+\contentsline {chapter}{\hbox to\@lnumwidth {\hfil }謝辞}{42}
+\contentsline {chapter}{\hbox to\@lnumwidth {\hfil }参考文献}{43}
+\contentsline {chapter}{\numberline {付 録A }シンタックス}{45}
+\contentsline {chapter}{\numberline {付 録B }評価器}{47}
+\contentsline {chapter}{\numberline {付 録C }制約生成器}{50}
 ```
 
 ##### 型システム
