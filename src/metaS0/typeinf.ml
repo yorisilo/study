@@ -265,6 +265,7 @@ let _ = pp_cnstrl @@ Lam("x", Var "x")
 let _ = pp_cnstrl @@ Lam_("x", Var "x")
 let _ = pp_cnstrl @@ Let_("x", Code(Int 1), PrimOp2("Add_", Code(Int 1), Var "x"))
 let _ = pp_cnstrl @@ R0(Let_("x", Code(Int 1), R0(Let_("y", Code(Int 2), S0("k", Let_("z", Var "x", T0("k", App(Var "k", Var "z"))))))))
+let _ = pp_cnstrl @@ R0(Let_("x", Code(Int 1), R0(Let_("y", Code(Int 2), S0("k2", S0("k1", Let_("z", Code(Int 3) , T0("k1", R0(T0("k2", App(Var"k2", Var"z")))))))))))
 
 let rec occurs tx t = (* t の中に tx が含まれるか *)
   if tx = t

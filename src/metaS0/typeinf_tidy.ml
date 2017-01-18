@@ -26,38 +26,11 @@ let rec lookup x tyenv =
   | [] -> failwith ("unbound variable: " ^ x)
   | (x', t, lv) :: tyenv' -> if x = x' then (t, lv) else lookup x tyenv'
 
-(* subtyl の pair の 右側は代入を完全に適用したもののみ *)
-(* subtyl には型変数の重複がないことが前提 *)
-let rec lookup_subtyl (tv: tyvar) subtyl : tyT option =
-  match subtyl with
-  | [] -> None
-  | (tv', ty') :: subtyl' ->
-    if tv = tv' then Some ty'
-    else lookup_subtyl tv subtyl'
-
-let extend_subtyl s t theta : subtyT list =
-  (s,t) :: theta
-
-let rec apply_subtyl ty subtyl : tyT =
-  match ty with
-  | TVar s ->
-    begin
-      match lookup_subtyl s subtyl with
-      | None -> ty
-      | Some ty' -> ty'
-    end
-  | TInt | TBool -> ty
-  | _ -> failwith "not implemented"
-  (* | T0Arrow *)
-  (* | T0Code *)
-  (* | T1Arrow *)
-  (* | TKArrow *)
-
 (* Γ L e t σ -> constr *)
 let rec gen_constr (tyct: tycntxtT list) (lv: lvT) (e: expr) (t: tyT) (sgm: sgmT) (cnstl: constrT list) : constrT list =
   match e,lv with
   | (Var x), L0 ->
-    let (t', L0) = lookup_tycntxt x tyct in
+    let (t', L0) = lookup_tycntxt x tyct in (* I guess l is L0. but can't working *)
     let c1 = CModelGtt(tyct, (t, t')) in
     let new_cnstl = c1 :: cnstl in
     new_cnstl
@@ -149,23 +122,32 @@ let rec gen_constr (tyct: tycntxtT list) (lv: lvT) (e: expr) (t: tyT) (sgm: sgmT
     gen_constr tyct lv e1 TBool sgm cnstl @
     gen_constr tyct lv e2 t     sgm cnstl @
     gen_constr tyct lv e3 t     sgm cnstl
-  (* | Eq *)
-  (* | Add *)
-  (* | PrimOp2("Add", e1, e2) -> *)
-  (* | PrimOp2("Add_", e1, e2) -> *)
+  | PrimOp2("Add_", e1, e2), lv ->
+    let new_clsfr = gen_clsfr () in
+    let c1 = CModelGtt(tyct, (t, T0Code(TInt, new_clsfr))) in
+    let new_cnstl = c1 :: cnstl in
+    gen_constr tyct lv e1 (T0Code(TInt, new_clsfr)) sgm new_cnstl @
+    gen_constr tyct lv e2 (T0Code(TInt, new_clsfr)) sgm new_cnstl
+  | PrimOp2("Add", e1, e2), lv ->
+    let c1 = CT0eq(t, TInt) in
+    let new_cnstl = c1 :: cnstl in
+    gen_constr tyct lv e1 TInt sgm new_cnstl @
+    gen_constr tyct lv e2 TInt sgm new_cnstl
   | Let_ (x, e0, e1), lv ->
     let t' = gen_tyvar () in
     let cf0 = gen_clsfr () in
     let cf1 = gen_clsfr () in
     let t0 = T0Code(t', cf0) in
     let t1 = T0Code(t', cf1) in
-    let new_tyct = Gtc(cf1, cf0) :: Tylv(x, t', L1 cf1) :: tyct in
-    let c1 = CModelGtt(tyct, (t, (T0Code(t', cf0)))) in
+    let new_tyct = Gtc(cf1, cf0) :: Tylv(x, t1, L0) :: tyct in
+    let c1 = CModelGtt(tyct, (t, t0)) in
     let new_cnstl = c1 :: cnstl in
     gen_constr tyct lv e0 t0 sgm new_cnstl @
     gen_constr new_tyct lv e1 t1 sgm new_cnstl
-  (* | Fix *)
-  | _ -> failwith "not implemented"
+
 
 let cnstrl e = gen_constr [] L0 e (gen_tyvar ()) SNil []
 let cnstrl_withtyct e tyct = gen_constr tyct L0 e (gen_tyvar ()) SNil []
+
+let pp_cnstrl e = print_cnstrl' @@ cnstrl e
+let pp_cnstrl_withtyct e tyct = print_cnstrl' @@ gen_constr tyct L0 e (gen_tyvar ()) SNil []
