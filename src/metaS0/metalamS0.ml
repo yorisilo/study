@@ -180,3 +180,5 @@ let _ = eval1 @@ Lam_("x", Lam_("x", PrimOp2("Add_", Var "x", Var "x")))
 let _ = eval1 @@ Lam("x", Fix("f", "n", If(PrimOp2("Eq", Var "n", Int 0), Int 1, PrimOp2("Mult", Var "x", App(Var "f", PrimOp2("Min", Var "n", Int 1))))))
 let _ = eval1 @@ App(App(Lam("x", Fix("f", "n", If(PrimOp2("Eq", Var "n", Int 0), Int 1, PrimOp2("Mult", Var "x", App(Var "f", PrimOp2("Min", Var "n", Int 1)))))), Int 2), Int 10)
 (* let _ = eval1 @@ Lam_("x", Fix("f", "n", If(PrimOp2("Eq", Var "n", Int 0), Code(Int 1), PrimOp2("Mult_", Var "x", App(Var "f", PrimOp2("Min", Var "n", Int 1)))))) *)
+
+let _ = eval1 @@ R0(Let_("x_1", Code(Int 3), S0("k", Let_("x_2", Code(Int 4), T0("k", App(Var "k", Code(Int 8)))))))

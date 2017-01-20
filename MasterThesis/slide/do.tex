@@ -1,0 +1,126 @@
+% 先の解決方法で実際になにができるのかの説明
+
+\subsection{型付けの例}
+
+\newcommand\boxterm{\framebox{
+    \only<2>{\green{$\cint{3}$}}
+    \only<3>{\red{$x~\cPlus~(\cint{3})$}}
+    \phantom{A}
+  }}
+
+\begin{frame}
+  \frametitle{型付けの例(1)}
+  \begin{align*}
+    e & = \Resetz ~~(\cfordo{x = e1}{e2} \\
+      & \phantom{=}~~~ \Shiftz~k~\to~
+        {\cLet~u=\green{\boxterm}~\cIn}~\Throw~k~u)
+  \end{align*}
+
+  \[
+    \infer{\vdash e : \codeTs{t}{\gamma0};~\epsilon}
+    {\infer[\blue{(\gamma1^*)}]{\vdash \cfor{x=...} :
+        \codeTs{t}{\gamma0};~\codeTs{t}{\gamma0}}
+      {\infer{\gamma1 \ord \gamma0,~x:\codeTs{t}{\gamma1}
+          \vdash \Shiftz~k~\to~... :
+          \codeTs{t}{\gamma1};~\codeTs{t}{\gamma0}}
+        {\infer[(\gamma2^*)]{\Gamma a \vdash \cLet~u=...:\codeTs{t}{\gamma0};~\epsilon}
+          {\infer{\Gamma b \vdash
+              \Throw~k~u:\codeTs{t}{\gamma2};~\epsilon }
+            {\infer{\Gamma b \vdash
+                u:\codeTs{t}{\gamma1 \cup \gamma2};~ \sigma}
+              {}
+            }
+            &\infer*{\Gamma a \vdash
+              \green{\boxterm}:\codeTs{t}{\red{\gamma0}};~\epsilon}
+            {}
+          }
+        }
+      }
+    }
+  \]
+
+  % $[(\gamma1^*)]$ は eigen variable (固有変数)
+
+  {\footnotesize
+    \begin{align*}
+      \Gamma a &= \gamma1 \ord \gamma0,~x:\codeTs{t}{\red{\gamma1}},
+                 ~k: \contT{\codeTs{t}{\gamma1}}{\codeTs{t}{\gamma0}} \\
+      \Gamma b &= \Gamma a,~\gamma2 \ord \gamma0,~u:\codeTs{t}{\gamma2}
+    \end{align*}
+  }
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{型付けの例(2)}
+
+  \newcommand\gammaa{\gamma1 \ord \gamma0,~x:\codeTs{t}{\gamma1}}
+  \newcommand\gammab{\Gamma a,\gamma2 \ord \gamma1,~y:\codeTs{t}{\gamma2}}
+  \newcommand\gammac{\Gamma b,\blue{k_2}:\contT{\codeTs{t}{\gamma2}}{\codeTs{t}{\gamma1}}}
+  \newcommand\gammad{\Gamma c,\red{k_1}:\contT{\codeTs{t}{\gamma1}}{\codeTs{t}{\gamma0}}}
+  \newcommand\gammae{\Gamma d,\gamma3 \ord \gamma0,\magenta{u}:\codeTs{t}{\gamma3}}
+
+  \footnotesize
+  \begin{align*}
+    e'= & \red{\Resetz}~(\cfordo{x = e1}{e2}~\blue{\Resetz} ~(\cfordo{y = e3}{e4} \\
+        & \blue{\Shiftz}~\blue{k_2}\to~ \red{\Shiftz}~\red{k_1}\to~\magenta{\cLet~u=\green{\framebox{\phantom{x}}}~\cIn}
+          ~\red{\Throw~k_1}~(\blue{\Throw~k_2}~e5)))
+  \end{align*}
+
+  \[
+    \infer{\vdash e'=\red{\Resetz}\cdots : \codeTs{t}{\gamma0};~~~\epsilon}
+    {\infer[(\gamma1^*)]
+      {\vdash \cfor{x=...} : \codeTs{t}{\gamma0};~~~\codeTs{t}{\gamma0}}
+      {\infer{\Gamma a=\gammaa\vdash \blue{\Resetz}\cdots : \codeTs{t}{\gamma1};~~~\codeTs{t}{\gamma0}}
+        {\infer[(\gamma2^*)]
+          {\Gamma a\vdash \cfor{y=...}: \codeTs{t}{\gamma1};~~~\codeTs{t}{\gamma1},\codeTs{t}{\gamma0}}
+          {\infer{\Gamma b=\gammab\vdash \blue{\Shiftz~k_2}... :\codeTs{t}{\gamma2}
+              ;~~~\codeTs{t}{\gamma1},\codeTs{t}{\gamma0}}
+            {\infer{\Gamma c=\gammac\vdash \red{\Shiftz~k_1}... :\codeTs{t}{\gamma1}
+                ;~~~\codeTs{t}{\gamma0}}
+              {\infer[(\gamma3^*)]
+                {\Gamma d=\gammad\vdash \magenta{\cLet~u=...} : \codeTs{t}{\gamma0};~\epsilon}
+                {\infer
+                  {\Gamma e=\gammae\vdash \red{\Throw~k_1}~... : \codeTs{t}{\gamma3};~\epsilon}
+                  {\infer{\Gamma e\vdash \blue{\Throw~k_2}~e5 :
+                      \codeTs{t}{\gamma1\cup\gamma3};~~\epsilon}
+                    {\infer*{\Gamma e\vdash e5:
+                        \codeTs{t}{\gamma2\cup\gamma1\cup\gamma3};~~~\epsilon}
+                      {}
+                    }
+                  }
+                  &\infer*{\Gamma d\vdash \green{\framebox{\phantom{x}}}:\codeTs{t}{\gamma0};\epsilon}{}
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  \]
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{型推論アルゴリズム}
+  \begin{itemize}
+  \item 制約生成
+  \item 制約解消
+  \end{itemize}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{制約生成}
+  こういう制約が出てくる
+\end{frame}
+
+
+\begin{frame}
+  \frametitle{制約解消}
+  先の制約を解消して，型を決定する
+\end{frame}
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "slide_oishi"
+%%% End:

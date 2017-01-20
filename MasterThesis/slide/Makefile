@@ -5,7 +5,7 @@
 .SUFFIXES:
 .SUFFIXES: .dvi .pdf .ps .tex .eps .jpg .png .bbl .aux .ppm .pnm .png .gif .jpg .cfg .elf .out .dep .stex .spdf
 
-SLIDE=	slide
+SLIDE=	slide_oishi
 
 # HANDOUT= $(subst .pdf,.spdf,$(SLIDE))
 HANDOUT= handout
@@ -33,5 +33,5 @@ clean:
 .tex.dvi:
 	$(LATEX) $< && $(LATEX) $<
 
-.dvi.pdf: 
+.dvi.pdf:
 	$(DVIPDFM) $<
