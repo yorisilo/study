@@ -4,80 +4,113 @@
 % コントロールオペレータs0/r0によるコード移動
 % 安全に
 
-\begin{frame}
-  \center
-  \huge{問題点}
-\end{frame}
+% \begin{frame}
+%   \center
+%   \huge{問題点}
+% \end{frame}
 
 \begin{frame}
-  \frametitle{コード生成前・後でスコープの包含関係が逆転}
-  % sudo らの研究の EC を素朴に適用させると問題があるということ言うスライド
-  % ここに，forループとshift0/reset0 の例を再掲する．
-  % もとのスライドの 24ページの絵をかく．
-
-  \newcommand\ml{\multicolumn}
-  \begin{columns}
-    \only<1>{コード生成器：}
-    \begin{column}{0.6\textwidth}%% [横幅] 0.2\textwidth = ページ幅の 20 %
-      \center
-      \footnotesize
-      \begin{tabular}{l|l|l|l|l|l|l|l|l|l|l}
-        \cline{2-10}
-        & \ml{9}{|l|}{$\cfordo{x = e1}{e2}$~~~~~~~~~~~~~~~} \\ \cline{3-9}
-        & \footnotesize{\alert{$\mathbf \gamma0$}} & \ml{7}{|l|}{$\Resetz~ \cfordo{y = e3}{e4}$~} & \\ \cline{4-8}
-        & & \footnotesize{\alert{$\mathbf \gamma1$}} & \ml{5}{|l|}{$\Shiftz~ k \to \magenta{\cLet~ u = cc ~ \cIn}$}  & & \\ \cline{5-7}
-        & & & \footnotesize{\alert{$\mathbf \gamma2$}} & \ml{3}{|l|}{$\Throw~ k$}     &   &  &       \\ \cline{6-6}
-        & & & & \footnotesize{\alert{$\mathbf \gamma3$}} & \ml{1}{|l|}{$\caryset{a}{(x,y)}{u}$} & & &  &  \\ \cline{6-6}
-        & & & & \ml{3}{|l|}{\ }  &   &   &           \\ \cline{5-7}
-        & & & \ml{5}{|l|}{\ } &  &               \\ \cline{4-8}
-        & & \ml{7}{|l|}{\ }  & \\ \cline{3-9}
-        & \ml{9}{|l|}{~~~~~~~ } \\ \cline{2-10}
-      \end{tabular}
-    \end{column}
-
-    \begin{column}{0.5\textwidth}%% [横幅] 0.2\textwidth = ページ幅の 20 %
-      \begin{onlyenv}<2->
-        \flushright
-        \footnotesize
+  \frametitle{コード生成前後でコードが移動する}
+  \begin{visibleenv}<1->
+    \begin{columns}
+      \begin{column}{0.5\textwidth}%% [横幅] 0.2\textwidth = ページ幅の 20 %
+        コード生成器
         \begin{align*}
-          \gamma3 \ord \red{\gamma2} \ord \red{\gamma1} \ord \gamma0 \\
+          & \cfordo{x = e1}{e2} \\
+          & ~~\red{\Resetz~} \cfordo{y = e3}{e4} \\
+          & ~~~~\red{\Shiftz~} k \to \magenta{\cLet~ u = y ~ \cIn} \\
+          & ~~~~~~\red{\Throw~} k~ \caryset{a}{(x,y)}{u}
         \end{align*}
-      \end{onlyenv}
-
-    \end{column}
-  \end{columns}
-
-  \bigskip
-
-  \begin{columns}
-    \only<1>{生成コード：~~}
-    \begin{column}{0.6\textwidth}%% [横幅] 0.2\textwidth = ページ幅の 20 %
-      \footnotesize
-      \begin{tabular}{l|l|l|l|l|l|l|l|l|l|l|l|l|}
-        \cline{2-10}
-        & \ml{9}{|l|}{$\cbra$ $\fordo{x' = e1'}{e2'}$~~~~~~~~~~~~~~~} \\ \cline{3-9}
-        & \footnotesize{\alert{$\mathbf \gamma0$}} & \ml{7}{|l|}{\magenta{$\Let~ u' = cc' ~ \In$}~} & \\ \cline{4-8}
-        & & \footnotesize{\alert{$\mathbf \gamma2$}} & \ml{5}{|l|}{$\fordo{y' = e3'}{e4'}$}  & & \\ \cline{5-7}
-        & & & \footnotesize{\alert{$\mathbf \gamma1$}} & \ml{3}{|l|}{\ }     &   &  &       \\ \cline{6-6}
-        & & & & \footnotesize{\alert{$\mathbf \gamma3$}} & \ml{1}{|l|}{$\aryset{a}{(x',y')}{u'}$ $\cket$} & & &  &  \\ \cline{6-6}
-        & & & & \ml{3}{|l|}{\ }  &   &   &           \\ \cline{5-7}
-        & & & \ml{5}{|l|}{\ } &  &               \\ \cline{4-8}
-        & & \ml{7}{|l|}{\ }  & \\ \cline{3-9}
-        & \ml{9}{|l|}{~~~~~~~ } \\ \cline{2-10}
-      \end{tabular}
-    \end{column}
-
-    \begin{column}{0.5\textwidth}%% [横幅] 0.2\textwidth = ページ幅の 20 %
-      \begin{onlyenv}<2->
-        \flushright
-        \footnotesize
+      \end{column}
+      $\too$
+      \begin{column}{0.5\textwidth}%% [横幅] 0.2\textwidth = ページ幅の 20 %
+        生成されるコード
         \begin{align*}
-          \gamma3 \ord \red{\gamma1} \ord \red{\gamma2} \ord \gamma0 \\
+          & \cbra~ \fordo{x' = e1'}{e2'} \\
+          & ~~\magenta{\Let~ u' = y' ~ \In} \\
+          & ~~~~\fordo{y' = e3'}{e4'} \\
+          & ~~~~~~\aryset{a}{(x',y')}{u'}~ \cket
         \end{align*}
-      \end{onlyenv}
-    \end{column}
-  \end{columns}
+      \end{column}
+    \end{columns}
+  \end{visibleenv}
+
+  \begin{visibleenv}<2>
+    \begin{exampleblock}{Scope Extrusion}
+      (コード移動により)意図した束縛から，変数が抜け出てしまうこと
+    \end{exampleblock}
+  \end{visibleenv}
 \end{frame}
+
+% \begin{frame}
+%   \frametitle{コード生成前・後でスコープの包含関係が逆転}
+%   % sudo らの研究の EC を素朴に適用させると問題があるということ言うスライド
+%   % ここに，forループとshift0/reset0 の例を再掲する．
+%   % もとのスライドの 24ページの絵をかく．
+
+%   \newcommand\ml{\multicolumn}
+%   \begin{columns}
+%     \only<1>{コード生成器：}
+%     \begin{column}{0.6\textwidth}%% [横幅] 0.2\textwidth = ページ幅の 20 %
+%       \center
+%       \footnotesize
+%       \begin{tabular}{l|l|l|l|l|l|l|l|l|l|l}
+%         \cline{2-10}
+%         & \ml{9}{|l|}{$\cfordo{x = e1}{e2}$~~~~~~~~~~~~~~~} \\ \cline{3-9}
+%         & \footnotesize{\alert{$\mathbf \gamma0$}} & \ml{7}{|l|}{$\Resetz~ \cfordo{y = e3}{e4}$~} & \\ \cline{4-8}
+%         & & \footnotesize{\alert{$\mathbf \gamma1$}} & \ml{5}{|l|}{$\Shiftz~ k \to \magenta{\cLet~ u = cc ~ \cIn}$}  & & \\ \cline{5-7}
+%         & & & \footnotesize{\alert{$\mathbf \gamma2$}} & \ml{3}{|l|}{$\Throw~ k$}     &   &  &       \\ \cline{6-6}
+%         & & & & \footnotesize{\alert{$\mathbf \gamma3$}} & \ml{1}{|l|}{$\caryset{a}{(x,y)}{u}$} & & &  &  \\ \cline{6-6}
+%         & & & & \ml{3}{|l|}{\ }  &   &   &           \\ \cline{5-7}
+%         & & & \ml{5}{|l|}{\ } &  &               \\ \cline{4-8}
+%         & & \ml{7}{|l|}{\ }  & \\ \cline{3-9}
+%         & \ml{9}{|l|}{~~~~~~~ } \\ \cline{2-10}
+%       \end{tabular}
+%     \end{column}
+
+%     \begin{column}{0.5\textwidth}%% [横幅] 0.2\textwidth = ページ幅の 20 %
+%       \begin{onlyenv}<2->
+%         \flushright
+%         \footnotesize
+%         \begin{align*}
+%           \gamma3 \ord \red{\gamma2} \ord \red{\gamma1} \ord \gamma0 \\
+%         \end{align*}
+%       \end{onlyenv}
+
+%     \end{column}
+%   \end{columns}
+
+%   \bigskip
+
+%   \begin{columns}
+%     \only<1>{生成コード：~~}
+%     \begin{column}{0.6\textwidth}%% [横幅] 0.2\textwidth = ページ幅の 20 %
+%       \footnotesize
+%       \begin{tabular}{l|l|l|l|l|l|l|l|l|l|l|l|l|}
+%         \cline{2-10}
+%         & \ml{9}{|l|}{$\cbra$ $\fordo{x' = e1'}{e2'}$~~~~~~~~~~~~~~~} \\ \cline{3-9}
+%         & \footnotesize{\alert{$\mathbf \gamma0$}} & \ml{7}{|l|}{\magenta{$\Let~ u' = cc' ~ \In$}~} & \\ \cline{4-8}
+%         & & \footnotesize{\alert{$\mathbf \gamma2$}} & \ml{5}{|l|}{$\fordo{y' = e3'}{e4'}$}  & & \\ \cline{5-7}
+%         & & & \footnotesize{\alert{$\mathbf \gamma1$}} & \ml{3}{|l|}{\ }     &   &  &       \\ \cline{6-6}
+%         & & & & \footnotesize{\alert{$\mathbf \gamma3$}} & \ml{1}{|l|}{$\aryset{a}{(x',y')}{u'}$ $\cket$} & & &  &  \\ \cline{6-6}
+%         & & & & \ml{3}{|l|}{\ }  &   &   &           \\ \cline{5-7}
+%         & & & \ml{5}{|l|}{\ } &  &               \\ \cline{4-8}
+%         & & \ml{7}{|l|}{\ }  & \\ \cline{3-9}
+%         & \ml{9}{|l|}{~~~~~~~ } \\ \cline{2-10}
+%       \end{tabular}
+%     \end{column}
+
+%     \begin{column}{0.5\textwidth}%% [横幅] 0.2\textwidth = ページ幅の 20 %
+%       \begin{onlyenv}<2->
+%         \flushright
+%         \footnotesize
+%         \begin{align*}
+%           \gamma3 \ord \red{\gamma1} \ord \red{\gamma2} \ord \gamma0 \\
+%         \end{align*}
+%       \end{onlyenv}
+%     \end{column}
+%   \end{columns}
+% \end{frame}
 
 %%% Local Variables:
 %%% mode: latex

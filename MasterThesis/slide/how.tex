@@ -6,35 +6,6 @@
 \end{frame}
 
 \begin{frame}
-  \frametitle{コード生成前に型付け，生成後のコードの型安全性を保証}
-  \begin{onlyenv}<1>
-    \center
-    \includegraphics[clip,height=1.9cm]{./img/prggen.png}
-  \end{onlyenv}
-
-  \begin{onlyenv}<2>
-    \center
-    \includegraphics[clip,height=2.4cm]{./img/prggen_type1.png}
-  \end{onlyenv}
-
-  \begin{onlyenv}<3>
-    \center
-    \includegraphics[clip,height=2.4cm]{./img/prggen_type2.png}
-  \end{onlyenv}
-
-  \begin{onlyenv}<4>
-    \center
-    \includegraphics[clip,height=3.0cm]{./img/prggen_type3.png}
-  \end{onlyenv}
-
-  \begin{onlyenv}<5>
-    \center
-    \includegraphics[clip,height=3.0cm]{./img/prggen_type4.png}
-  \end{onlyenv}
-\end{frame}
-
-
-\begin{frame}
   \frametitle{環境識別子(EC)を利用したスコープ表現\tiny{[Sudo+2014]}}
   % \begin{center}
   %   \includegraphics[clip,height=5.7cm]{./img/ec_for.png}
@@ -68,40 +39,40 @@
   \red{$\gamma2$} $\ord$ \red{$\gamma1$} $\ord$ \red{$\gamma0$}
 \end{frame}
 
-\begin{frame}
-  \frametitle{環境識別子(EC)を利用したスコープ表現\tiny{[Sudo+2014]}}
-  % 大なり記号はスコープの大きさを表しているのではなく，使える自由変数の集合の大きさを表している
-  型システムでコード変数のスコープを表現:
+% \begin{frame}
+%   \frametitle{環境識別子(EC)を利用したスコープ表現\tiny{[Sudo+2014]}}
+%   % 大なり記号はスコープの大きさを表しているのではなく，使える自由変数の集合の大きさを表している
+%   型システムでコード変数のスコープを表現:
 
-  \center
-  \begin{align*}
-    & \Gamma = \gamma2 \ord \gamma1,~
-      x : \codeTs{\textbf{int}}{\gamma1},~
-      y : \codeTs{\textbf{int}}{\gamma2}
-  \end{align*}
+%   \center
+%   \begin{align*}
+%     & \Gamma = \gamma2 \ord \gamma1,~
+%       x : \codeTs{\textbf{int}}{\gamma1},~
+%       y : \codeTs{\textbf{int}}{\gamma2}
+%   \end{align*}
 
-  \begin{tabular}{c|c}
-    $\gamma1$ & $\gamma2$ \\ \hline \hline
-    \uncover<1->{$\Gamma ~\vdash~ x : \codeTs{\textbf{int}}{\gamma1}~~ \alert{\text{OK}}$} & \uncover<1->{$\Gamma ~\vdash~ x : \codeTs{\textbf{int}}{\gamma2}~~ \alert{\text{OK}}$} \\ \hline
+%   \begin{tabular}{c|c}
+%     $\gamma1$ & $\gamma2$ \\ \hline \hline
+%     \uncover<1->{$\Gamma ~\vdash~ x : \codeTs{\textbf{int}}{\gamma1}~~ \alert{\text{OK}}$} & \uncover<1->{$\Gamma ~\vdash~ x : \codeTs{\textbf{int}}{\gamma2}~~ \alert{\text{OK}}$} \\ \hline
 
-    \uncover<1->{$\Gamma ~\vdash~ y : \codeTs{\textbf{int}}{\gamma1}~~ \alert{\text{NG}}$} & \uncover<1->{$\Gamma ~\vdash~ y : \codeTs{\textbf{int}}{\gamma2}~~ \alert{\text{OK}}$} \\ \hline
+%     \uncover<1->{$\Gamma ~\vdash~ y : \codeTs{\textbf{int}}{\gamma1}~~ \alert{\text{NG}}$} & \uncover<1->{$\Gamma ~\vdash~ y : \codeTs{\textbf{int}}{\gamma2}~~ \alert{\text{OK}}$} \\ \hline
 
-    \uncover<1->{$\Gamma ~\vdash~ x\cPlus y : \codeTs{\textbf{int}}{\gamma1}~~  \alert{\text{NG}}$} & \uncover<1->{$\Gamma ~\vdash~ x\cPlus y : \codeTs{\textbf{int}}{\gamma2}~~  \alert{\text{OK}}$}
-  \end{tabular}
+%     \uncover<1->{$\Gamma ~\vdash~ x\cPlus y : \codeTs{\textbf{int}}{\gamma1}~~  \alert{\text{NG}}$} & \uncover<1->{$\Gamma ~\vdash~ x\cPlus y : \codeTs{\textbf{int}}{\gamma2}~~  \alert{\text{OK}}$}
+%   \end{tabular}
 
-  \bigskip
+%   \bigskip
 
-  \begin{uncoverenv}<2->
-    コードレベルのラムダ抽象の型付け規則で固有変数条件を利用:
+%   \begin{uncoverenv}<2->
+%     コードレベルのラムダ抽象の型付け規則で固有変数条件を利用:
 
-    \[
-      \infer[(\gamma_2~\text{is eigen var})]
-      {\Gamma \vdash \cfun{x}{e} : \codeTs{t_1\to t_2}{\gamma_1} }
-      {\Gamma,~\gamma_2 \ord \gamma_1,~x:\codeTs{t_1}{\gamma_2} \vdash
-        e : \codeTs{t_2}{\gamma_2}}
-    \]
-  \end{uncoverenv}
-\end{frame}
+%     \[
+%       \infer[(\gamma_2~\text{is eigen var})]
+%       {\Gamma \vdash \cfun{x}{e} : \codeTs{t_1\to t_2}{\gamma_1} }
+%       {\Gamma,~\gamma_2 \ord \gamma_1,~x:\codeTs{t_1}{\gamma_2} \vdash
+%         e : \codeTs{t_2}{\gamma_2}}
+%     \]
+%   \end{uncoverenv}
+% \end{frame}
 
 \begin{frame}
   \frametitle{環境識別子(EC)を利用したスコープ表現}
@@ -124,21 +95,21 @@
 \end{frame}
 
 
-\begin{frame}
-  \frametitle{本研究の解決策}
-  \flushleft
-  \includegraphics[clip,height=3cm]{./img/ecgraph.png}
-  \begin{itemize}
-  \item<2-> $\gamma1$ のコード変数は $\gamma2$ では使ってはいけない
-  \item<2-> $\gamma2$ のコード変数は $\gamma1$ では使ってはいけない
-  \item<3->[$\Rightarrow$] \red{$\gamma1$ と $\gamma2$ の間に順序を付けない}
-  \end{itemize}
+% \begin{frame}
+%   \frametitle{本研究の解決策}
+%   \flushleft
+%   \includegraphics[clip,height=3cm]{./img/ecgraph.png}
+%   \begin{itemize}
+%   \item<2-> $\gamma1$ のコード変数は $\gamma2$ では使ってはいけない
+%   \item<2-> $\gamma2$ のコード変数は $\gamma1$ では使ってはいけない
+%   \item<3->[$\Rightarrow$] \red{$\gamma1$ と $\gamma2$ の間に順序を付けない}
+%   \end{itemize}
 
-  \begin{itemize}
-  \item<4-> $\gamma1, \gamma2$ のコード変数は $\gamma3$ で使ってよい
-  \item<5->[$\Rightarrow$] \red{Sudoらの体系に $\cup$ (ユニオン) を追加} % ジョイン
-  \end{itemize}
-\end{frame}
+%   \begin{itemize}
+%   \item<4-> $\gamma1, \gamma2$ のコード変数は $\gamma3$ で使ってよい
+%   \item<5->[$\Rightarrow$] \red{Sudoらの体系に $\cup$ (ユニオン) を追加} % ジョイン
+%   \end{itemize}
+% \end{frame}
 
 \begin{frame}[fragile]
   \frametitle{コード生成+shift0/reset0 の型システム\small{ (の一部)}}
