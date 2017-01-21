@@ -1,0 +1,182 @@
+%
+% Type inference algorithm draft (for Oishi System)
+%
+\documentclass[dvipdfmx]{jsarticle}
+
+\usepackage[dvipdfmx]{graphicx,color}
+\addtolength{\topmargin}{-2cm}
+\addtolength{\textwidth}{3cm}
+\addtolength{\oddsidemargin}{-1.5cm}
+
+
+\usepackage{theorem}
+\usepackage{amsmath,amssymb}
+\usepackage{ascmac}
+%\usepackage{mathtools}
+\usepackage{proof}
+%\usepackage{stmaryrd}
+\usepackage{listings,jlisting}
+\usepackage{here}
+%\usepackage{verbatim}
+%\usepackage{framed}
+%\usepackage{algorithm}
+%\usepackage{algpseudocode}
+%
+%\lstset{
+%  basicstyle=\ttfamily,
+%  columns=fullflexible,
+%  keepspaces=true,
+%}
+
+%\newenvironment{vq}
+%{%begin
+%  \VerbatimEnvironment \begin{screen} \begin{quote} \begin{Verbatim}
+%      }
+%      {%end
+%      \end{Verbatim} \end{quote} \end{screen}
+%}
+%\newtheorem{theorem}{theorem}[section]
+
+%\input{newcommand}
+
+\newcommand\smallerscope[2]{#1 \ord #2}
+\newcommand\greaterscope[2]{#2 \ord #1}
+\newcommand\longer[2]{{#1} \ord {#2}}
+% \newcommand*\defeq{\stackrel{\text{def}}{=}}
+\newcommand\Int{\mbox{\texttt{Int}}}
+\newcommand\Bool{\mbox{\texttt{Bool}}}
+
+\newcommand\uni{\cup} % !!! 現在の順序では「∪」
+
+\overfullrule=0pt
+
+\begin{document}
+
+\begin{center}
+  Oishi Type System に対する型制約「解消」アルゴリズム  \\
+  2017/1/21
+\end{center}
+
+\section{解きたい型制約}
+
+以下の構文を持つclassifier式を考える。
+
+\begin{align*}
+e & ::= d \mid \gamma_x \mid e \cup e 
+\end{align*}
+
+ここで、$d$ は定数 (固有変数条件をみたすclassifier変数), $\gamma_x$は
+classifierをあらわす変数、$e$は classifier式。
+(Oishi論文では、classifier式は$\gamma$と書いていたが、$\gamma_x$と
+紛らわしいので、ここでは$e$と書くことにする。)
+また、型推論の対象となった式の一番外側でのclassifier も定数と考えられ
+るので、それを$d_0$とする。
+
+解きたい制約は、以下の形である。
+\[
+\Delta \models C
+\]
+ただし、 $\Delta$ は、$d \ge e$ の形の不等式を有限個「かつ」でつなげた
+ものである。
+また、すべての式$d_i$ ($i>0$)に対して$d_i \ge d_o$が $\Delta$に含まれ
+ているとしてよい。
+また、$C$は、$e \ge e$ の形の不等式を「かつ」でつなげたものである。
+
+なお、仮定$\Delta$ は、(code-lambdaルール等で) 固有変数を導入する際の
+$d \ge e$という形の不等式のみがはいっているので、左辺が必ず $d$である
+ことに注意せよ。
+
+
+制約解消問題 $ \Delta \models C $ に対して、
+$[\gamma_x := e,\cdots,\gamma_x:=e]$ という形の代入$\theta$で、
+$ \Delta\theta \models C\theta $ が(順序に関する規則のみで)導けるとき、
+この$\theta$を解と呼ぶ。そのような$\theta$が存在しないとき、解がないと
+いう。
+
+\section{代数的な準備}
+
+Upper Semilattice (上むき半束)と Join-Irreducible いう言葉を導入する。
+
+まず、lattice(束)とは、順序集合で、$\cap$と$\cup$があるものである。
+今回の型推論では、$\cup$はあるが$\cap$はないので、latice ではない。
+「上の方向だけ(半分)、lattice の構造がある」という意味で、
+semilattice (半束)あるいは、もっと正確には upper semilattice(上向き半
+束)という言葉を使う。
+
+要素$e$が、join-irreducible (joinについて還元可能でない)であるとは、
+
+ほかのどんな要素$e_1,e_2$に対しても、$e_1 \cup e_2 \ge e$ ならば、
+$e_1 \ge e$ または
+$e_2 \ge e$ であることを言う。\footnote{ただし、こまかいことだが、
+最小元である$d_0$ は、通常は、join-irreducibleとは言わない。}
+
+今回型推論をおこなう対象の構造は、Upper Semilattice であって、
+かつ、すべてのclasifier定数$d$(もともとは固有変数だったもの)が
+join-irreducible としてよい。
+(理由： $\Delta$ は $d\ge e$の形だけからなる。
+$\Delta$から$e_1 \cup e_2 \ge d$を導く証明のサイズに関する帰納法で、
+$\Delta$から$e_1 \ge d$または$e_2 \ge d$が導けることが言える。)
+
+\section{制約解消アルゴリズム}
+
+$\Delta$と$C$と代入$\theta$に対して、以下の手順を適用する。
+代入$\theta$の初期値は、空代入とする。
+
+\begin{itemize}
+\item $C$ が空であるならば、$\theta$を返して終了する。
+\item $(e \ge e) \in C$ (両辺が同じ不等式)ならば、
+$C$から、この不等式を除去して再帰する。
+\item $(d_1 \ge d_2) \in C$ (両辺が異なるclassifier定数)のとき、
+さらに、$\Delta$のもとで、$d_1 \ge d_2$ が導けるのであれば、
+この不等式を除去して再帰する。
+導けないのであれば、「制約解消失敗」を返して終了する。
+\item $e_1 \ge e_2 \cup e_3) \in C$ ならば、
+$C$から$e_1 \ge e_2 \cup e_3$を除去し、
+$e_1 \ge e_2$ と $e_1 \ge e_3$を追加して再帰する。
+\item $(\cdots \cup \gamma_x \cup \cdots) \in \gamma_x$ 
+ならば、この不等式を除去して再帰する。
+\item $(e_1 \cup e_2 \ge d) \in C$ ならば、
+join-irreducible の仮定(*)を用いて、
+$e_1 \ge d$ または $e_2 \ge d$である。
+よって、
+$C - \{(e_1 \cup e_2 \ge d)\} \cup \{(e_1 \ge d)\}$に対して再帰し、
+さらに、
+$C - \{(e_1 \cup e_2 \ge d)\} \cup \{(e_2 \ge d)\}$に対して再帰し、
+それらの解の両方を解として返す。(一意的には解けない。解は一般的には複数ある。)
+\item 上記のいずれのケースもあてはまらないが、$C$が空でないときは、
+残ったclassifier変数$\gamma_x$ をひとつ取り出し、$C$の中から以下の形の不等式
+をすべて列挙する。
+
+\begin{align*}
+e_i & \ge \gamma_x  ~~ & \text{for}~ i=1,2,,...m\\
+\gamma_x & \ge d_j  ~~ & \text{for}~ j=1,2,,...n
+\end{align*}
+
+ただし $m$や$n$は0かもしれない。また、上記の変形が終了しているので、
+すべての$e_i$ は $\gamma_x$は含まないことに注意。
+
+\begin{itemize}
+\item $m=0$かつ$n>0$のとき、$\gamma_x:=d_1 \cup \cdots \cup d_n$という
+代入を$\theta$に追加して、$C$からは$\gamma_x$に関する不等式をすべて取
+り除いて再帰する。
+\item $m>0$かつ$n=0$のとき、$\gamma_x:=d_0$という
+代入を$\theta$に追加して、$C$からは$\gamma_x$に関する不等式をすべて取
+り除いて再帰する。
+\item $m>0$かつ$n>0$のとき、
+$C$から$\gamma_x$に関する不等式をすべて取り除いた上で、以下の不等式を
+追加する。
+\[
+e_i \ge d_j   ~~\textrm{(すべての}~i,j~\textrm{に対して)}
+\]
+さらに、$\gamma_x:=d_1 \cup \cdots \cup d_n$という代入を$\theta$に追加
+した上で再帰する。
+\end{itemize}
+\end{itemize}
+
+上記の手順を繰返すと(この繰返しは、かならず停止することがいえる)、
+最終的に、(途中でfailしないかぎり)$\gamma_x$変数がすべて消去され、制約$C$が空になり、
+制約を満たす解の有無が判定できる。
+
+
+\end{document}
+
