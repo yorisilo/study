@@ -1,7 +1,19 @@
 \definecolor{DarkGreen}{rgb}{0,0.5,0}
 \definecolor{Magenta}{rgb}{1.0, 0.0, 1.0}
 
+\newcommand\cbra{\texttt{<}}
+\newcommand\cket{\texttt{>}}
+
+\newcommand\lam{\lambda}
+
+\newcommand\codeTs[2]{\langle{#1}\rangle{\textbf{\textasciicircum}{#2}}}
+
+\newcommand\fordo[2]{\textbf{for}~{#1}~\textbf{to}~{#2}~\textbf{do}}
+\newcommand\cfordo[2]{\underline{\textbf{for}}~{#1}~\underline{\textbf{to}}~{#2}~\underline{\textbf{do}}}
+\newcommand\cfor[1]{\underline{\textbf{for}}~{#1}}
+
 \newcommand\too{\leadsto^*}
+\newcommand\downtoo{\rotatebox{-90}{$\leadsto^*$}}
 \newcommand\pink[1]{\textcolor{pink}{#1}}
 \newcommand\red[1]{\textcolor{red}{#1}}
 \newcommand\green[1]{\textcolor{green}{#1}}
@@ -52,6 +64,9 @@
 \newcommand\In{\textbf{in}}
 \newcommand\letin[3]{\Let~{#1}={#2}~\In~{#3}}
 
+\newcommand\iif{\textbf{if}}
+\newcommand\then{\textbf{then}}
+\newcommand\eelse{\textbf{else}}
 \newcommand\ift[3]{\textbf{if}~{#1}~\textbf{then}~{#2}~\textbf{else}~{#3}}
 \newcommand\cif[3]{\underline{\textbf{if}}~\code{{#1}}~\code{{#2}}~\code{{#3}}}
 \newcommand\cIf{\underline{\textbf{if}}}
@@ -71,6 +86,7 @@
 \newcommand\cArrays[2]{\underline{[{#1}][{#2}]}}
 \newcommand\aryset[3]{{#1}[{#2}]\leftarrow {#3}}
 \newcommand\caryset[3]{\underline{\textbf{aryset}}~{#1}~{#2}~{#3}}
+\newcommand\set{\underline{\textbf{set}}}
 
 % コメントマクロ
 \newcommand\kam[1]{\red{kam said: {#1}}}

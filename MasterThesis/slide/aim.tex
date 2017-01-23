@@ -3,8 +3,8 @@
 
 \begin{frame}
   \frametitle{目的}
-  \blue{コード生成の説明と，研究の目的を同時に話す}
-
+  % \blue{コード生成の説明と，研究の目的を同時に話す}
+  % \vspace{-4zh} %% odd
   \medskip
   \flushleft
   \includegraphics[clip,height=2cm]{./img/prggen.png}
@@ -12,9 +12,19 @@
   \begin{itemize}
     % \item コード生成ステージとコード実行ステージ
     % \item 生成前の段階で，生成後のコードの安全性を保証する
-  \item コード生成をサポートするプログラム言語(=\alert{コード生成言語})
-  %\item[◯]<2-> 生成するプログラムだけでなく，生成されたプログラムも型の整合性が静的に (生成前に) 保証される
+  \item コード生成をサポートするプログラム言語\\(=\alert{コード生成言語})
+    % \item[◯]<2-> 生成するプログラムだけでなく，生成されたプログラムも型の整合性が静的に (生成前に) 保証される
   \end{itemize}
+
+  \begin{visibleenv}<2>
+    \begin{block}{\textbf{表現力}と\textbf{安全性}を兼ね備えたコード生成言語の構築}
+      \begin{itemize}
+      \item 表現力: 多段階let挿入，メモ化等の技法を表現
+      \item 安全性: 生成されるコードの一定の性質を静的に検査
+      \end{itemize}
+    \end{block}
+  \end{visibleenv}
+
 \end{frame}
 
 \begin{frame}
@@ -39,20 +49,29 @@
     \includegraphics[clip,height=3.0cm]{./img/prggen_type3.png}
   \end{onlyenv}
 
-  \begin{onlyenv}<5>
+  \begin{onlyenv}<5->
     \center
     \includegraphics[clip,height=3.0cm]{./img/prggen_type4.png}
   \end{onlyenv}
+
+  \begin{uncoverenv}<6>
+    \begin{block}{本研究: 簡潔で強力なコントロールオペレータに基づくコード生成体系の構築}
+      \begin{itemize}
+      \item コントロールオペレータ shift0/reset0 を利用し，多段階let挿入などのコード生成技法を表現
+      \item 型システムを構築して型安全性を保証
+      \end{itemize}
+    \end{block}
+  \end{uncoverenv}
+
 \end{frame}
 
-% \section{研究の目的，概要}
+% \section{研究の目的}
 % \begin{frame}
-%   \frametitle{研究の目的，概要}
+%   \frametitle{研究の目的}
 
-%   目的
 %   \begin{block}{\textbf{表現力}と\textbf{安全性}を兼ね備えたコード生成言語の構築}
 %     \begin{itemize}
-%     \item 表現力: 多段階let挿入等の技法を表現
+%     \item 表現力: 多段階let挿入，メモ化等の技法を表現
 %     \item 安全性: 生成されるコードの一定の性質を静的に検査
 %     \end{itemize}
 %   \end{block}
@@ -60,13 +79,19 @@
 %   \medskip
 %   \pause
 
-%   概要
 %   \begin{block}{本研究: 簡潔で強力なコントロールオペレータに基づくコード生成体系の構築}
 %     \begin{itemize}
 %     \item コントロールオペレータ shift0/reset0 を利用し，let挿入などのコード生成技法を表現
 %     \item 型システムを構築して型安全性を保証
 %     \end{itemize}
 %   \end{block}
+% \end{frame}
+
+% \section{研究の内容}
+
+% \begin{frame}
+%   \center
+%   \huge{表現力を上げ（コードレベルでの多段階let挿入），安全性も保証するためにどうすればよいのか}
 % \end{frame}
 
 

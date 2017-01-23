@@ -11,6 +11,11 @@
 \usepackage{proof}
 % \usepackage{tikz}
 % \usetikzlibrary{positioning}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+\newcommand\longer[2]{{#1} \ord {#2}}
+\newcommand\uni{\cup}
 
 \newcommand\fun[2]{\lambda{#1}.{#2}}
 \newcommand\lam{\lambda}
@@ -24,7 +29,6 @@
 
 \newcommand\Resett{\textbf{reset}}
 \newcommand\Shiftt{\textbf{shift}}
-
 
 \newcommand\cfun[2]{\underline{\lambda}{#1}.{#2}}
 \newcommand\clam{\underline{\lambda}}
@@ -206,11 +210,11 @@
 \end{frame}
 
 % 全体 20分-18分
-\input{aim} % 目的 0.5分 \input{abst} % 概要 0.5分
+\input{aim} % 目的 2分
 \input{background} % 準備 3分 s0/r0 + コード生成 で 多段階let挿入
-\input{problem} % 問題 3分
-\input{how} %  解決方法，どうやって解くか 6分
-\input{do} % 何ができるか 型付けの例とか 5分
+\input{problem} % 問題 2分
+\input{solution} %  解決方法 4分 型システム
+\input{howdo} % どう解くか 6分 型付けの例，型推論
 \input{conc} % まとめ 1分
 
 \input{appendix} % 予備
