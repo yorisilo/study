@@ -8,19 +8,19 @@
     \visible<1->{\text{コード生成器}} \visible<1->{&\phantom{\too} \text{生成されるコード}} \\
     \visible<1->{(\cint~ 3)} \visible<1->{&\too \code{3}} \\
     \visible<1->{(\cint~ 3)~ \cPlus~ (\cint~ 5)} \visible<1->{&\too \code{3 + 5}} \\
-    \visible<1->{\cfun{x}{~x~ \cPlus~ (\cint~ 3)}} \visible<1->{&\too \code{\fun{x'}{x' + 3}}} \\
+    \visible<1->{\cfun{x}{~(x~ \cPlus~ (\cint~ 3))}} \visible<1->{&\too \code{\fun{x'}{~x' + 3}}} \\
     \visible<1->{\cfordo{x = \cdots}{\cdots}~ \cdots}
     \visible<1->{&\too \code{\fordo{x' = \cdots}{\cdots}~ \cdots}}
   \end{align*}
 
-  \begin{visibleenv}<2>
-    \begin{exampleblock}{コードコンビネータ}
-      \begin{itemize}
-      \item 下線つきの演算子
-      \item コードを引数にとり，コードを返す
-      \end{itemize}
-    \end{exampleblock}
-  \end{visibleenv}
+  % \begin{visibleenv}<2>
+  %   \begin{exampleblock}{コードコンビネータ}
+  %     \begin{itemize}
+  %     \item 下線つきの演算子
+  %     \item コードを引数にとり，コードを返す
+  %     \end{itemize}
+  %   \end{exampleblock}
+  % \end{visibleenv}
 
 \end{frame}
 
@@ -34,18 +34,18 @@
       \begin{column}{0.5\textwidth}%% [横幅] 0.2\textwidth = ページ幅の 20 %
         コード生成器
         \begin{align*}
-          & \red{\circ}~ \cfordo{x = e1}{e2} \\
-          & ~~\red{\circ}~ \cfordo{y = e3}{e4} \\
-          & ~~~~~~\caryset{\code{a}}{(x,y)}~ \red{\circ}~ \\
-          & ~~~~~~~~\magenta{\cLet ~u ~= ~\text{cc} ~\cIn}~ \red{\circ}~ \text{u}
+          & ~ \cfordo{x = e1}{e2} \\
+          & ~~~ \cfordo{y = e3}{e4} \\
+          & ~~~~~~\caryset{\code{a}}{(x,y)}~ ~ \\
+          & ~~~~~~~~\magenta{\cLet ~u ~= ~\text{cc} ~\cIn}~~ \text{u}
         \end{align*}
       \end{column}
       $\too$
       \begin{column}{0.5\textwidth}%% [横幅] 0.2\textwidth = ページ幅の 20 %
-        生成されるコード
+        生成したいコード
         \begin{align*}
-          & \cbra \magenta{\Let ~u' ~= ~\text{cc}' ~\In} \\
-          & ~~\fordo{x' = e1'}{e2'} \\
+          & \cbra \fordo{x' = e1'}{e2'} \\
+          & ~~\magenta{\Let ~u' ~= ~\text{cc}' ~\In} \\
           & ~~~~\fordo{y' = e3'}{e4'} \\
           & ~~~~~~\aryset{a}{x',y'}{u'} \cket
         \end{align*}
@@ -55,7 +55,7 @@
 
   \begin{visibleenv}<2>
     \begin{exampleblock}{shift0/reset0の導入}
-      $\red{\circ}$ のところに \red{shift0/reset0} 等を用いることで，多段階let挿入を行う
+      \red{shift0/reset0} 等を用いることで，(多段階)let挿入等を行う
     \end{exampleblock}
   \end{visibleenv}
 \end{frame}

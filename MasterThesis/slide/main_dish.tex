@@ -1,0 +1,101 @@
+\begin{frame}
+  \center
+  \huge{型推論アルゴリズム}
+\end{frame}
+
+\begin{frame}
+  \frametitle{型推論アルゴリズム}
+
+  $\Gamma,~ L,~ \sigma,~ e$ が与えられたとき，$\Gamma \vdash^{L} e : t ;~\sigma$ が成立するような $t$ があるかどうか判定し，その型$t$ を返す
+
+  \begin{exampleblock}{制約生成}
+    与えられた項に対して，型，EC，エフェクトに関する制約を返す
+  \end{exampleblock}
+  \begin{exampleblock}{制約解消}
+    その得られた制約を解消し，その制約を満たす代入$\Theta$ を返す
+  \end{exampleblock}
+\end{frame}
+
+% \begin{frame}
+%   \frametitle{型推論アルゴリズム}
+
+% \end{frame}
+
+\begin{frame}
+  \frametitle{制約生成}
+  \begin{exampleblock}{制約生成用の型システム$T_2$の導入}
+    subsumption 規則をあらゆる規則に付加させて型推論用(制約を生成する)の型システムを作成．
+    型付け規則を一意に適用できるようにした
+  \end{exampleblock}
+  \begin{exampleblock}{型に関する順序 $\longer{t_1}{t_2}$ の導入}
+    制約生成時において，コード型か普通の型か判断することができないため
+    その2つを同時に表す$\longer{}{}$ を導入した
+  \end{exampleblock}
+  % こういう制約が出てくる
+\end{frame}
+
+\begin{frame}
+  \frametitle{制約解消}
+
+  生成された制約 $\Delta \models C$
+
+  仮定 $\Delta$
+  \begin{align*}
+    &\text{ECに対する順序} & \quad d \ord e \\
+  \end{align*}
+  制約 $C$
+  \begin{align*}
+    &\text{型} & \quad t0 = t1 & \quad t0 \ord t1 \\
+    &\text{EC} & \quad \gamma0 = \gamma1 & \quad \gamma0 \ord \gamma1 \\
+    &\text{エフェクト (型の列)} & \quad \sigma0 = \sigma1
+  \end{align*}
+
+  \begin{exampleblock}{制約に対する解の存在判定}
+    型に対する単一化等をおこなう \\ % 単一化については質問が出そうなのでappendixを作成する
+  \end{exampleblock}
+  ここでは，ECの不等式制約の解消について説明をする
+  % 先の制約を解消して，型を決定する
+\end{frame}
+
+\begin{frame}
+  \frametitle{制約解消：ECの不等式制約の解消}
+  この時点で残る制約 $\Delta \models C$
+  \begin{align*}
+    &\text{仮定 $\Delta$} & \quad d \ord e \text{の有限集合 ($d$はEC定数)}\\
+    &\text{制約 $C$} & \quad e1 \ord e2 \text{の有限集合}\\
+    &\text{$e,e1,e2,...$ ECを表す式} & \quad e ::= d \mid x \mid e \uni e\\
+  \end{align*}
+
+  \vspace{-2.5zh} %% odd
+
+  \begin{onlyenv}<1>
+    \begin{exampleblock}{制約解消アルゴリズム(の一部)}
+      \begin{description}
+      \item[$d1 \ord d1$] $\Longrightarrow  \text{$\Delta$を使って判定}$
+      \item[$e1 \ord e2 \uni e3$] $\Longrightarrow \text{$e1 \ord e2$ かつ $e1 \ord e3$}$
+      \item[$e1 \uni e2 \ord d$] $\Longrightarrow \text{$e1 \ord d$ または $e2 \ord d$}$
+      \item[$\text{変数 $x$ の除去}$] $[x := d1 \uni d2 \uni y ]$ \mbox{} \\
+        \vspace{-2zh} %% odd
+        \begin{align*}
+          &e1 \ord x & \quad x \ord d1 & \quad \phantom{\Longrightarrow\,\,\,} e1 \ord d1 & \quad e2 \ord d1 \\
+          &e2 \ord x & \quad x \ord d2 & \quad \Longrightarrow e1 \ord d2 & \quad e2 \ord d2 \\
+          &          & \quad x \ord y  & \quad \phantom{\Longrightarrow\,\,\,} e1 \ord y  & \quad e2 \ord y
+        \end{align*}
+      \end{description}
+    \end{exampleblock}
+  \end{onlyenv}
+
+  % 制約を満たす解が存在するかどうかは判定できる
+  % 解は1つとは限らない
+
+\end{frame}
+
+% \begin{frame}
+%   \frametitle{制約解消：ECの不等式制約の解消の例}
+
+% \end{frame}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: "slide_oishi"
+%%% End:

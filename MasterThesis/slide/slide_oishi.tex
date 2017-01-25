@@ -63,6 +63,8 @@
 \newcommand\green[1]{\textcolor{DarkGreen}{#1}}
 \newcommand\magenta[1]{\textcolor{magenta}{#1}}
 \newcommand\blue[1]{\textcolor{blue}{#1}}
+\newcommand\gray[1]{\textcolor{Gray}{#1}}
+\newcommand\lgray[1]{\textcolor{LightGray}{#1}}
 
 \newcommand\forin[2]{\textbf{for}~{#1}~\textbf{to}~{#2}~\textbf{in}}
 \newcommand\fordo[2]{\textbf{for}~{#1}~\textbf{to}~{#2}~\textbf{do}}
@@ -110,7 +112,7 @@
 %% 発表会の名前とか（省略可）
 % \session{研究室ゼミ}
 %% スライドのタイトル
-\title{安全なコード移動が可能な\\コード生成言語の型システムの設計と実装}
+\title{安全なコード移動が可能な\\コード生成言語の型システムの設計と実装 }
 
 %% 必要ならば，サブタイトルも
 % \subtitle{}
@@ -173,6 +175,7 @@
 % \usepackage[scale=0.9]{DejaVuSansMono}
 
 \definecolor{DarkGreen}{rgb}{0,0.5,0}
+\definecolor{LightGray}{gray}{0.8}
 % プログラミング言語と表示するフォント等の設定
 \lstset{
   language={[Objective]Caml},% プログラミング言語
@@ -214,7 +217,7 @@
 \input{background} % 準備 3分 s0/r0 + コード生成 で 多段階let挿入
 \input{problem} % 問題 2分
 \input{solution} %  解決方法 4分 型システム
-\input{howdo} % どう解くか 6分 型付けの例，型推論
+\input{main_dish} % 6分 メインディッシュ 型推論 型推論アルゴリズムを実際に例を使って説明
 \input{conc} % まとめ 1分
 
 \input{appendix} % 予備
