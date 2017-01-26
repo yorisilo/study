@@ -1,3 +1,69 @@
+\section{shift/reset と shift0/reset0 の意味論}
+
+\begin{frame}[fragile]
+  \frametitle{shift/reset と shift0/reset0 の意味論}
+
+  shift/reset
+  \noindent
+  \begin{align*}
+    \Resett ~(E[\Shiftt~ k \to e]) &~\leadsto~ \Resett~ e \ksubst{k}{E} \\
+    \uncover<2->{\Resett ~(E[\Shiftt~ k \to e]) &~\leadsto~ \Resett~ e[k := \fun{x}{\Resett~ E[x]}]}
+  \end{align*}
+
+  shift0/reset0
+  \noindent
+  \begin{align*}
+    \Resetz ~(E[\Shiftz~ k \to e]) &~\leadsto~ e \ksubst{k}{E} \\
+    \uncover<2->{\Resetz ~(E[\Shiftz~ k \to e]) &~\leadsto~ e[k := \fun{x}{\Resetz~ E[x]}]}
+  \end{align*}
+\end{frame}
+
+% \section{健全性の証明}
+
+% \begin{frame}[fragile]
+%   \frametitle{健全性の証明 (Subject Reduction)}
+
+%   型安全性(型システムの健全性; Subject Reduction等の性質)を厳密に証明する．
+
+%   \begin{block}{Subject Redcution Property}
+%     $\Gamma \vdash M: \tau$ が導ければ(プログラム$M$が型検査を通れば)，
+%     $M$を計算して得られる任意の$N$に対して，
+%     $\Gamma \vdash N: \tau$ が導ける($N$も型検査を通り，$M$と同じ型，
+%     同じ自由変数を持つ)
+%   \end{block}
+% \end{frame}
+
+% \section{answer type の列 (エフェクト)}
+
+% \begin{frame}
+%   \frametitle{answer type の列(エフェクト)}
+
+% \end{frame}
+
+\section{単一化とは}
+
+\begin{frame}
+  \frametitle{型の単一化の例}
+  \begin{align*}
+    &y \to (\intT \to w) \to x \\
+    &\stackrel?= (x \to z) \to (x \to z)
+  \end{align*}
+
+  \begin{exampleblock}{単一化問題}
+    両辺が同じ型になるような型変数への代入が存在するかどうかを判定することである．
+  \end{exampleblock}
+
+  \vspace{-1zh}
+  \begin{visibleenv}<2>
+    \begin{align*}
+      \Theta &= \{x := \intT \to w,~ y := (\intT \to w) \to (\intT \to w),~\\
+             &~~~z := \intT \to w \} \\
+      \\
+             &  (\intT \to w) \to (\intT \to w) \to (\intT \to w) \to (\intT \to w) \\
+      &= (\intT \to w) \to (\intT \to w ) \to (\intT \to w ) \to (\intT \to w )
+    \end{align*}
+  \end{visibleenv}
+\end{frame}
 
 %%% Local Variables:
 %%% mode: latex

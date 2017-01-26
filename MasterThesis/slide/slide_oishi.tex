@@ -3,7 +3,7 @@
 % * 印刷用の配布資料を作るときは handout を documentclass のオプションに追加する
 % （overlay が全て一つのスライドに出力される）
 
-%\usepackage{pxjahyper}% しおりの文字化け対策 (なくても良い)
+% \usepackage{pxjahyper}% しおりの文字化け対策 (なくても良い)
 \usepackage{amsmath,amssymb,amsfonts,amsthm,ascmac,cases,bm,pifont}
 \usepackage{graphicx}
 \usepackage{url}
@@ -90,7 +90,7 @@
 \newcommand\cArray[1]{\underline{[{#1}]}}
 \newcommand\cArrays[2]{\underline{[{#1}][{#2}]}}
 \newcommand\aryset[3]{{#1}[{#2}]\leftarrow {#3}}
-%\newcommand\caryset[3]{\underline{\textbf{aryset}}~{#1}~{#2}~{#3}}
+% \newcommand\caryset[3]{\underline{\textbf{aryset}}~{#1}~{#2}~{#3}}
 \newcommand\caryset[3]{\underline{\textbf{set}}~{#1}~{#2}~{#3}}
 \newcommand\set{\underline{\textbf{set}}}
 
@@ -236,7 +236,12 @@
 \input{main_dish} % 6分 メインディッシュ 型推論 型推論アルゴリズムを実際に例を使って説明
 \input{conc} % まとめ 1分
 
-\input{appendix} % 予備
+%% 予備スライドは appendix 環境の中に書きましょう．
+\begin{appendix}
+  %% 予備スライドの先頭に APPENDIX と書かれたページを挟む（お好みで消去しても良い）
+  \frame[plain]{\centerline{\Huge\bfseries\color{structure}APPENDIX}}
+  \input{appendix} % 予備
+\end{appendix}
 
 \end{document}
 
