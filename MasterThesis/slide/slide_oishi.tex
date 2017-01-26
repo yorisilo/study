@@ -13,6 +13,11 @@
 % \usetikzlibrary{positioning}
 \usepackage{algorithm}
 \usepackage{algpseudocode}
+\usepackage{framed}
+
+\newcommand\intT{\mbox{\texttt{int}}}
+\newcommand\boolT{\mbox{\texttt{bool}}}
+\newcommand\funT[3]{{#1} \stackrel{#3}{\rightarrow} {#2}}
 
 \newcommand\longer[2]{{#1} \ord {#2}}
 \newcommand\uni{\cup}
@@ -65,6 +70,15 @@
 \newcommand\blue[1]{\textcolor{blue}{#1}}
 \newcommand\gray[1]{\textcolor{Gray}{#1}}
 \newcommand\lgray[1]{\textcolor{LightGray}{#1}}
+\newcommand\black[1]{\textcolor{black}{#1}}
+\newcommand\cyan[1]{\textcolor{cyan}{#1}}
+\newcommand\pinkbox[1]{\pink{\framebox{#1}}}
+\newcommand\redbox[1]{\red{\framebox{#1}}}
+\newcommand\greenbox[1]{\green{\framebox{#1}}}
+\newcommand\magentabox[1]{\magenta{\framebox{#1}}}
+\newcommand\bluebox[1]{\blue{\framebox{#1}}}
+\newcommand\blackbox[1]{\black{\framebox{#1}}}
+\newcommand\cyanbox[1]{\cyan{\framebox{#1}}}
 
 \newcommand\forin[2]{\textbf{for}~{#1}~\textbf{to}~{#2}~\textbf{in}}
 \newcommand\fordo[2]{\textbf{for}~{#1}~\textbf{to}~{#2}~\textbf{do}}
@@ -88,6 +102,7 @@
 \newcommand\cIf{\underline{\textbf{if}}}
 
 \newcommand\cPlus{\underline{\textbf{+}}}
+\newcommand\Plus{\textbf{+}}
 \newcommand\cTimes{\underline{\textbf{$\times$}}}
 \newcommand\cint{\underline{\textbf{int}}~}
 \newcommand\fix{\textbf{fix}}
@@ -172,6 +187,7 @@
 %% ===============================================
 
 \usepackage{listings,jlisting}
+
 % \usepackage[scale=0.9]{DejaVuSansMono}
 
 \definecolor{DarkGreen}{rgb}{0,0.5,0}

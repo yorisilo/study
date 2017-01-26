@@ -143,22 +143,24 @@
 \subsection{型付けの例}
 
 \newcommand\boxterm{\framebox{
+    \only<1>{\phantom{a}}
     \only<2>{\green{$\cint{3}$}}
-    \only<3>{\red{$x~\cPlus~(\cint{3})$}}
-    \phantom{A}
+    \only<3>{\red{$x$}}
   }}
 
 \begin{frame}
   \frametitle{型付けの例(1)}
-  \begin{align*}
-    e & = \Resetz ~~(\cfordo{x = e1}{e2} \\
-      & \phantom{=}~~~ \Shiftz~k~\to~
-        {\cLet~u=\green{\boxterm}~\cIn}~\Throw~k~u)
-  \end{align*}
+
+
+  {\footnotesize
+    \begin{align*}
+      e = \Resetz~ \redbox{\cfordo{x = e1}{e2}~ \bluebox{\Shiftz~ k~ →~ \magentabox{\cLet~u=\green{\boxterm}~\cIn~ \cyanbox{\Throw~k~\blackbox{u}}}}} % \to や \rightarrow を \framebox で囲むとなぜかエラーが出る．バグっぽい
+    \end{align*}
+  }
 
   \[
     \infer{\vdash e : \codeTs{t}{\gamma0};~\epsilon}
-    {\infer[\blue{(\gamma1^*)}]{\vdash \cfor{x=...} :
+    {\infer[(\gamma1^*)]{\vdash \cfor{x=...} :
         \codeTs{t}{\gamma0};~\codeTs{t}{\gamma0}}
       {\infer{\gamma1 \ord \gamma0,~x:\codeTs{t}{\gamma1}
           \vdash \Shiftz~k~\to~... :
@@ -183,7 +185,7 @@
 
   {\footnotesize
     \begin{align*}
-      \Gamma a &= \gamma1 \ord \gamma0,~x:\codeTs{t}{\red{\gamma1}},
+      \Gamma a &= \blue{\gamma1} \ord \red{\gamma0},~x:\codeTs{t}{\blue{\gamma1}},
                  ~k: \contT{\codeTs{t}{\gamma1}}{\codeTs{t}{\gamma0}} \\
       \Gamma b &= \Gamma a,~\gamma2 \ord \gamma0,~u:\codeTs{t}{\gamma2}
     \end{align*}
@@ -193,6 +195,7 @@
 
 \begin{frame}
   \frametitle{型付けの例(2)}
+  % ここでは型付けが複雑になるということを言うにとどめておく
 
   \newcommand\gammaa{\gamma1 \ord \gamma0,~x:\codeTs{t}{\gamma1}}
   \newcommand\gammab{\Gamma a,\gamma2 \ord \gamma1,~y:\codeTs{t}{\gamma2}}
@@ -213,7 +216,7 @@
     e'= & \red{\Resetz}~(\cfordo{x = e1}{e2}~\blue{\Resetz} ~(\cfordo{y = e3}{e4} \\
     % & \blue{\Shiftz}~\blue{k_2}\to~ \red{\Shiftz}~\red{k_1}\to~\magenta{\cLet~u=\green{\framebox{\phantom{x}}}~\cIn}
       & \blue{\Shiftz}~\blue{k_2}\to~ \red{\Shiftz}~\red{k_1}\to~\magenta{\cLet~u=\green{\boxterms}~\cIn}
-          ~\red{\Throw~k_1}~(\blue{\Throw~k_2}~e5)))
+        ~\red{\Throw~k_1}~(\blue{\Throw~k_2}~e5)))
   \end{align*}
 
   \vspace{-2zh} % odd

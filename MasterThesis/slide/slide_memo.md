@@ -147,6 +147,10 @@ keywords: let挿入 コード生成 s0/r0 EC union
 
 * answer type の列ってなに？
 
+* 固有変数条件を導入した理由は？
+
+* subsumption 規則とは？
+
 
 ## 型推論の制約解消部分のスライド案
 
