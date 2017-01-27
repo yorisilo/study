@@ -151,13 +151,13 @@
 \begin{frame}
   \frametitle{型付けの例(1)}
 
-
   {\footnotesize
     \begin{align*}
-      e = \Resetz~ \redbox{\cfordo{x = e1}{e2}~ \bluebox{\Shiftz~ k~ →~ \magentabox{\cLet~u=\green{\boxterm}~\cIn~ \cyanbox{\Throw~k~\blackbox{u}}}}} % \to や \rightarrow を \framebox で囲むとなぜかエラーが出る．バグっぽい
+      &e = \Resetz~ \redbox{\cfordo{x = e1}{e2}~ \bluebox{\Shiftz~ k~ →~ \magentabox{\cLet~u=\green{\boxterm}~\cIn~ \cyanbox{\Throw~k~\blackbox{u}}}}} \\ % \to や \rightarrow を \framebox で囲むとなぜかエラーが出る．バグっぽい
+      &\text{使用できるコード変数}~ \red{\gamma0} = \{\},~ \blue{\gamma1} = \{x\},~ \cyan{\gamma2} = \{u\},~ \gamma1 \uni \gamma2 = \{u,x\}
     \end{align*}
   }
-
+  \vspace{-0.7zw}
   \[
     \infer{\vdash e : \codeTs{t}{\gamma0};~\epsilon}
     {\infer[(\gamma1^*)]{\vdash \cfor{x=...} :
@@ -209,14 +209,13 @@
       \phantom{a}
     }}
 
-  \vspace{-1zh} % odd
-
+  \vspace{-2zh} % odd
   \footnotesize
   \begin{align*}
     e'= & \red{\Resetz}~(\cfordo{x = e1}{e2}~\blue{\Resetz} ~(\cfordo{y = e3}{e4} \\
     % & \blue{\Shiftz}~\blue{k_2}\to~ \red{\Shiftz}~\red{k_1}\to~\magenta{\cLet~u=\green{\framebox{\phantom{x}}}~\cIn}
       & \blue{\Shiftz}~\blue{k_2}\to~ \red{\Shiftz}~\red{k_1}\to~\magenta{\cLet~u=\green{\boxterms}~\cIn}
-        ~\red{\Throw~k_1}~(\blue{\Throw~k_2}~e5)))
+        ~\red{\Throw~k_1}~\Resetz~ (\blue{\Throw~k_2}~e5)))
   \end{align*}
 
   \vspace{-2zh} % odd
@@ -236,11 +235,12 @@
                 {\Gamma d=\gammad\vdash \magenta{\cLet~u=...} : \codeTs{t}{\gamma0};~\epsilon}
                 {\infer
                   {\Gamma e=\gammae\vdash \red{\Throw~k_1}~... : \codeTs{t}{\gamma3};~\epsilon}
-                  {\infer{\Gamma e\vdash \blue{\Throw~k_2}~e5 :
-                      \codeTs{t}{\gamma1\cup\gamma3};~~\epsilon}
-                    {\infer*{\Gamma e\vdash e5:
-                        \codeTs{t}{\gamma2\cup\gamma1\cup\gamma3};~~~\epsilon}
-                      {}
+                  {\infer{\Gamma e\vdash \Resetz~ \blue{\Throw~k_2}~e5 :
+                      \codeTs{t}{\gamma1\cup\gamma3};~ \epsilon}
+                    {\infer{\Gamma e\vdash \blue{\Throw~k_2}~e5 :
+                        \codeTs{t}{\gamma1\cup\gamma3};~ \codeTs{t}{\gamma1\cup\gamma3}}
+                      {\infer*{\Gamma e\vdash ~e5 :
+                          \codeTs{t}{\gamma2\cup\gamma1\cup\gamma3};~~\epsilon}{}}
                     }
                   }
                   % &\infer*{\Gamma d\vdash \green{\framebox{\phantom{x}}}:\codeTs{t}{\gamma0};\epsilon}{}

@@ -24,18 +24,31 @@
 \begin{frame}
   \frametitle{制約生成}
   \begin{exampleblock}{制約生成用の型システム$T_2$}
+    \small
+    $T_1$
+    \vspace{-0.5zh}
     \[
-      \infer[Constr;~ t = \intT]
-      {\Gamma \vdash x~ \Plus~ y: t; \sigma}
-      {\Gamma \vdash x: \intT ; \sigma & \Gamma \vdash y: \intT ; \sigma}
-    \]
-    \vspace{-1.2zh}
-    \[
-      \infer[Constr;~ \Gamma \models \longer{t}{\codeT{\intT}{\gamma}}]
-      {\Gamma \vdash u~ \cPlus~ w: t; \sigma}
+      \infer[]
+      {\Gamma \vdash u~ \cPlus~ w: \codeT{\intT}{\gamma}; \sigma}
       {\Gamma \vdash u: \codeT{\intT}{\gamma}; \sigma & \Gamma \vdash w: \codeT{\intT}{\gamma}; \sigma}
+      +
+      \quad
+      \infer
+      {\Gamma \vdash e : \codeT{t}{\gamma_2} ; \sigma}
+      {\Gamma \vdash e : \codeT{t}{\gamma_1} ; \sigma
+        & \Gamma \models \gamma_2 \ord \gamma_1
+      }
     \]
-
+    \vspace{-2zh}
+    \begin{visibleenv}<2->
+      $T_2$\\
+      \[
+        \infer[Constr;~ \Gamma \models \longer{t}{\codeT{\intT}{\gamma}}]
+        {\Gamma \vdash u~ \cPlus~ w: t; \sigma}
+        {\Gamma \vdash u: \codeT{\intT}{\gamma}; \sigma & \Gamma \vdash w: \codeT{\intT}{\gamma}; \sigma}
+      \]
+    \end{visibleenv}
+    \vspace{-2zh}
     \begin{itemize}
     \item 下から上に一意的に適用
     \item 規則適用時に制約を生成
@@ -62,9 +75,9 @@
   % \end{align*}
   制約 $C$
   \begin{align*}
-    &\text{型} & \quad t0 = t1 & \quad t0 \ord t1 \\
-    &\text{EC} & \quad \gamma0 = \gamma1 & \quad \only<2->{\red{\gamma0 \ord \gamma1}}\only<1>{\gamma0 \ord \gamma1} \\
-    &\text{エフェクト (型の列)} & \quad \sigma0 = \sigma1
+    &\text{型} & t0 = t1 & \quad t0 \ord t1 \\
+    &\text{EC} & \gamma0 = \gamma1 & \quad \only<2->{\red{\gamma0 \ord \gamma1}}\only<1>{\gamma0 \ord \gamma1} \\
+    &\text{エフェクト (型の列)} & \sigma0 = \sigma1
   \end{align*}
 
   \begin{exampleblock}{制約に対する解の存在判定}
