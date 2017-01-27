@@ -24,28 +24,28 @@
 \begin{frame}
   \frametitle{制約生成}
   \begin{exampleblock}{制約生成用の型システム$T_2$}
-    \small
+    \footnotesize
     $T_1$
     \vspace{-0.5zh}
     \[
       \infer[]
-      {\Gamma \vdash u~ \cPlus~ w: \codeT{\intT}{\gamma}; \sigma}
-      {\Gamma \vdash u: \codeT{\intT}{\gamma}; \sigma & \Gamma \vdash w: \codeT{\intT}{\gamma}; \sigma}
+      {\Gamma \vdash u~ \cPlus~ w: \codeTs{\intT}{\gamma}; \sigma}
+      {\Gamma \vdash u: \codeTs{\intT}{\gamma}; \sigma & \Gamma \vdash w: \codeTs{\intT}{\gamma}; \sigma}
       +
       \quad
       \infer
-      {\Gamma \vdash e : \codeT{t}{\gamma_2} ; \sigma}
-      {\Gamma \vdash e : \codeT{t}{\gamma_1} ; \sigma
-        & \Gamma \models \gamma_2 \ord \gamma_1
+      {\Gamma \vdash e : \codeTs{t}{\gamma2} ; \sigma}
+      {\Gamma \vdash e : \codeTs{t}{\gamma1} ; \sigma
+        & \Gamma \models \gamma2 \ord \gamma1
       }
     \]
     \vspace{-2zh}
     \begin{visibleenv}<2->
       $T_2$\\
       \[
-        \infer[Constr;~ \Gamma \models \longer{t}{\codeT{\intT}{\gamma}}]
+        \infer[Constr;~ \Gamma \models \longer{t}{\codeTs{\intT}{\gamma}}]
         {\Gamma \vdash u~ \cPlus~ w: t; \sigma}
-        {\Gamma \vdash u: \codeT{\intT}{\gamma}; \sigma & \Gamma \vdash w: \codeT{\intT}{\gamma}; \sigma}
+        {\Gamma \vdash u: \codeTs{\intT}{\gamma}; \sigma & \Gamma \vdash w: \codeTs{\intT}{\gamma}; \sigma}
       \]
     \end{visibleenv}
     \vspace{-2zh}
