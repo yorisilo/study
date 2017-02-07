@@ -23,7 +23,8 @@ $\gamma$の定義における$\gamma_x$は環境識別子の変数を表す．
 $L ::= \cdot \mid \gamma$ は現在ステージ(レベル0)と将来ステージ(レベル1)をまとめ
 て表す記号である．たとえば，$\Gamma \vdash^L
 e:t~;~\sigma$は，$L=\empty$のとき現在ステージ(レベル0)の判断で，
-$L=\gamma$のとき将来ステージ(レベル1)の判断となる．
+$L=\gamma$のとき将来ステージ(レベル1)の判断となり，その判断の$\sigma$は$\cdot$とする．
+将来ステージではエフェクトは発生しないからである．
 なお，現在ステージ(レベル0)を表す$\cdot$ は省略する事がある．
 
 レベル0の型$t^0$，レベル1の型$t^1$，(レベル0の)型の有限列$\sigma$,
@@ -144,7 +145,7 @@ $n=1,\cdots,k$に対して並べた列)で表現している．
     {}
     \quad
     \infer
-    {\Gamma, (u : t)^\gamma \vdash^\gamma u : t ~;~ \sigma}
+    {\Gamma, (u : t)^\gamma \vdash^\gamma u : t ~;~ \cdot}
     {}
   \]
 
@@ -156,9 +157,9 @@ $n=1,\cdots,k$に対して並べた列)で表現している．
 
   \[
     \infer
-    {\Gamma \vdash^{\gamma} e_1~ e_2 : t_1 ; \sigma}
-    {\Gamma \vdash^{\gamma} e_1 : \funT{t_2}{t_1}{\sigma};~ \sigma
-      & \Gamma \vdash^{\gamma} e_2 : t_2  ; \sigma
+    {\Gamma \vdash^{\gamma} e_1~ e_2 : t_1 ;~ \cdot}
+    {\Gamma \vdash^{\gamma} e_1 : \funT{t_2}{t_1}{\sigma};~ \cdot
+      & \Gamma \vdash^{\gamma} e_2 : t_2  ~;~ \cdot
     }
     \quad
     \infer
@@ -174,8 +175,8 @@ $n=1,\cdots,k$に対して並べた列)で表現している．
     {\Gamma,~x : t_1 \vdash e : t_2 ~;~ \sigma}
     \quad
     \infer
-    {\Gamma \vdash^\gamma \fun{u}{e} : \funT{t_1}{t_2}{} ~;~ }
-    {\Gamma,~(u : t_1)^\gamma \vdash^\gamma e : t_2 ~;~  }
+    {\Gamma \vdash^\gamma \fun{u}{e} : \funT{t_1}{t_2}{} ~;~ \cdot}
+    {\Gamma,~(u : t_1)^\gamma \vdash^\gamma e : t_2 ~;~ \cdot}
   \]
 
   \[
@@ -256,8 +257,8 @@ $n=1,\cdots,k$に対して並べた列)で表現している．
 
   \[
     \infer
-    {\Gamma \vdash^{\gamma_2} e : t ~;~ \sigma}
-    {\Gamma \vdash^{\gamma_1} e : t ~;~ \sigma
+    {\Gamma \vdash^{\gamma_2} e : t ~;~ \cdot}
+    {\Gamma \vdash^{\gamma_1} e : t ~;~ \cdot
       & \Gamma \models \gamma_2 \ord \gamma_1
     }
   \]
@@ -266,7 +267,7 @@ $n=1,\cdots,k$に対して並べた列)で表現している．
   \[
     \infer
     {\Gamma \vdash \code{e} : \codeT{t^1}{\gamma} ; \sigma}
-    {\Gamma \vdash^{\gamma} e : t^1 ; \sigma}
+    {\Gamma \vdash^{\gamma} e : t^1 ; \cdot}
   \]
 
   \[

@@ -85,7 +85,7 @@ $T_2$の設計にあたって解決すべき問題は subsumption規則である
 
 \[
   \infer[Constr;~\Gamma \models \longer{\gamma}{\gamma'}]
-  {\Gamma \vdash^{\gamma} u:t;~\sigma}
+  {\Gamma \vdash^{\gamma} u:t;~\cdot}
   {(u:t)^{\gamma'} \in \Gamma
   }
 \]
@@ -102,9 +102,9 @@ $T_2$の設計にあたって解決すべき問題は subsumption規則である
 
 \[
   \infer[Constr;~\Gamma \models \longer{t}{t_1}]
-  {\Gamma \vdash^\gamma e_1 \, e_2 : t;~\sigma}
-  {\Gamma \vdash^\gamma e_1 : \funT{t_2}{t_1}{\sigma};~\sigma
-    &\Gamma \vdash^\gamma e_2 : t_2;~\sigma
+  {\Gamma \vdash^\gamma e_1 \, e_2 : t;~\cdot}
+  {\Gamma \vdash^\gamma e_1 : \funT{t_2}{t_1}{\sigma};~\cdot
+    &\Gamma \vdash^\gamma e_2 : t_2;~\cdot
   }
 \]
 
@@ -134,8 +134,8 @@ $T_2$の設計にあたって解決すべき問題は subsumption規則である
 
 \[
   \infer[Constr;~t=\funT{t_1}{t_2}{}]
-  {\Gamma \vdash^\gamma \lambda u.e : t;~\sigma}
-  {\Gamma,~(u:t_1)^\gamma \vdash^\gamma e : t_2;~\sigma}
+  {\Gamma \vdash^\gamma \lambda u.e : t;~\cdot}
+  {\Gamma,~(u:t_1)^\gamma \vdash^\gamma e : t_2;~\cdot}
 \]
 
 (if)
@@ -218,7 +218,7 @@ $T_2$の設計にあたって解決すべき問題は subsumption規則である
 \[
   \infer[Constr;~\longer{t}{\codeT{t_1}{\gamma}}]
   {\Gamma \vdash \code{e} : t;~\sigma}
-  {\Gamma \vdash^\gamma e : t_1;~\sigma}
+  {\Gamma \vdash^\gamma e : t_1;~\cdot}
 \]
 
 
@@ -416,7 +416,7 @@ $\Delta \models \longer{t^0}{s^0}$の形の制約は，両方ともが型変数�
     \end{description}
   \item[1-3] $C$から$\Delta \models \longer{t^0}{s^0}$ の形の制約を選び，それを$c$とする．$C_1 = C - \{c\}$ とする．
     \begin{description}
-    \item[1-3-1] $t^0,s^0$のどちらかが型変数でないとき，詳細は省くが，制約$\theta$ が生成される;
+    \item[1-3-1] $t^0,s^0$のどちらかが型変数でないとき，詳細は省くが，代入$\theta$ が生成される;
       unify1($C_1, \Theta(\theta)$)を呼び出す
     \item[1-3-2] $t^0,s^0$がともに型変数のときつまり，$c$ が $\Delta \models \longer{\alpha^0}{\beta^0}$のとき，その制約を残す
     \end{description}
