@@ -409,13 +409,13 @@ $\Delta \models \longer{c}{c}$の形の制約を生む可能性があるが，
       \item[2-2-2] 型 $B$ に $A$ が現れないなら，$\Theta_1 = [A := B]$とし，unify1($\Theta_1(C_1), \Theta(\Theta_1))$を呼び出す．
       \end{description}
     \item[2-3] $A \neq B$ で $B$ が型変数($\sigma$変数)のとき，$A$ と $B$ を入れ替えて，2-2へ
-    \item[2-4] $A \neq B$ で $A = \funT{A_1}{A_2}{}$，$B = \funT{B_1}{B_2}{}$ のとき， $C_2 = C_1 \cup \{A_1 = B_1, A_2 = B_2\}$ とし， unify1($C_2, \Theta$)を呼び出す
-    \item[2-5] $A \neq B$ で $A = \funT{A_1}{A_2}{\sigma_1}$，$B = \funT{B_1}{B_2}{\sigma_2}$ のとき， $C_2 = C_1 \cup \{A_1 = B_1, A_2 = B_2, \sigma_1 = \sigma_2\}$ とし， unify1($C_2, \Theta$)を呼び出す
-    \item[2-6] $A \neq B$ で $A = \codeT{A_1}{c_1} , B = \codeT{B_1}{c_2}$ のとき，$C_2 = C_1 \cup \{A_1 = B_1, c_1 = c_2\}$ とし， unify1($C_2, \Theta$)を呼び出す
+    \item[2-4] $A \neq B$ で $A = \funT{A_1}{A_2}{}$，$B = \funT{B_1}{B_2}{}$ のとき， $C_2 = C_1 + \{A_1 = B_1, A_2 = B_2\}$ とし， unify1($C_2, \Theta$)を呼び出す
+    \item[2-5] $A \neq B$ で $A = \funT{A_1}{A_2}{\sigma_1}$，$B = \funT{B_1}{B_2}{\sigma_2}$ のとき， $C_2 = C_1 + \{A_1 = B_1, A_2 = B_2, \sigma_1 = \sigma_2\}$ とし， unify1($C_2, \Theta$)を呼び出す
+    \item[2-6] $A \neq B$ で $A = \codeT{A_1}{c_1} , B = \codeT{B_1}{c_2}$ のとき，$C_2 = C_1 + \{A_1 = B_1, c_1 = c_2\}$ とし， unify1($C_2, \Theta$)を呼び出す
     \item[2-7] $A \neq B$ で ともに$\sigma$変数のときつまり，$A = \sigma_x , B = \sigma_y$ のとき，その制約は残す．
-    \item[2-8] $A \neq B$ で $A = \sigma_x , B = \cdot$ のとき，$C_2 = C_1 \cup \{\sigma_x = \cdot\}$ とし， unify1($C_2, \Theta$)を呼び出す
-    \item[2-9] $A \neq B$ で $A = \sigma_x , B = t_1, \sigma_2$ のとき，$C_2 = C_1 \cup \{\sigma_x = (t_z,\sigma_2),~ \longer{t_z}{t_1} \}$ とし， unify1($C_2, \Theta$)を呼び出す
-    \item[2-10] $A \neq B$ で $A = (t_1, \sigma_1) , B = (t_2, \sigma_2)$ のとき，$C_2 = C_1 \cup \{\longer{t_1}{t_2}, \sigma_1 = \sigma_2 \}$ とし， unify1($C_2, \Theta$)を呼び出す
+    \item[2-8] $A \neq B$ で $A = \sigma_x , B = \cdot$ のとき，$C_2 = C_1 + \{\sigma_x = \cdot\}$ とし， unify1($C_2, \Theta$)を呼び出す
+    \item[2-9] $A \neq B$ で $A = \sigma_x , B = t_1, \sigma_2$ のとき，$C_2 = C_1 + \{\sigma_x = (t_z,\sigma_2),~ \longer{t_z}{t_1} \}$ とし， unify1($C_2, \Theta$)を呼び出す
+    \item[2-10] $A \neq B$ で $A = (t_1, \sigma_1) , B = (t_2, \sigma_2)$ のとき，$C_2 = C_1 + \{\longer{t_1}{t_2}, \sigma_1 = \sigma_2 \}$ とし， unify1($C_2, \Theta$)を呼び出す
     \item[2-11] 上記のいずれでもないとき「単一化失敗」を返す．
     \end{description}
   \item[1-3] $C$から$\Delta \models \longer{t^0}{s^0}$ の形の制約を選び，それを$c$とする．$C_1 = C - \{c\}$ とする．
