@@ -303,7 +303,7 @@ $T_2$の型付け規則を適用する時，型付け規則の下の型判断に
   \begin{align*}
     \Gamma &\models \longer{t^0}{t^0} \\
     \Gamma &\models \longer{c}{c} \\
-    \Gamma &\models \longer{\sigma}{\sigma} \\
+    \sigma &= \sigma \\
     t^0 &= t^0 \\
     t^1 &= t^1
   \end{align*}
@@ -313,7 +313,7 @@ $T_2$の型付け規則を適用する時，型付け規則の下の型判断に
   \begin{align*}
     t^0      & ::= \alpha^0 \mid \Int \mid \Bool \mid \funT{t^0}{t^0}{\sigma} \mid \codeT{t^1}{c} \\
     t^1      & ::= \alpha^1 \mid \Int \mid \Bool \mid \funT{t^1}{t^1}{} \\
-    c        & ::= \gamma \mid d \mid c \uni c \\
+    c        & ::= \gamma_x \mid d \mid c \uni c \\
     \sigma   & ::= \sigma_x \mid \epsilon \mid t^0, \sigma
   \end{align*}
 
@@ -328,7 +328,7 @@ $t_0$, $t_1$, $c$, $\sigma$ はそれぞれ、
 classifierをあらわす表現(メタ変数)，
 answer type の列($\sigma$-part)
 である．また，
-$\alpha^i$はレベル$i$の型変数，$\gamma$はclassifier変数，$\sigma_x$は$\sigma$-partの変数である．
+$\alpha^i$はレベル$i$の型変数，$\gamma_x$はclassifier変数，$\sigma_x$は$\sigma$-partの変数($\sigma$変数)である．
 また，$d$は，固有変数条件をもつclassifier変数のことであり，
 型推論のあいだは，これは実質的に定数として扱われる\footnote{つまり，classifier変数$\gamma$に対しては代入するが，$d$に対しては代入しない}．
 
@@ -345,7 +345,7 @@ $\alpha^i$はレベル$i$の型変数，$\gamma$はclassifier変数，$\sigma_x$
 
 制約の解消とは，制約が与えられたとき，その解となる代入$\Theta$を求めることである．
 代入$\Theta$は、型変数$\alpha^0,~ \alpha^1$への型の代入と，
-classifier変数$\gamma$へのclassifierの代入とから構成される．
+classifier変数$\gamma_x$へのclassifierの代入とから構成される．
 
 % $\sigma$変数 $\sigma_x$ へ answer type の列の代入もあるはず．$\sigma_x$への代入についてよくわかってない
 
@@ -355,17 +355,21 @@ classifier変数$\gamma$へのclassifierの代入とから構成される．
 \subsection{typeinf1: 制約の解消アルゴリズム(前半)}
 $t^0=s^0$ と $t^1=s^1$ の形の制約は，単一化アルゴリズムによって解くことができる．
 % 単一化アルゴリズムについての説明が必要っぽい
-それを解いた結果，$\alpha^0$，$\alpha^1$, $\gamma$に対する代入が生じる．
+それを解いた結果，$\alpha^0$，$\alpha^1$, $\gamma_x$に対する代入が生じる．
 もしくは「解なし」という結果となる．
+また，$\sigma_1 = \sigma_2$ の形の制約も，単一化アルゴリズムで解くことができ，
+それを解いた結果，$\sigma_x$ に対する代入が生じる．もしくは「解なし」という結果となる．
 
 $\longer{\sigma}{\sigma}$ の形の制約も，単一化アルゴリズムによって解くことができる．
 それを説いた結果，$\sigma$変数 $\sigma_x$に対する代入や $\longer{t^0}{t^0}$の形の制約が生成される．
 もしくは「解なし」という結果となる．
 
 $\Delta \models \longer{t^0}{s^0}$の形の制約は，両方ともが型変数の場合以外は，
-簡単に解ける．(その結果として、$t^i=s^i$ の型の制約や，$\Delta \models
-\longer{c}{c}$の形の制約を生む可能性があるが，前者は前と同様に解けばよ
-く，前者を解いている間にあらたに$\Delta \models \longer{t^0}{s^0}$の形の制約は生じない．)
+簡単に解ける．
+(その結果として、$t^i=s^i$ の型の制約や，
+$\Delta \models \longer{c}{c}$の形の制約を生む可能性があるが，
+前者は前と同様に解けばよく，
+前者を解いている間にあらたに$\Delta \models \longer{t^0}{s^0}$の形の制約は生じない．)
 
 ここまでの段階で残る制約は，以下のものだけである．
 
@@ -395,16 +399,16 @@ $\Delta \models \longer{t^0}{s^0}$の形の制約は，両方ともが型変数�
 
   % unify1($C, []$) を呼び出す
   \begin{description}           % \oishi{% $longer{\sigma}{\sigma}$ の形についてはあとで考える}
-  \item[1] $C$の中に$t^0=s^0$か$t^1=s^1$か$\Delta \models \longer{t^0}{s^0}$の形の制約がなければ，代入$\Theta$ を返す．
-  \item[2] $C$から$t^0=s^0$ か $t^1=s^1$の形の制約を選び，それを$A = B$とする．$C_1 = C - \{A = B\}$ とする．
+  \item[1] $C$の中に$t^0=s^0$か$t^1=s^1$か$\sigma_0 = \sigma_1$か$\Delta \models \longer{t^0}{s^0}$の形の制約がなければ，代入$\Theta$ を返す．
+  \item[2] $C$から$t^0=s^0$ か $t^1=s^1$ か $\sigma_0 = \sigma_1$ の形の制約を選び，それを$A = B$とする．$C_1 = C - \{A = B\}$ とする．
     \begin{description}
     \item[2-1] $A = B$ のとき，unify1($C_1, \Theta$)を呼び出す．
-    \item[2-2] $A \neq B$ で $A$ が型変数のとき，
+    \item[2-2] $A \neq B$ で $A$ が型変数($\sigma$変数)のとき，
       \begin{description}
       \item[2-2-1] 型 $B$ に $A$ が現れるなら，「単一化失敗」を返す．
       \item[2-2-2] 型 $B$ に $A$ が現れないなら，$\Theta_1 = [A := B]$とし，unify1($\Theta_1(C_1), \Theta(\Theta_1))$を呼び出す．
       \end{description}
-    \item[2-3] $A \neq B$ で $B$ が型変数のとき，$A$ と $B$ を入れ替えて，2-2へ
+    \item[2-3] $A \neq B$ で $B$ が型変数($\sigma$変数)のとき，$A$ と $B$ を入れ替えて，2-2へ
     \item[2-4] $A \neq B$ で $A = \funT{A_1}{A_2}{}$，$B = \funT{B_1}{B_2}{}$ のとき， $C_2 = C_1 \cup \{A_1 = B_1, A_2 = B_2\}$ とし， unify1($C_2, \Theta$)を呼び出す
     \item[2-5] $A \neq B$ で $A = \funT{A_1}{A_2}{\sigma_1}$，$B = \funT{B_1}{B_2}{\sigma_2}$ のとき， $C_2 = C_1 \cup \{A_1 = B_1, A_2 = B_2, \sigma_1 = \sigma_2\}$ とし， unify1($C_2, \Theta$)を呼び出す
     \item[2-6] $A \neq B$ で $A = \codeT{A_1}{c_1} , B = \codeT{B_1}{c_2}$ のとき，$C_2 = C_1 \cup \{A_1 = B_1, c_1 = c_2\}$ とし， unify1($C_2, \Theta$)を呼び出す
@@ -496,61 +500,139 @@ $\Delta \models \longer{t^0}{s^0}$の形の制約は，両方ともが型変数�
 
 まず，$\Delta \models \longer{c}{c}$の形の制約の解消について述べる
 
-この形の制約たちを，
-$\Delta_i \models \longer{c_i}{c'_i}$とすると，
-それぞれの$\Delta_i$ は両立的であるので，
-$\Delta = \Delta_1 \cup \cdots \cup \Delta_n$として，
-$\Delta \models \longer{c_i}{c'_i}$を解けばよい．
+$c$とは以下のような式である．
+\begin{align*}
+  c & ::= d \mid \gamma_x \mid c \cup c
+\end{align*}
+
+ここで，$d$ は定数 (固有変数条件をみたすclassifier変数)， $\gamma_x$は
+classifierをあらわす変数、$c$は classifier式。
+また，型推論の対象となった式の一番外側でのclassifierも定数と考えられ
+るので，それを$d_0$とする．
+
+% この形の制約たちを，
+% $\Delta_i \models \longer{c_i}{c'_i}$とすると，
+% それぞれの$\Delta_i$ は両立的であるので，
+% $\Delta = \Delta_1 \cup \cdots \cup \Delta_n$として，
+% $\Delta \models \longer{c_i}{c'_i}$を解けばよい．
+
+解きたい制約は，以下の形である．
+\[
+  \Delta \models C
+\]
+
+ただし， $\Delta$ は，$d \ge c$ の形の不等式を有限個「かつ」でつなげた
+ものである．
+また，すべての式$d_i$ ($i>0$)に対して$d_i \ge d_o$が $\Delta$に含まれ
+ているとしてよい．
+また，$C$は，$c \ge c$ の形の不等式を「かつ」でつなげたものである．
+
+なお，仮定$\Delta$ は，(code-lambda規則等で) 固有変数を導入する際の
+$d \ge c$という形の不等式のみがはいっているので，左辺は必ず $d$である．
+
+制約解消問題 $ \Delta \models C $ に対して，
+$[\gamma_x := c,\cdots,\gamma_x:=c]$ という形の代入$\Theta$で，
+$ \Delta\Theta \models C\Theta $ が(順序に関する規則のみで)導けるとき，
+この$\theta$を解と呼ぶ．そのような$\Theta$が存在しないとき，解がないと
+いう．
+
 % それぞれの $\Delta_i$ はcompatible であるはずなので(ここはあとでチェッ
 % クが必要)
 % $\Delta = \Delta_1 \cup \cdots \cup \Delta_n$ という風に全部を合体させ
 % た上で、$\Delta \models \longer{c_i}{c'_i}$を解けばよい。
 
+以下で，classifier 式 $c$ が join-irreducible であることを述べる．
+\begin{theo}[join-irreducible]
+  \label{theo:join-ir}
+  $c$はほかのどのような要素 $c_1$, $c_2$に対しても，$c_1 \cup c_2 \ge c$ ならば，
+  $c_1 \ge c$ または $c_2 \ge c$ である
+\end{theo}
+
+\begin{proof}[\ref{theo:join-ir}の証明]
+  $\Delta$ は $d\ge c$の形だけからなる．
+  $\Delta$から$c_1 \cup c_2 \ge d$を導く証明のサイズに関する帰納法で，
+  $\Delta$から$c_1 \ge d$または$c_2 \ge d$が導けることが言える．
+\end{proof}
+
+主に以下の右辺の$\uni$の除去，左辺の分解，classifier変数の除去というアイデアをもとにclassifier不等式の制約解消アルゴリズムを構成する．
+
 \begin{description}
-\item[(ステップ1: classifier変数の除去)]\mbox{}\\
-  制約中のclassifier変数の1つに着目し，それを$\gamma$とする．
-  $\longer{c_i}{\gamma}$ の形の制約 ($i=1,2,\cdots,I$)と
-  $\longer{\gamma}{c'_j}$ の形の制約 ($j=1,2,\cdots,J$)をすべて消去し，
-  以下の制約を，すべての$(i,j)$に対して追加する．
-
-  \[
-    \longer{c_i}{c'_j}
-  \]
-
-  これにより，classifier変数は1つ減る．% (制約は一般には増えるかもしれない。)
-  したがって，ステップ1を繰り返すと，classifier変数はなくなる．
-
-\item[(ステップ2: 右辺の$\uni$の除去)]\mbox{}\\
+\item[(右辺の$\uni$の除去)]\mbox{}\\
   $\longer{c_1}{c_2 \uni c_3}$ を
   $\longer{c_1}{c_2}$ と
   $\longer{c_1}{c_3}$ に変換する．
 
   これにより，不等号の右辺にある$\uni$の個数が1つ減る．
-  したがって，ステップ2を繰り返すと，不等号の右辺にある$\uni$はなくなる．
+  したがって，これを繰り返すと不等号の右辺にある$\uni$はなくなる．
 
-  ステップ2の繰り返しがおわると，制約は，
-  $\Delta \models \longer{c}{d}$の形になる．
+  % ステップ2の繰り返しがおわると，制約は，
+  % $\Delta \models \longer{c}{d}$の形になる．
 
 
   % \oishi{ステップ3 は変更する必要あり ここで「$d$は atomic」 という仮定をおく。これについてはあとで吟味する.}\\
   % \oishi{以下は 定理 として証明が必要}
-\item[(ステップ3: 左辺の分解)] \mbox{}\\
-  $d$は 定数 とすると，
+\item[(左辺の分解)] \mbox{}\\
+  定理 \ref{theo:join-ir} join-irreducible の仮定より
   「$\longer{c_1 \uni c_2}{d}$ ならば
   $\longer{c_1}{d}$または，
   $\longer{c_2}{d}$」ということが言える．
 
   これを用いて、$\longer{c}{d}$の左辺を分解することができ，
 
-  \[
-    \Delta \models \longer{d_1}{d_1'} \vee \cdots \vee \longer{d_n}{d'_n}
-  \]
+  $C - \{(c_1 \cup c_2 \ge d)\} \cup \{(c_1 \ge d)\}$に対して再帰し，
+  さらに，
+  $C - \{(c_1 \cup c_2 \ge d)\} \cup \{(c_2 \ge d)\}$に対して再帰し，
+  それらの解の両方を解として返す．(一意的には解けない．解は一般的には複数ある．)
 
-  となる．
-  さらに$\Delta$も $\longer{d1}{d2}$の形を「かつ」と「または」で
-  つないだ形になる．
+  % \[
+  %   \Delta \models \longer{d_1}{d_1'} \vee \cdots \vee \longer{d_n}{d'_n}
+  % \]
+
+  % となる．
+  % さらに$\Delta$も $\longer{d1}{d2}$の形を「かつ」と「または」で
+  % つないだ形になる．
 
   % これは decidable なので、「解があるかどうか」もdecidableである。
+
+\item[(classifier変数の除去)]\mbox{}\\
+  制約中のclassifier変数の1つに着目し，それを$\gamma_x$とし，
+  $C$の中から以下の形の不等式
+  をすべて列挙する。
+
+  \begin{align*}
+    c_i & \ge \gamma_x  ~~ & \text{for}~ i=1,2,,...m\\
+    \gamma_x & \ge d_j  ~~ & \text{for}~ j=1,2,,...n
+  \end{align*}
+
+  ただし $m$や$n$は$0$の可能性があり，また，すべての$c_i$ は $\gamma_x$は含まない．
+
+  \begin{itemize}
+  \item $m=0$かつ$n>0$のとき，$\gamma_x:=d_1 \cup \cdots \cup d_n$という
+    代入を$\theta$に追加し，$C$からは$\gamma_x$に関する不等式をすべて取
+    り除いて再帰する．
+  \item $m>0$かつ$n=0$のとき，$\gamma_x:=d_0$という
+    代入を$\theta$に追加して、$C$からは$\gamma_x$に関する不等式をすべて取
+    り除いて再帰する．
+  \item $m>0$かつ$n>0$のとき，
+    $C$から$\gamma_x$に関する不等式をすべて取り除いた上で，以下の不等式を
+    追加する．
+    \[
+      c_i \ge d_j   ~~\textrm{(すべての}~i,j~\textrm{に対して)}
+    \]
+    さらに，$\gamma_x:=d_1 \cup \cdots \cup d_n$という代入を$\Theta$に追加
+    した上で再帰する．
+  \end{itemize}
+  % $\longer{c_i}{\gamma}$ の形の制約 ($i=1,2,\cdots,I$)と
+  % $\longer{\gamma}{c'_j}$ の形の制約 ($j=1,2,\cdots,J$)をすべて消去し，
+  % 以下の制約を，すべての$(i,j)$に対して追加する．
+
+  % \[
+  %   \longer{c_i}{c'_j}
+  % \]
+
+  これにより，classifier変数は1つ減る．% (制約は一般には増えるかもしれない。)
+  したがって，これを繰り返すとclassifier変数はなくなる．
+
 \end{description}
 
 $\Delta \models \longer{\alpha^0}{\beta^0}$の形の制約は残す．
@@ -565,6 +647,10 @@ $\Delta \models \longer{\alpha^0}{\beta^0}$の形の制約は残す．
 %   $\Delta \models \longer{\gamma1}{\gamma2}$
 % \end{itemize}
 
+
+以下の制約解消アルゴリズムは$\Delta \models \longer{c}{c}$の形の制約についての制約解消について記述する．
+% $\Delta \models \longer{\alpha^0}{\beta^0}$の形の制約は残すだけであるので，特に記述しない．
+
 \begin{oframed}
   制約解消アルゴリズム(後半) unify2
   \begin{itemize}
@@ -574,27 +660,71 @@ $\Delta \models \longer{\alpha^0}{\beta^0}$の形の制約は残す．
   \end{itemize}
 
   \begin{description}
-  \item[入力] $C$, $\Theta$ ($\Theta$ には $\Delta \models \longer{\alpha^0}{\beta^0}$, $\Delta \models \longer{c}{c}$ の形の制約のみがある)
-  \item[出力] $C$, $\Theta$ ($\Delta \models \longer{\alpha^0}{\beta^0}$の形の制約があればそれも返す)
+  \item[入力] $C$, $\Theta$ ($\Theta$ には $\Delta \models \longer{c}{c}$ の形の制約のみがある)
+  \item[出力] $C$, $\Theta$
   \end{description}
 
   \begin{description}
+  \item[0] $C$ が空であるならば，$\Theta$ を返して終了する．
   \item[1] $C$から任意の制約$c$を選び， $C' = C - \{c\}$ とする．
     \begin{description}
-    \item[1-1] $c$ が $\Delta \models \longer{c}{c}$の形のとき，
-      \begin{description}
-        \item[1-1-1: ステップ1] classifier 変数 $\gamma$ を選び，$\longer{c_i}{\gamma}$ と$\longer{\gamma}{c'_j}$ をすべて消去し，制約に$\longer{c_i}{c'_j}$ を加える．すべての classifier 変数がなくなるまでステップ1を繰り返し，ステップ2へ
-        \item[1-1-2: ステップ2] $\longer{c_1}{c_2 \uni c_3}$ を$\longer{c_1}{c_2}$ と $\longer{c_1}{c_3}$ に変換する．右辺に$\uni$ がなくなるまで，ステップ2を繰り返すことによって，制約は， $\longer{c}{d}$となる．ステップ3へ
-        \item[1-1-3: ステップ3] $\longer{c_1 \uni c_2}{d}$ を $\longer{c_1}{d} \vee \longer{c_2}{d}$ に変換する．その制約を$\Theta$に加え，unify2($C', \Theta$)を呼び出す
-      \end{description}
-    % \item[1-2] $c$ が $\Delta \models \longer{\alpha^0}{\beta^0}$の形のとき，
-    %   $C'_1$($C'$ に$\alpha^0 = \beta^0$を加えたもの)，\\
-    %   $C'_2$($C'$ に$\alpha^0 = \codeT{t}{\gamma1},~ \beta^0 = \codeT{t}{\gamma2},~ \Delta \models \longer{\gamma1}{\gamma2}$を加えたもの)とする．\\
-    %   unify2($C'_1, \Theta_1$)とunify2($C'_2, \Theta_2$)とを呼び出す．
+    \item[1-1] その制約が$c \ge c$ (両辺が同じ不等式)ならば，unify2($C',~ \Theta$)を呼び出す
+    \item[1-2] その制約が $d_1 \ge d_2$ (両辺が異なるclassifier定数)のとき，
+      さらに，$\Delta$のもとで、$d_1 \ge d_2$ が導けるのであれば，
+      unify2($C',~ \Theta$)を呼び出す．
+      導けないのであれば，「制約解消失敗」を返して終了する．
+    \item[1-3] その制約が $c_1 \ge c_2 \cup c_3$ ならば，
+      $C'' = C' + \{c_1 \ge c_2,~ c_1 \ge c_3\}$とし，
+      unify2($C'',~ \Theta$)を呼び出す．
+    \item[1-4] その制約が $(\cdots \cup \gamma_x \cup \cdots) \ge \gamma_x$ ならば，
+      unify2($C',~ \Theta$)を呼び出す．
+    \item[1-5] その制約が $c_1 \cup c_2 \ge d$ ならば，
+      定理 \ref{theo:join-ir} join-irreducible の仮定より
+      $(c_1 \cup c_2 \ge d)$ は，$e_1 \ge d$ または $e_2 \ge d$であるので，
+      $C_1 = C' + \{ e_1 \ge d \}$ とし，unify2($C_1,~ \Theta$)を呼び出し，
+      $C_2 = C' + \{ e_2 \ge d \}$ とし，unify2($C_2,~ \Theta$)を呼び出し，
+      それらの解の両方を解として返す．
     \end{description}
-    \item[1-2] 解として，$C, \Theta$と $\Delta \models \longer{\alpha^0}{\beta^0}$の形の制約を返す．
+  \item[2] 1-1 から 1-5 のいずれのケースにも当てはまらない場合かつ，$C$ が空でないとき，残っている classifier 変数 $\gamma_x$ を一つ取り出し，$C$の中から，以下の形の不等式すべてを列挙する．
+    \begin{align*}
+      c_i & \ge \gamma_x  ~~ & \text{for}~ i=1,2,,...m\\
+      \gamma_x & \ge d_j  ~~ & \text{for}~ j=1,2,,...n
+    \end{align*}
+    \begin{description}
+    \item[2-1] $m=0$かつ$n>0$の場合，
+      $\gamma_x:=d_1 \cup \cdots \cup d_n$という代入を$\Theta$に追加したものを$\Theta'$とし，
+      $C$から$\gamma_x$に関する不等式をすべて取り除いたものを $C'$ とし，unify2($C',~\Theta',$)を呼び出す．
+    \item[2-2] $m>0$かつ$n=0$の場合，
+      $\gamma_x:=d_0$という代入を$\Theta$に追加したものを$\Theta'$とし，
+      $C$から$\gamma_x$に関する不等式をすべて取り除いたものを $C'$ とし，unify2($C',~\Theta',$)を呼び出す．
+    \item[2-3] $m>0$かつ$n>0$の場合，
+      $\gamma_x:=d_1 \cup \cdots \cup d_n$という代入を$\Theta$に追加したものを$\Theta'$とし，
+      $C$から$\gamma_x$に関する不等式をすべて取り除いた上で，以下の不等式を
+      追加したものを$C'$とし，unify2($C',~\Theta',$)を呼び出す．
+      \[
+        c_i \ge d_j   ~~\textrm{(すべての}~i,j~\textrm{に対して)}
+      \]
+    \end{description}
   \end{description}
+  % \begin{description}
+  % \item[1] $C$から任意の制約$c$を選び， $C' = C - \{c\}$ とする．
+  %   \begin{description}
+  %   \item[1-1] $c$ が $\Delta \models \longer{c}{c}$の形のとき，
+  %     \begin{description}
+  %       \item[1-1-1: ステップ1] classifier 変数 $\gamma$ を選び，$\longer{c_i}{\gamma}$ と$\longer{\gamma}{c'_j}$ をすべて消去し，制約に$\longer{c_i}{c'_j}$ を加える．すべての classifier 変数がなくなるまでステップ1を繰り返し，ステップ2へ
+  %       \item[1-1-2: ステップ2] $\longer{c_1}{c_2 \uni c_3}$ を$\longer{c_1}{c_2}$ と $\longer{c_1}{c_3}$ に変換する．右辺に$\uni$ がなくなるまで，ステップ2を繰り返すことによって，制約は， $\longer{c}{d}$となる．ステップ3へ
+  %       \item[1-1-3: ステップ3] $\longer{c_1 \uni c_2}{d}$ を $\longer{c_1}{d} \vee \longer{c_2}{d}$ に変換する．その制約を$\Theta$に加え，unify2($C', \Theta$)を呼び出す
+  %     \end{description}
+  %   % \item[1-2] $c$ が $\Delta \models \longer{\alpha^0}{\beta^0}$の形のとき，
+  %   %   $C'_1$($C'$ に$\alpha^0 = \beta^0$を加えたもの)，\\
+  %   %   $C'_2$($C'$ に$\alpha^0 = \codeT{t}{\gamma1},~ \beta^0 = \codeT{t}{\gamma2},~ \Delta \models \longer{\gamma1}{\gamma2}$を加えたもの)とする．\\
+  %   %   unify2($C'_1, \Theta_1$)とunify2($C'_2, \Theta_2$)とを呼び出す．
+  %   \end{description}
+  %   \item[1-2] 解として，$C, \Theta$と $\Delta \models \longer{\alpha^0}{\beta^0}$の形の制約を返す．
+  % \end{description}
 \end{oframed}
+
+上記のアルゴリズムを繰り返すと，制約解消が途中で失敗しない限り，$\gamma_x$ 変数がすべて消去され，制約$C$が空になり，制約を満たす解の有無が判定可能となる．
 
 % \oishi{ 固有変数d の条件のチェックが必要． Γの中の d たちの順序 と 制約で出てきた順序についてのチェック }
 
