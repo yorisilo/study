@@ -541,18 +541,35 @@ $ \Delta\Theta \models C\Theta $ が(順序に関する規則のみで)導ける
 % $\Delta = \Delta_1 \cup \cdots \cup \Delta_n$ という風に全部を合体させ
 % た上で、$\Delta \models \longer{c_i}{c'_i}$を解けばよい。
 
-以下で，classifier 式 $c$ が join-irreducible であることを述べる．
-\begin{theo}[join-irreducible]
+以下では，classifier 式 に関する join irreducible という概念を導入する．
+\begin{defi}[join irreducible]
   \label{theo:join-ir}
-  $c$はほかのどのような要素 $c_1$, $c_2$に対しても，$c_1 \cup c_2 \ge c$ ならば，
-  $c_1 \ge c$ または $c_2 \ge c$ である
-\end{theo}
+  $c$ が join irreducible である，とは，
+  任意の $c_1$, $c_2$に対しても，$c_1 \cup c_2 \ge c$ ならば，
+  $c_1 \ge c$ または $c_2 \ge c$ が成立することである．
+\end{defi}
 
-\begin{proof}[\ref{theo:join-ir}の証明]
-  $\Delta$ は $d\ge c$の形だけからなる．
-  $\Delta$から$c_1 \cup c_2 \ge d$を導く証明のサイズに関する帰納法で，
-  $\Delta$から$c_1 \ge d$または$c_2 \ge d$が導けることが言える．
-\end{proof}
+要素 $c$ が join irreducible であるということの直感的な意味は，
+$c$ が，それより小さい要素から作ることができない，ということである．
+例えば，自然数の順序集合上では，suc(n) は，それより小さい要素たちの最大値として表すことはできないので， join irreducible である．
+このように， join irreducible な要素は，順序が小さい要素たちの極限等では表現できず，
+離散的な構造のことをいう．
+
+本研究の型システムにおいては，固有変数条件を満たす変数は常に，それを導入する規則より下の classifier より真に大きいという関係にあり， join irreducible であるとみなすことができる．
+\footnote{この事実は classifier からなる順序集合のモデルの上で正当化できると考えているが，本研究ではそこまでは立ち入らず，「固有変数はすべて join irreducible 」という事実を仮定する．}
+
+そこで，以下では，固有変数に対応する classifier 定数 $d$ はすべて join irreducible である，という仮定をおく．
+
+\begin{supp}
+  \label{supp:d-is-join-ir}
+  任意の classifier 定数 $d$ は，join irreducible である．
+\end{supp}
+
+% \begin{proof}[\ref{theo:join-ir}の証明]
+%   $\Delta$ は $d\ge c$の形だけからなる．
+%   $\Delta$から$c_1 \cup c_2 \ge d$を導く証明のサイズに関する帰納法で，
+%   $\Delta$から$c_1 \ge d$または$c_2 \ge d$が導けることが言える．
+% \end{proof}
 
 主に以下の右辺の$\uni$の除去，左辺の分解，classifier変数の除去というアイデアをもとにclassifier不等式の制約解消アルゴリズムを構成する．
 
@@ -572,7 +589,7 @@ $ \Delta\Theta \models C\Theta $ が(順序に関する規則のみで)導ける
   % \oishi{ステップ3 は変更する必要あり ここで「$d$は atomic」 という仮定をおく。これについてはあとで吟味する.}\\
   % \oishi{以下は 定理 として証明が必要}
 \item[(左辺の分解)] \mbox{}\\
-  定理 \ref{theo:join-ir} join-irreducible の仮定より
+  仮定 \ref{supp:d-is-join-ir} より， $d$ は join irreducible であるので，
   「$\longer{c_1 \uni c_2}{d}$ ならば
   $\longer{c_1}{d}$または，
   $\longer{c_2}{d}$」ということが言える．
