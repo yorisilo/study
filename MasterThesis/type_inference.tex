@@ -545,7 +545,7 @@ $ \Delta\Theta \models C\Theta $ が(順序に関する規則のみで)導ける
 \begin{defi}[join irreducible]
   \label{theo:join-ir}
   $c$ が join irreducible である，とは，
-  任意の $c_1$, $c_2$に対しても，$c_1 \cup c_2 \ge c$ ならば，
+  任意の $c_1$, $c_2$に対して $c_1 \cup c_2 \ge c$ ならば，
   $c_1 \ge c$ または $c_2 \ge c$ が成立することである．
 \end{defi}
 
@@ -710,14 +710,14 @@ $\Delta \models \longer{\alpha^0}{\beta^0}$の形の制約は残す．
     \begin{description}
     \item[2-1] $m=0$かつ$n>0$の場合，
       $\gamma_x:=d_1 \cup \cdots \cup d_n$という代入を$\Theta$に追加したものを$\Theta'$とし，
-      $C$から$\gamma_x$に関する不等式をすべて取り除いたものを $C'$ とし，unify2($C',~\Theta',$)を呼び出す．
+      $C$から$\gamma_x$に関する不等式をすべて取り除いたものを $C'$ とし，unify2($C',~\Theta'$)を呼び出す．
     \item[2-2] $m>0$かつ$n=0$の場合，
       $\gamma_x:=d_0$という代入を$\Theta$に追加したものを$\Theta'$とし，
-      $C$から$\gamma_x$に関する不等式をすべて取り除いたものを $C'$ とし，unify2($C',~\Theta',$)を呼び出す．
+      $C$から$\gamma_x$に関する不等式をすべて取り除いたものを $C'$ とし，unify2($C',~\Theta'$)を呼び出す．
     \item[2-3] $m>0$かつ$n>0$の場合，
       $\gamma_x:=d_1 \cup \cdots \cup d_n$という代入を$\Theta$に追加したものを$\Theta'$とし，
       $C$から$\gamma_x$に関する不等式をすべて取り除いた上で，以下の不等式を
-      追加したものを$C'$とし，unify2($C',~\Theta',$)を呼び出す．
+      追加したものを$C'$とし，unify2($C',~\Theta'$)を呼び出す．
       \[
         c_i \ge d_j   ~~\textrm{(すべての}~i,j~\textrm{に対して)}
       \]
